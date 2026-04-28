@@ -21,7 +21,3 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
-# private course materials
-/public/private-course/
-/private-assets/
