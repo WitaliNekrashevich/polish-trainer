@@ -10,7 +10,9 @@ const norm = (s) =>
     .replace(/[.!?]+$/g, "")
     .replace(/\s+/g, " ");
 
-const STORAGE_KEY = "polish-trainer-course-v1";
+const LEGACY_STORAGE_KEY = "polish-trainer-course-v1";
+const PROFILE_META_KEY = "polish-trainer-profiles-v1";
+const PROFILE_STORAGE_PREFIX = "polish-trainer-course-profile-v1";
 
 const styles = {
   app: { minHeight: "100vh", background: "#f4f6f8", padding: 20, fontFamily: "Arial, sans-serif", color: "#202428" },
@@ -36,6 +38,9 @@ const styles = {
   progressFill: { height: "100%", background: "#2f7d59", transition: "width .2s ease" },
   moduleTitle: { margin: "18px 0 8px", color: "#56616b", fontSize: 12, fontWeight: "bold", textTransform: "uppercase", letterSpacing: 0 },
   moduleBtn: { width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", border: 0, background: "transparent", cursor: "pointer", color: "#56616b", fontSize: 12, fontWeight: "bold", textTransform: "uppercase", letterSpacing: 0 },
+  moduleCard: { border: "1px solid #d9e2e8", borderRadius: 10, background: "#fbfcfd", padding: "8px 10px", marginBottom: 12 },
+  topicPanel: { border: "1px solid #dde6ec", borderRadius: 10, background: "#f8fbfd", padding: 10, marginBottom: 12 },
+  exerciseList: { borderLeft: "3px solid #c8d7e2", marginLeft: 12, paddingLeft: 10, marginTop: 8 },
   collapseBtn: { padding: "7px 10px", borderRadius: 8, border: "1px solid #c7d2da", background: "#f8fafb", cursor: "pointer" },
   goal: { borderLeft: "4px solid #2f7d59", background: "#f3faf6", padding: 12, borderRadius: 8, marginBottom: 12 },
   mistake: { border: "1px solid #f0c7c7", background: "#fff7f7", borderRadius: 8, padding: 10, marginBottom: 8 },
@@ -48,13 +53,16 @@ const styles = {
   modal: { width: "min(900px, 96vw)", maxHeight: "90vh", overflow: "auto", background: "white", borderRadius: 10, padding: 20, boxShadow: "0 24px 80px rgba(0,0,0,.25)" },
   printArea: { width: "100%", minHeight: 220, boxSizing: "border-box", border: "1px solid #cbd8e2", borderRadius: 8, padding: 10, fontFamily: "Consolas, monospace", whiteSpace: "pre" },
   dashboardGrid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 10, marginTop: 12 },
-  metric: { background: "#f8fafb", border: "1px solid #e0e6ea", borderRadius: 8, padding: 10 }
+  metric: { background: "#f8fafb", border: "1px solid #e0e6ea", borderRadius: 8, padding: 10 },
+  profileBar: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 12 },
+  floatingDictionaryButton: { position: "fixed", right: 20, bottom: 20, zIndex: 18, boxShadow: "0 12px 28px rgba(0,0,0,.16)" },
+  floatingDictionaryPanel: { position: "fixed", right: 20, bottom: 76, width: "min(380px, calc(100vw - 24px))", maxHeight: "70vh", overflow: "auto", zIndex: 18, background: "white", border: "1px solid #d8e2e8", borderRadius: 12, padding: 16, boxShadow: "0 24px 60px rgba(0,0,0,.18)" }
 };
 
 const input = (q, a, explanation = "") => ({ type: "input", q, a: Array.isArray(a) ? a : [a], explanation });
 const choice = (q, options, correct, explanation = "") => ({ type: "choice", q, options, correct, explanation });
 const free = (q, hint = "Ответ свободный. Напиши 4–8 предложений, потом можешь прислать мне на проверку.") => ({ type: "free", q, explanation: hint });
-const note = (title, body, words = []) => ({ type: "note", title, body, words });
+const note = (title, body, words = [], links = []) => ({ type: "note", title, body, words, links });
 const audio = (title, body) => ({ type: "audio", title, body });
 const makeExercise = (title, items) => ({ title, items });
 
@@ -227,6 +235,10 @@ const ruleTables = {
   instrumental: [{ title: "Narzędnik — z kim? z czym?", headers: ["mianownik", "narzędnik", "przykład"], rows: [["programista", "programistą", "jestem programistą"], ["student", "studentem", "jestem studentem"], ["lekarz", "lekarzem", "jestem lekarzem"], ["kolega", "kolegą", "z kolegą"], ["rodzina", "rodziną", "z rodziną"], ["dziecko", "dzieckiem", "z dzieckiem"], ["ludzie", "ludźmi", "z ludźmi"]] }],
   locative: [{ title: "Miejscownik — o kim? o czym?", headers: ["mianownik", "miejscownik", "przykład"], rows: [["Polska", "Polsce", "w Polsce"], ["praca", "pracy", "w pracy"], ["sklep", "sklepie", "w sklepie"], ["dom", "domu", "w domu"], ["kurs", "kursie", "na kursie"], ["rodzina", "rodzinie", "o rodzinie"], ["dziecko", "dziecku", "o dziecku"]] }],
   verbsPresent: [{ title: "Czas teraźniejszy", headers: ["osoba", "pracować", "robić", "mówić", "mieć"], rows: [["ja", "pracuję", "robię", "mówię", "mam"], ["ty", "pracujesz", "robisz", "mówisz", "masz"], ["on/ona", "pracuje", "robi", "mówi", "ma"], ["my", "pracujemy", "robimy", "mówimy", "mamy"], ["wy", "pracujecie", "robicie", "mówicie", "macie"], ["oni/one", "pracują", "robią", "mówią", "mają"]] }],
+  irregularVerbs: [
+    { title: "Najważniejsze czasowniki nieregularne", headers: ["bezokolicznik", "ja", "ty", "on/ona", "my", "wy", "oni/one"], rows: [["być", "jestem", "jesteś", "jest", "jesteśmy", "jesteście", "są"], ["mieć", "mam", "masz", "ma", "mamy", "macie", "mają"], ["iść", "idę", "idziesz", "idzie", "idziemy", "idziecie", "idą"], ["jechać", "jadę", "jedziesz", "jedzie", "jedziemy", "jedziecie", "jadą"], ["jeść", "jem", "jesz", "je", "jemy", "jecie", "jedzą"]] },
+    { title: "Druga grupa do zapamiętania", headers: ["bezokolicznik", "ja", "ty", "on/ona", "my", "wy", "oni/one"], rows: [["móc", "mogę", "możesz", "może", "możemy", "możecie", "mogą"], ["chcieć", "chcę", "chcesz", "chce", "chcemy", "chcecie", "chcą"], ["wiedzieć", "wiem", "wiesz", "wie", "wiemy", "wiecie", "wiedzą"], ["brać", "biorę", "bierzesz", "bierze", "bierzemy", "bierzecie", "biorą"], ["dać", "dam", "dasz", "da", "damy", "dacie", "dadzą"]] }
+  ],
   verbsPast: [{ title: "Czas przeszły", headers: ["osoba", "męski", "żeński / niemęskoos."], rows: [["ja", "robiłem", "robiłam"], ["ty", "robiłeś", "robiłaś"], ["on/ona", "robił", "robiła"], ["my", "robiliśmy", "robiłyśmy"], ["wy", "robiliście", "robiłyście"], ["oni/one", "robili", "robiły"]] }],
   verbsFuture: [{ title: "Czas przyszły", headers: ["typ", "przykład", "znaczenie"], rows: [["będę + infinitiv", "będę pracować", "proces"], ["będę + forma przeszła", "będę pracował", "proces"], ["dokonany", "zrobię", "rezultat"], ["dokonany", "kupię", "rezultat"], ["dokonany", "przeczytam", "rezultat"]] }],
   aspect: [{ title: "Aspekt", headers: ["sytuacja", "niedokonany", "dokonany"], rows: [["proces", "robić", "—"], ["rezultat", "—", "zrobić"], ["często / zawsze", "robię", "—"], ["już / do końca", "—", "zrobiłem / zrobię"], ["długo", "czytałem", "—"], ["całą książkę", "—", "przeczytałem"]] }],
@@ -272,6 +284,22 @@ function genDative() { const verbs = ["daję", "pomagam", "mówię", "pokazuję 
 function genInstrumental() { const items = []; dict.instrumental.forEach(([sg, ins]) => { items.push(input(`z (${sg})`, ins)); items.push(input(`jestem (${sg})`, ins)); items.push(input(`rozmawiam z (${sg})`, ins)); }); return cap50(items); }
 function genLocative() { const preps = ["w", "na", "o"]; const items = []; dict.locative.forEach(([sg, loc]) => preps.forEach((p) => items.push(input(`${p} (${sg})`, loc)))); return cap50(items); }
 function genPresent() { const persons = ["ja", "ty", "on", "my", "wy", "oni"]; const items = []; dict.present.forEach(([verb, forms]) => forms.forEach((form, i) => items.push(input(`${persons[i]} (${verb})`, form)))); return cap50(items); }
+function genIrregularVerbs() {
+  const verbs = [
+    ["być", ["jestem", "jesteś", "jest", "jesteśmy", "jesteście", "są"]],
+    ["mieć", ["mam", "masz", "ma", "mamy", "macie", "mają"]],
+    ["iść", ["idę", "idziesz", "idzie", "idziemy", "idziecie", "idą"]],
+    ["jechać", ["jadę", "jedziesz", "jedzie", "jedziemy", "jedziecie", "jadą"]],
+    ["jeść", ["jem", "jesz", "je", "jemy", "jecie", "jedzą"]],
+    ["móc", ["mogę", "możesz", "może", "możemy", "możecie", "mogą"]],
+    ["chcieć", ["chcę", "chcesz", "chce", "chcemy", "chcecie", "chcą"]],
+    ["wiedzieć", ["wiem", "wiesz", "wie", "wiemy", "wiecie", "wiedzą"]],
+    ["brać", ["biorę", "bierzesz", "bierze", "bierzemy", "bierzecie", "biorą"]],
+    ["dać", ["dam", "dasz", "da", "damy", "dacie", "dadzą"]]
+  ];
+  const persons = ["ja", "ty", "on", "my", "wy", "oni"];
+  return cap50(verbs.flatMap(([verb, forms]) => forms.map((form, index) => input(`${persons[index]} (${verb})`, form))));
+}
 function genPast() { const base = [["ja-mężczyzna (robić)", "robiłem"], ["ja-kobieta (robić)", "robiłam"], ["ty-mężczyzna (robić)", "robiłeś"], ["ty-kobieta (robić)", "robiłaś"], ["on (robić)", "robił"], ["ona (robić)", "robiła"], ["my-mężczyźni (robić)", "robiliśmy"], ["my-kobiety (robić)", "robiłyśmy"], ["wy-mężczyźni (robić)", "robiliście"], ["wy-kobiety (robić)", "robiłyście"], ["oni (robić)", "robili"], ["one (robić)", "robiły"], ["ja-mężczyzna (być)", "byłem"], ["ja-kobieta (być)", "byłam"], ["ja-mężczyzna (pójść)", "poszedłem"], ["ja-kobieta (pójść)", "poszłam"], ["ja-mężczyzna (wrócić)", "wróciłem"], ["ja-kobieta (wrócić)", "wróciłam"]]; return cap50(base.map(([q, a]) => input(q, a))); }
 function genFuture() { return cap50([input("ja (pracować) jutro", "będę pracować"), input("ty (pracować) jutro", "będziesz pracować"), input("on (pracować) jutro", "będzie pracować"), input("my (pracować) jutro", "będziemy pracować"), input("wy (pracować) jutro", "będziecie pracować"), input("oni (pracować) jutro", "będą pracować"), input("ja (zrobić) zadanie", "zrobię zadanie"), input("ty (kupić) chleb", "kupisz chleb"), input("on (napisać) mail", "napisze mail"), input("my (przeczytać) książkę", "przeczytamy książkę"), input("wy (pójść) do sklepu", "pójdziecie do sklepu"), input("oni (wrócić) do domu", "wrócą do domu"), input("ja (nauczyć się) tego", "nauczę się tego"), input("ona (ugotować) obiad", "ugotuje obiad"), input("my (spotkać) kolegę", "spotkamy kolegę"), input("oni (zobaczyć) film", "zobaczą film"), input("Jutro o 8:00 (ja pracować)", "będę pracować"), input("W przyszłym tygodniu (my pojechać) do Krakowa", "pojedziemy do Krakowa"), input("Za godzinę (ja zadzwonić)", "zadzwonię"), input("Pojutrze (oni wrócić)", "wrócą"), input("Wieczorem (ja czytać)", "będę czytać"), input("Rano (ona zrobić) śniadanie", "zrobi śniadanie")]); }
 function genAspectChoice() { return cap50([choice("Codziennie ___ zadanie", ["robię", "zrobię"], "robię", "codziennie = powtarzalność"), choice("Jutro ___ zadanie do końca", ["będę robić", "zrobię"], "zrobię", "do końca = rezultat"), choice("Wczoraj długo ___ książkę", ["czytałem", "przeczytałem"], "czytałem", "długo = proces"), choice("Wczoraj ___ całą książkę", ["czytałem", "przeczytałem"], "przeczytałem", "całą = rezultat"), choice("Często ___ kawę w domu", ["robię", "zrobię"], "robię"), choice("Za chwilę ___ kawę", ["zrobię", "robię"], "zrobię"), choice("Uczę się, żeby ___ polskiego", ["uczyć się", "nauczyć się"], "nauczyć się"), choice("Teraz ___ polskiego", ["uczę się", "nauczę się"], "uczę się"), choice("Muszę ___ maila", ["napisać", "pisać"], "napisać"), choice("Lubię ___ maile rano", ["pisać", "napisać"], "pisać")]); }
@@ -873,6 +901,53 @@ function genAudioListening() {
   ]));
 }
 
+function genUczmySiePolskiego() {
+  return [
+    note(
+      "Uczmy się polskiego — jak pracować z serialem",
+      "To jest klasyczny serial edukacyjny do nauki polskiego. Najlepiej pracować tak: 1) obejrzyj 10-15 minut bez zatrzymywania, 2) obejrzyj drugi raz i wypisz 5-10 fraz, 3) dodaj nowe słowa do słownika, 4) wróć do odcinka po 2-3 dniach. Najpierw bierz odcinki 1-15, bo to kurs podstawowy i bardziej pasuje do naszego A2-B1.",
+      [],
+      [
+        { label: "Playlist YouTube: Uczmy się polskiego (30 odcinków)", url: "https://www.youtube.com/watch?v=NOJVwQK1pOE&list=PLsqlYowH737T5hAxqs0wja9niCQoEGg7I" },
+        { label: "Opis kursu Uniwersytetu Śląskiego", url: "https://www.sjikp.us.edu.pl/pl/uczmy-sie-polskiego-1-kurs-podstawowy-lets-learn-polish-basic/" }
+      ]
+    ),
+    note(
+      "Startowe odcinki z bezpośrednimi linkami",
+      "Zacznij od odcinków codziennych i praktycznych. One dobrze rozwijają słownictwo o rodzinie, mieszkaniu, telefonie, drodze, zakupach, zdrowiu i podróży.",
+      [],
+      [
+        { label: "Odcinek 1 — Nowi lokatorzy", url: "https://www.youtube.com/watch?v=NOJVwQK1pOE" },
+        { label: "Odcinek 2 — Pierwsze kłopoty", url: "https://www.youtube.com/watch?v=mbv404A-n1s" },
+        { label: "Odcinek 3 — Halo, tu mieszkanie Grzegorzewskich", url: "https://www.youtube.com/watch?v=SJWJY-1GlQM" },
+        { label: "Odcinek 4 — Jak znaleźć dom cioci Ani", url: "https://www.youtube.com/watch?v=2pIcsFGZzA0" },
+        { label: "Odcinek 7 — Szpital w domu", url: "https://www.youtube.com/watch?v=MzFTzAzC8HA" },
+        { label: "Odcinek 9 — Podróżująca rodzinka", url: "https://www.youtube.com/watch?v=5k_kwFiXnFM" }
+      ]
+    ),
+    note(
+      "Plan odcinków 1-15",
+      "1. Nowi lokatorzy\n2. Pierwsze kłopoty\n3. Halo, tu mieszkanie Grzegorzewskich\n4. Jak znaleźć dom cioci Ani\n5. Zakupy\n6. Proszę nie ruszać moich rzeczy\n7. Szpital w domu\n8. Wesołych świąt\n9. Podróżująca rodzinka\n10. Kto jest lepszy\n11. Prezent urodzinowy\n12. Witamy w Warszawie\n13. Musimy się lepiej poznać\n14. Rozstania i powroty\n15. Ach, co to będzie za ślub",
+      [],
+      [
+        { label: "Otwórz playlistę i wybierz odcinek 1-15", url: "https://www.youtube.com/watch?v=NOJVwQK1pOE&list=PLsqlYowH737T5hAxqs0wja9niCQoEGg7I" },
+        { label: "Podręcznik / teksty — część 1", url: "https://docer.pl/doc/xncxv8" },
+        { label: "Podręcznik / teksty — część 2", url: "https://docer.pl/doc/x8v8x0e" }
+      ]
+    ),
+    note(
+      "Plan odcinków 16-30",
+      "16. Każdy chce czego innego\n17. Propozycja nie do odrzucenia\n18. Świetny pomysł\n19. Droga pełna przeszkód\n20. Ach, co to był za ślub\n21. Pierwsze małżeńskie problemy\n22. Dobrze, powtórzę\n23. Niech żyje socjologia\n24. Gdzie mamy mieszkać\n25. Szukam pracy\n26. On to powiedział\n27. Proszę o spokój\n28. Kłopoty z pogodą\n29. Plany na przyszłość\n30. Pożegnanie",
+      [],
+      [
+        { label: "Otwórz playlistę i wybierz odcinek 16-30", url: "https://www.youtube.com/watch?v=NOJVwQK1pOE&list=PLsqlYowH737T5hAxqs0wja9niCQoEGg7I" }
+      ]
+    ),
+    free("Po obejrzeniu odcinka napisz 2-4 zdania: o czym był odcinek, jakie 3 nowe słowa zapamiętałeś i jaka scena była dla ciebie najłatwiejsza do zrozumienia.", "Użyj minimum 1 связку: ponieważ / dlatego / jednak / oprócz tego."),
+    free("Po 2-3 odcinkach napisz krótki komentarz: które tematy rozumiesz już lepiej dzięki serialowi — mieszkanie, zakupy, zdrowie, podróż czy rodzina?", "Napisz 4-6 zdań i dodaj 3 polskie frazy z serialu.")
+  ];
+}
+
 function genExamWriting() {
   return repeatTo50([
     free("Pisanie B1: Napisz e-mail do właściciela mieszkania. Opisz awarię, poproś o naprawę i zaproponuj termin. 80–120 słów.", "Checklist: powitanie, problem, szczegóły, prośba, termin, zakończenie."),
@@ -1001,17 +1076,18 @@ function makeLexiconTopic(key, title, description, theory) {
 const topics = {
   diagnosticB1: { title: "Диагностика B1", description: "Карта сильных и слабых мест", theory: ["Начни здесь, если хочешь понять текущий уровень.", "20 вопросов смешивают падежи, времена, аспект, лексику и экзаменационные реакции.", "После прохождения смотри проценты по темам и тренируй слабые блоки."], exercises: [makeExercise("Диагностика: 20 вопросов", genDiagnostic())] },
   mixed20: { title: "Смешанный тест 20", description: "Активное вспоминание из всего курса", theory: ["Это режим для памяти: вопросы идут вперемешку, как в реальной речи.", "Запускай после 2–3 тем или в конце дня.", "Цель — 80% правильных без подсказок."], exercises: [makeExercise("Mixed practice 20", genMixed20())] },
-  pluralNominative: { title: "Mianownik liczby mnogiej", description: "Множественное число: oni / one", theory: ["Mianownik liczby mnogiej — форма множественного числа: kto? co?", "Главное деление: męskoosobowy = oni; niemęskoosobowy = one.", "Męskoosobowy: мужчины и смешанные группы: studenci, lekarze, koledzy.", "Niemęskoosobowy: женщины, дети, животные, предметы: kobiety, dzieci, psy, książki.", "Прилагательные согласуются: dobrzy studenci, но dobre książki."], exercises: [makeExercise("Męskoosobowy — rzeczowniki", genMascPlural()), makeExercise("Niemęskoosobowy — rzeczowniki", genNonMascPlural()), makeExercise("Przymiotnik + rzeczownik", genPluralAdjectives()), makeExercise("Oni czy one?", genOniOne()), makeExercise("Исправь ошибку", genPluralMistakes()), makeExercise("Разговор", speakingPrompts)] },
-  accusative: { title: "Biernik — kogo? co?", description: "Винительный падеж", theory: ["Biernik отвечает на kogo? co?", "После: widzę, mam, kupuję, znam, spotykam, lubię.", "Мужской одушевлённый: lekarz → lekarza.", "Мужской неодушевлённый: telefon → telefon.", "Женский: kawa → kawę."], exercises: [makeExercise("Формы biernik", genAccusativeForms()), makeExercise("Прилагательные в biernik", genAccusativeAdjectives()), makeExercise("Типичные ошибки", cap50([input("Widzę dobry lekarz", "widzę dobrego lekarza"), input("Mam nowego samochodu", "mam nowy samochód"), input("Kupuję czarna kawa", "kupuję czarną kawę"), input("Znam polscy studentów", "znam polskich studentów"), input("Spotykam nowy kolegę", "spotykam nowego kolegę")])), makeExercise("Разговор", speakingPrompts)] },
-  genitive: { title: "Dopełniacz — kogo? czego?", description: "Родительный падеж", theory: ["Dopełniacz отвечает на kogo? czego?", "После: nie ma, nie mam, dużo, mało, trochę, szukam, potrzebuję, używam.", "Mam czas → Nie mam czasu.", "kawa → kawy, praca → pracy."], exercises: [makeExercise("Dopełniacz — формы", genGenitive()), makeExercise("Исправь ошибку", cap50([input("Nie mam czas", "nie mam czasu"), input("Nie ma kawa", "nie ma kawy"), input("Szukam pracę", "szukam pracy"), input("Potrzebuję pomoc", "potrzebuję pomocy"), input("Dużo ludzie", "dużo ludzi"), input("Używam telefon", "używam telefonu"), input("Mało pieniądze", "mało pieniędzy"), input("Trochę wodę", "trochę wody")])), makeExercise("Разговор", speakingPrompts)] },
-  dative: { title: "Celownik — komu? czemu?", description: "Дательный падеж", theory: ["Celownik отвечает на komu? czemu?", "После: daję, pomagam, mówię komuś, pokazuję komuś.", "Местоимения: mi, ci, mu, jej, nam, wam, im.", "studentowi, koledze, kobiecie, dziecku."], exercises: [makeExercise("Celownik — формы", genDative()), makeExercise("Исправь ошибку", cap50([input("Praca daje mnie satysfakcję", "praca daje mi satysfakcję"), input("Pomagam mój kolega", "pomagam mojemu koledze"), input("Daję książkę brat", "daję książkę bratu"), input("Pokazuję droga student", "pokazuję drogę studentowi"), input("Pomagam ona", "pomagam jej"), input("Daję jemu prezent", "daję mu prezent"), input("Mówię do ci", "mówię ci"), input("Pomagam ludzie", "pomagam ludziom")])), makeExercise("Разговор", speakingPrompts)] },
-  instrumental: { title: "Narzędnik — z kim? z czym?", description: "Творительный падеж", theory: ["Narzędnik отвечает на z kim? z czym?", "После z: z kolegą, z rodziną.", "После być при профессии: jestem programistą.", "studentem, kobietą, dzieckiem, ludźmi."], exercises: [makeExercise("Narzędnik — формы", genInstrumental()), makeExercise("Исправь ошибку", cap50([input("Jestem programista", "jestem programistą"), input("Idę z kolega", "idę z kolegą"), input("Bawię się z córka", "bawię się z córką"), input("Rozmawiam z nauczyciel", "rozmawiam z nauczycielem"), input("Jadę samochód", "jadę samochodem"), input("On jest lekarz", "on jest lekarzem"), input("Spotykam się z rodzina", "spotykam się z rodziną"), input("Pracuję z ludzie", "pracuję z ludźmi")])), makeExercise("Разговор", speakingPrompts)] },
-  locative: { title: "Miejscownik — o kim? o czym?", description: "Местный / предложный падеж", theory: ["Miejscownik отвечает на o kim? o czym?", "С предлогами: w, na, o, przy, po.", "w Polsce, w domu, w sklepie, na kursie.", "mówię o pracy, myślę o rodzinie."], exercises: [makeExercise("Miejscownik — формы", genLocative()), makeExercise("Исправь ошибку", cap50([input("Mieszkam w Polska", "mieszkam w Polsce"), input("Jestem w praca", "jestem w pracy"), input("Mówię o rodzina", "mówię o rodzinie"), input("Byłem w sklep", "byłem w sklepie"), input("Myślę o kurs", "myślę o kursie"), input("Czytam o język polski", "czytam o języku polskim"), input("Jestem na spotkanie", "jestem na spotkaniu"), input("Spaceruję po park", "spaceruję po parku")])), makeExercise("Разговор", speakingPrompts)] },
-  verbsPresent: { title: "Czas teraźniejszy", description: "Настоящее время", theory: ["Настоящее время зависит от типа спряжения.", "-ować: pracuję, pracujesz, pracuje...", "-ić/-yć: robię, robisz, robi...", "Нерегулярные: być, mieć, pić."], exercises: [makeExercise("Спряжение", genPresent()), makeExercise("Исправь ошибку", cap50([input("ja pracuje", "ja pracuję"), input("ty piję kawę", "ty pijesz kawę"), input("oni mówi po polsku", "oni mówią po polsku"), input("my mieszka w Polsce", "my mieszkamy w Polsce"), input("wy robią zadanie", "wy robicie zadanie"), input("on pijesz kawę", "on pije kawę"), input("ja masz czas", "ja mam czas")])), makeExercise("Разговор", speakingPrompts)] },
+  pluralNominative: { title: "Mianownik liczby mnogiej", description: "Множественное число: oni / one", theory: ["Mianownik liczby mnogiej отвечает на pytanie kto? co? и нужен, когда мы просто называем группу: To są studenci. To są książki.", "Самое важное деление: `oni` = męskoosobowy, `one` = niemęskoosobowy. Если в группе есть мужчины или группа смешанная, очень часто будет `oni`.", "Męskoosobowy: studenci, lekarze, koledzy, rodzice. Niemęskoosobowy: kobiety, dzieci, psy, auta, książki.", "Смотри сразу на прилагательное: dobrzy studenci, mili koledzy, ale dobre książki, nowe mieszkania, małe dzieci.", "Практическое правило: сначала реши `oni czy one`, а уже потом выбирай форму прилагательного и существительного."], exercises: [makeExercise("Męskoosobowy — rzeczowniki", genMascPlural()), makeExercise("Niemęskoosobowy — rzeczowniki", genNonMascPlural()), makeExercise("Przymiotnik + rzeczownik", genPluralAdjectives()), makeExercise("Oni czy one?", genOniOne()), makeExercise("Исправь ошибку", genPluralMistakes()), makeExercise("Разговор", speakingPrompts)] },
+  accusative: { title: "Biernik — kogo? co?", description: "Винительный падеж", theory: ["Biernik нужен, когда действие направлено на объект: `widzę`, `mam`, `kupuję`, `znam`, `spotykam`, `lubię`.", "Удобная логика такая: сначала найди глагол, потом спроси `kogo? co?`, и только потом меняй форму слова.", "Мужской одушевлённый обычно похож на dopełniacz: widzę lekarza, znam kolegę, mam psa. Мужской неодушевлённый часто не меняется: mam telefon, kupuję chleb.", "Женский род часто даёт окончания `-ę / -ą`: kawę, herbatę, dobrą książkę. Средний род обычно совпадает с mianownik: widzę dziecko.", "Очень полезно учить готовыми кусками: `widzę nowego lekarza`, `kupuję czarną kawę`, `mam ważny dokument`."], exercises: [makeExercise("Формы biernik", genAccusativeForms()), makeExercise("Прилагательные в biernik", genAccusativeAdjectives()), makeExercise("Типичные ошибки", cap50([input("Widzę dobry lekarz", "widzę dobrego lekarza"), input("Mam nowego samochodu", "mam nowy samochód"), input("Kupuję czarna kawa", "kupuję czarną kawę"), input("Znam polscy studentów", "znam polskich studentów"), input("Spotykam nowy kolegę", "spotykam nowego kolegę")])), makeExercise("Разговор", speakingPrompts)] },
+  genitive: { title: "Dopełniacz — kogo? czego?", description: "Родительный падеж", theory: ["Dopełniacz очень частый в живой речи. Он появляется после отрицания `nie ma / nie mam`, после количества `dużo / mało / trochę` и после глаголов `szukam`, `potrzebuję`, `używam`.", "Хороший способ запомнить: dopełniacz часто отвечает за идею `нет чего-то`, `нужно что-то`, `ищу что-то`.", "Типичные пары: mam czas -> nie mam czasu, jest kawa -> nie ma kawy, mam pracę -> szukam pracy.", "После чисел и слов количества dopełniacz особенно важен: dużo ludzi, mało pieniędzy, trochę wody.", "На B1 полезно не просто знать форму, а держать готовые конструкции: `potrzebuję pomocy`, `używam telefonu`, `nie mam czasu`."], exercises: [makeExercise("Dopełniacz — формы", genGenitive()), makeExercise("Исправь ошибку", cap50([input("Nie mam czas", "nie mam czasu"), input("Nie ma kawa", "nie ma kawy"), input("Szukam pracę", "szukam pracy"), input("Potrzebuję pomoc", "potrzebuję pomocy"), input("Dużo ludzie", "dużo ludzi"), input("Używam telefon", "używam telefonu"), input("Mało pieniądze", "mało pieniędzy"), input("Trochę wodę", "trochę wody")])), makeExercise("Разговор", speakingPrompts)] },
+  dative: { title: "Celownik — komu? czemu?", description: "Дательный падеж", theory: ["Celownik показывает адресата действия: кому я даю, кому помогаю, кому говорю, кому объясняю.", "Самые полезные формы для жизни: `mi`, `ci`, `mu`, `jej`, `nam`, `wam`, `im`. Они встречаются постоянно: podoba mi się, pomagam ci, mówię mu.", "У существительных часто видим формы: studentowi, koledze, kobiecie, dziecku, mamie, bratu.", "Запоминай с глаголом целиком: `pomagam koledze`, `daję dziecku prezent`, `mówię mamie prawdę`.", "Частая ошибка B1: ставить biernik вместо celownik. После `pomagać` и `dawać komuś` почти всегда нужен именно celownik."], exercises: [makeExercise("Celownik — формы", genDative()), makeExercise("Исправь ошибку", cap50([input("Praca daje mnie satysfakcję", "praca daje mi satysfakcję"), input("Pomagam mój kolega", "pomagam mojemu koledze"), input("Daję książkę brat", "daję książkę bratu"), input("Pokazuję droga student", "pokazuję drogę studentowi"), input("Pomagam ona", "pomagam jej"), input("Daję jemu prezent", "daję mu prezent"), input("Mówię do ci", "mówię ci"), input("Pomagam ludzie", "pomagam ludziom")])), makeExercise("Разговор", speakingPrompts)] },
+  instrumental: { title: "Narzędnik — z kim? z czym?", description: "Творительный падеж", theory: ["Narzędnik часто нужен в двух базовых ситуациях: после `z` и после `być`, когда мы называем профессию, роль или состояние.", "С `z` это обычно ответ на `с кем? с чем?`: z kolegą, z rodziną, z dokumentem. После `jestem` это `кем? чем?`: jestem programistą, jestem studentem.", "Типичные окончания хорошо слышны в готовых фразах: kolegą, kobietą, rodziną, dzieckiem, nauczycielem, lekarzem.", "На уровне B1 старайся учить narzędnik не списком, а в живых конструкциях: `pracuję z ludźmi`, `jadę samochodem`, `jestem zainteresowany kursem`.", "Если видишь `z` в значении `вместе с`, очень вероятно нужен narzędnik. Но `z pracy` и `z Polski` — это уже dopełniacz, потому что там значение `откуда`."], exercises: [makeExercise("Narzędnik — формы", genInstrumental()), makeExercise("Исправь ошибку", cap50([input("Jestem programista", "jestem programistą"), input("Idę z kolega", "idę z kolegą"), input("Bawię się z córka", "bawię się z córką"), input("Rozmawiam z nauczyciel", "rozmawiam z nauczycielem"), input("Jadę samochód", "jadę samochodem"), input("On jest lekarz", "on jest lekarzem"), input("Spotykam się z rodzina", "spotykam się z rodziną"), input("Pracuję z ludzie", "pracuję z ludźmi")])), makeExercise("Разговор", speakingPrompts)] },
+  locative: { title: "Miejscownik — o kim? o czym?", description: "Местный / предложный падеж", theory: ["Miejscownik почти всегда приходит с предлогом. Самые частые друзья этого падежа: `w`, `na`, `o`, `po`, `przy`.", "Он нужен, когда мы говорим где что-то находится или о чём говорим: w Polsce, w pracy, na kursie, o rodzinie, o problemie.", "Для памяти хорошо держать связки готовыми блоками: `w domu`, `w sklepie`, `na spotkaniu`, `o języku polskim`, `po pracy`.", "Частая ловушка: после `w` и `na` нужно понять смысл. `na kurs` = куда? biernik. `na kursie` = где? miejscownik.", "Чтобы miejscownik стал удобным, полезно учить не одно слово, а мини-фразу: `mieszkam w Polsce`, `myślę o egzaminie`, `rozmawiam o pracy`."], exercises: [makeExercise("Miejscownik — формы", genLocative()), makeExercise("Исправь ошибку", cap50([input("Mieszkam w Polska", "mieszkam w Polsce"), input("Jestem w praca", "jestem w pracy"), input("Mówię o rodzina", "mówię o rodzinie"), input("Byłem w sklep", "byłem w sklepie"), input("Myślę o kurs", "myślę o kursie"), input("Czytam o język polski", "czytam o języku polskim"), input("Jestem na spotkanie", "jestem na spotkaniu"), input("Spaceruję po park", "spaceruję po parku")])), makeExercise("Разговор", speakingPrompts)] },
+  verbsPresent: { title: "Czas teraźniejszy", description: "Настоящее время", theory: ["Czas teraźniejszy нужен для привычек, распорядка, фактов и того, что происходит сейчас: pracuję, uczę się, mieszkam, wiem.", "Самый удобный старт — видеть модели. `-ować`: pracuję, pracujesz. `-ać`: mieszkam, mieszkasz. `-ić / -yć`: robię, robisz; mówię, mówisz.", "Некоторые глаголы надо просто запомнить как частотные: być, mieć, iść, jeść, móc. Они дают опору почти во всей речи.", "Учись не отдельной форме, а короткой репликой: `pracuję w firmie`, `mieszkam w Warszawie`, `nie mam czasu`, `idziemy do sklepu`.", "Частая ошибка на старте B1 — путать окончания по лицам. Если не уверен, сначала определи `ja / ty / on / my / wy / oni`, и только потом выбирай форму."], exercises: [makeExercise("Спряжение", genPresent()), makeExercise("Исправь ошибку", cap50([input("ja pracuje", "ja pracuję"), input("ty piję kawę", "ty pijesz kawę"), input("oni mówi po polsku", "oni mówią po polsku"), input("my mieszka w Polsce", "my mieszkamy w Polsce"), input("wy robią zadanie", "wy robicie zadanie"), input("on pijesz kawę", "on pije kawę"), input("ja masz czas", "ja mam czas")])), makeExercise("Разговор", speakingPrompts)] },
+  irregularVerbs: { title: "Czasowniki nieregularne", description: "Неправильные глаголы и спряжение", theory: ["Это глаголы, которые лучше не выводить по правилу, а запомнить как готовые формы. Они очень частые и дают основу для живой речи.", "Самые важные для повседневного B1: być, mieć, iść, jechać, jeść, móc, chcieć, wiedzieć, brać, dać.", "Лучше учить их в коротких фразах: `jestem w domu`, `mam czas`, `idę do pracy`, `mogę pomóc`, `chcę się uczyć`.", "Обрати внимание на формы, которые часто ломают автоматизм: `idę`, `jadę`, `jem`, `mogę`, `biorę`, `wiem`.", "Задача этого блока не просто узнать таблицу, а начать быстро узнавать и использовать эти формы без остановки."], exercises: [makeExercise("Спряжение nieregularne", genIrregularVerbs()), makeExercise("Исправь ошибку", cap50([input("Ja jest w domu", "ja jestem w domu"), input("Ty moża mi pomóc", "ty możesz mi pomóc"), input("My wiedzą o problemie", "my wiemy o problemie"), input("Oni jecha do pracy", "oni jadą do pracy"), input("Ja bierzesz dokument", "ja biorę dokument"), input("Wy dają odpowiedź", "wy dajecie odpowiedź"), input("On chcie iść", "on chce iść"), input("Ona jem obiad", "ona je obiad")])), makeExercise("Разговор", speakingPrompts)] },
   verbsPast: { title: "Czas przeszły", description: "Прошедшее время", theory: ["Прошедшее время зависит от рода: robiłem / robiłam.", "On robił, ona robiła, oni robili, one robiły.", "pójść: poszedłem / poszłam."], exercises: [makeExercise("Czas przeszły — формы", genPast()), makeExercise("Разговор", speakingPrompts)] },
-  verbsFuture: { title: "Czas przyszły", description: "Будущее время", theory: ["Несовершенный вид: będę robić / będę robił.", "Совершенный вид: zrobię, kupię, pójdę.", "Процесс: będę pracować. Результат: zrobię zadanie.", "С будущим временем часто используются: jutro, pojutrze, za godzinę, za tydzień, w przyszłym tygodniu, rano, wieczorem.", "Время на часах обычно: o ósmej, o dziewiątej, o osiemnastej."], exercises: [makeExercise("Czas przyszły — формы", genFuture()), makeExercise("Будущее + время", genFutureWithTime()), makeExercise("Разговор", speakingPrompts)] },
-  aspect: { title: "Aspekt — robić vs zrobić", description: "Несовершенный и совершенный вид", theory: ["Несовершенный вид: процесс, повторяемость, длительность.", "Совершенный вид: результат, завершение.", "zawsze/często/długo → robić. już/do końca/w końcu → zrobić."], exercises: [makeExercise("Выбери аспект", genAspectChoice()), makeExercise("Пары aspektowe", genAspectPairs()), makeExercise("Разговор", speakingPrompts)] },
-  prepositions: { title: "Przyimki + przypadki", description: "Предлоги и падежи", theory: ["Предлог часто требует конкретный падеж.", "do + dopełniacz: do sklepu.", "w + miejscownik: w Polsce.", "na + biernik: na kurs; na + miejscownik: na kursie.", "z rodziną = narzędnik; z pracy = dopełniacz."], exercises: [makeExercise("Przyimki", genPrepositions()), makeExercise("Разговор", speakingPrompts)] },
+  verbsFuture: { title: "Czas przyszły", description: "Будущее время", theory: ["В польском будущем важно сначала понять: ты говоришь о процессе или о результате. Это сразу влияет на форму.", "Если речь о процессе или плане без акцента на завершение, часто будет `będę + bezokolicznik` или `będę + forma przeszła`: będę pracować, będę czytać, będę pracował.", "Если нужен результат, обычно берём совершенный вид: zrobię, kupię, napiszę, przeczytam, pojadę.", "Сравнение: `jutro będę pisać raport` = процесс; `jutro napiszę raport` = закончу и будет готово.", "Будущее почти всегда дружит с маркерами времени: jutro, pojutrze, za godzinę, za tydzień, w przyszłym miesiącu, o ósmej."], exercises: [makeExercise("Czas przyszły — формы", genFuture()), makeExercise("Будущее + время", genFutureWithTime()), makeExercise("Разговор", speakingPrompts)] },
+  aspect: { title: "Aspekt — robić vs zrobić", description: "Несовершенный и совершенный вид", theory: ["Aspekt в польском — это взгляд на действие: как на процесс или как на результат. Это одна из самых важных тем для сильного B1.", "Niedokonany показывает процесс, привычку, повторяемость, длительность: robić, czytać, pisać, uczyć się.", "Dokonany показывает завершение или конкретный итог: zrobić, przeczytać, napisać, nauczyć się.", "Подсказки в предложении очень помогают. `zawsze`, `często`, `teraz`, `długo` тянут к niedokonany. `już`, `do końca`, `w końcu`, `na jutro` часто тянут к dokonany.", "Хорошая привычка: учить глаголы парами и сразу в контексте, например `czytać książkę` и `przeczytać książkę do końca`."], exercises: [makeExercise("Выбери аспект", genAspectChoice()), makeExercise("Пары aspektowe", genAspectPairs()), makeExercise("Разговор", speakingPrompts)] },
+  prepositions: { title: "Przyimki + przypadki", description: "Предлоги и падежи", theory: ["В польском предлог почти никогда не живёт один: он тянет за собой конкретный падеж. Поэтому учить надо не `do`, а `do + dopełniacz`, не `z`, а разные значения `z`.", "База для жизни: `do sklepu`, `do pracy`, `z pracy`, `w Polsce`, `na kursie`, `na kurs`, `o problemie`, `z rodziną`.", "Самая частая путаница: `na` и `w`, а также разные значения `z`. `z rodziną` = вместе с кем? narzędnik. `z Polski` = откуда? dopełniacz.", "Полезный способ учить: не список предлогов, а мини-маршрут. `Idę do sklepu. Jestem w sklepie. Wracam ze sklepu.`", "Если ты сначала спрашиваешь себя `куда? где? откуда? с кем? о чём?`, падеж выбирается намного легче."], exercises: [makeExercise("Przyimki", genPrepositions()), makeExercise("Разговор", speakingPrompts)] },
   numbersTime: { title: "Liczby i czas", description: "Числа, часы, деньги и выражения времени", theory: ["Числа нужны для времени, дат, цен, адресов и количества.", "После 1 обычно форма единственного числа: jeden złoty, jeden grosz.", "После 2, 3, 4 — форма множественного: dwa złote, trzy grosze, cztery pieniądze.", "После 5+ обычно dopełniacz liczby mnogiej: pięć złotych, pięć groszy, pięć pieniędzy.", "Важно: 22/23/24 → złote/grosze/pieniądze, но 12/13/14 → złotych/groszy/pieniędzy.", "Время: która godzina? ósma; o której? o ósmej. Для будущих планов: Jutro o ósmej będę pracować."], exercises: [makeExercise("Liczby 0–100", genNumbers()), makeExercise("Pieniądze: złoty / złote / złotych", genMoney()), makeExercise("Правила 1–4 / 5+", genNumberRules()), makeExercise("Która godzina?", genClock()), makeExercise("Wyrażenia czasu", genTimePhrases()), makeExercise("Czas + przyszłość", genFutureWithTime()), makeExercise("Разговор", speakingPrompts)] },
   complexSentences: { title: "Zdania złożone", description: "Сложные предложения", theory: ["że = что", "kiedy/gdy = когда", "jeśli/jeżeli = если", "bo = потому что; dlatego = поэтому; żeby = чтобы."], exercises: [makeExercise("Spójniki", genComplexSentences()), makeExercise("Разговор", speakingPrompts)] },
   politeConditional: { title: "Tryb warunkowy", description: "Вежливые просьбы и условное", theory: ["Tryb warunkowy нужен для вежливого B1-письма и просьб.", "Главные формы: chciałbym/chciałabym, mógłbym/mogłabym, mogliby Państwo.", "В условии: gdybym miał czas, zadzwoniłbym."], exercises: [makeExercise("Вежливые формы", genPoliteConditional()), makeExercise("Разговор", speakingPrompts)] },
@@ -1051,17 +1127,19 @@ const topics = {
   examB1Writing: { title: "Egzamin B1: Pisanie", description: "Письмо: email, жалоба, заявление", theory: ["Письмо B1 требует структуры: приветствие, цель, детали, просьба, завершение.", "Цель — писать 80–120 слов простыми, правильными фразами.", "Проверяй себя по чеклисту: czy jest cel? czy są szczegóły? czy ton jest grzeczny?"], exercises: [makeExercise("Pisanie B1", genExamWriting()), makeExercise("Krótka odpowiedź 2–4 zdania", genShortWritingB1()), makeExercise("Собери полезную фразу", genWritingAssembly())] },
   examB1Speaking: { title: "Egzamin B1: Mówienie", description: "Говорение: карточки и ситуации", theory: ["Говорение B1 — это не идеальная грамматика, а понятная речь с примерами и связками.", "Тренируй схему: opisuję sytuację → dodaję szczegóły → mówię opinię → kończę wnioskiem.", "Хорошие связки: moim zdaniem, wydaje mi się, ponieważ, dlatego, na przykład."], exercises: [makeExercise("Mówienie B1", genExamSpeaking())] },
   examB1Mock: { title: "Egzamin B1: Mini test", description: "Смешанный пробный тест", theory: ["Мини-тест смешивает грамматику, лексику и экзаменационные реакции.", "Используй его как контроль после прохождения модулей.", "Если тема даёт много ошибок, возвращайся в соответствующий блок курса."], exercises: [makeExercise("Mini test B1", genExamMixed()), makeExercise("Wypowiedź kontrolna", repeatTo50([free("Napisz autoprezentację B1: kim jesteś, czym się zajmujesz, dlaczego uczysz się polskiego i jakie masz plany. 100–140 słów.", "Checklist: teraźniejszość, przeszłość, przyszłość, минимум 5 связок.")]))] },
-  b1Mistakes: { title: "Najczęstsze błędy B1", description: "Самые частые ошибки B1", theory: ["Здесь собраны ошибки по падежам, się, порядку слов, аспекту, предлогам и временам.", "Цель — видеть ошибку автоматически.", "Если ошибка повторяется 3 раза — это тема для повторения."], exercises: [makeExercise("Исправь ошибки B1", genB1Mistakes()), makeExercise("Собери правильную фразу", genSentenceAssemblyB1()), makeExercise("Короткий ответ 2–4 zdania", genShortWritingB1()), makeExercise("Разговор-диагностика", speakingPrompts)] }
+  b1Mistakes: { title: "Najczęstsze błędy B1", description: "Самые частые ошибки B1", theory: ["Здесь собраны ошибки по падежам, się, порядку слов, аспекту, предлогам и временам.", "Цель — видеть ошибку автоматически.", "Если ошибка повторяется 3 раза — это тема для повторения."], exercises: [makeExercise("Исправь ошибки B1", genB1Mistakes()), makeExercise("Собери правильную фразу", genSentenceAssemblyB1()), makeExercise("Короткий ответ 2–4 zdania", genShortWritingB1()), makeExercise("Разговор-диагностика", speakingPrompts)] },
+  audioUczmySiePolskiego: { title: "Audio: Uczmy się polskiego", description: "Сериал по сериям с YouTube", theory: ["Это отдельный финальный раздел для живого аудирования через учебный сериал. Он хорош тем, что даёт повторяемые бытовые темы и медленную, понятную польскую речь.", "Лучший режим работы такой: сначала смотри без паузы, потом пересматривай с выписыванием 5-10 новых слов, потом добавляй их в словарь и через пару дней возвращайся к серии.", "Начинай с odcinki 1-15, потому что они ближе к базе A2/B1. Когда они станут понятнее, переходи дальше и используй сериал как мост к настоящему аудированию."], exercises: [makeExercise("Serial audio", genUczmySiePolskiego())] }
 };
 
 const courseModules = [
   { title: "Диагностика и повторение", keys: ["diagnosticB1", "mixed20"] },
   { title: "База: формы и числа", keys: ["pluralNominative", "numbersTime"] },
   { title: "Падежи в речи", keys: ["accusative", "genitive", "dative", "instrumental", "locative"] },
-  { title: "Глаголы и время", keys: ["verbsPresent", "verbsPast", "verbsFuture", "aspect"] },
+  { title: "Глаголы и время", keys: ["verbsPresent", "irregularVerbs", "verbsPast", "verbsFuture", "aspect"] },
   { title: "Конструкции B1", keys: ["prepositions", "complexSentences", "b1Connectors", "politeConditional", "imperatives", "pronouns", "reflexiveSie", "comparisons", "modalVerbs", "impersonal", "wordOrder", "b1Mistakes"] },
   { title: "Лексика по темам", keys: ["workLexicon", "housingLexicon", "healthLexicon", "documentsLexicon", "shoppingLexicon", "cityLexicon", "educationLexicon", "relationshipsLexicon", "travelLexicon", "foodLexicon", "technologyLexicon", "argumentationLexicon", "financeLexicon", "familyLexicon", "dailyLexicon", "natureLexicon", "cultureLexicon", "leisureLexicon", "safetyLexicon", "societyLexicon", "personalityLexicon", "environmentLexicon"] },
-  { title: "Egzamin B1", keys: ["writingTemplates", "examB1Reading", "examB1Listening", "examB1Writing", "examB1Speaking", "examB1Mock"] }
+  { title: "Egzamin B1", keys: ["writingTemplates", "examB1Reading", "examB1Listening", "examB1Writing", "examB1Speaking", "examB1Mock"] },
+  { title: "Audio i serial", keys: ["audioUczmySiePolskiego"] }
 ];
 
 const topicGoals = {
@@ -1074,6 +1152,7 @@ const topicGoals = {
   instrumental: ["Говорить с кем и чем", "Называть профессию после jestem", "Использовать z + narzędnik"],
   locative: ["Говорить где находишься", "Использовать w, na, o + miejscownik", "Описывать место жизни и работы"],
   verbsPresent: ["Спрягать частые глаголы", "Согласовывать глагол с лицом", "Говорить о привычках"],
+  irregularVerbs: ["Запомнить самые частые неправильные формы", "Узнавать их на слух и в тексте", "Использовать в коротких живых фразах"],
   verbsPast: ["Говорить о прошлом с родом", "Отличать robiłem / robiłam", "Рассказывать о выходных"],
   verbsFuture: ["Строить планы", "Различать będę robić и zrobię", "Добавлять время: jutro, za godzinę, o ósmej"],
   aspect: ["Выбирать процесс или результат", "Связывать aspekt с маркерами czasu", "Избегать będę zrobię"],
@@ -1117,18 +1196,75 @@ const topicGoals = {
   examB1Writing: ["Писать email, жалобу и заявление", "Держать структуру B1", "Проверять текст по чеклисту"],
   examB1Speaking: ["Говорить по карточке", "Описывать ситуацию", "Строить ответ 1–2 минуты"],
   examB1Mock: ["Проверить готовность", "Смешать грамматику и лексику", "Найти слабые темы"],
-  b1Mistakes: ["Видеть типичные B1-ошибки", "Повторять слабые места", "Готовиться к смешанной речи"]
+  b1Mistakes: ["Видеть типичные B1-ошибки", "Повторять слабые места", "Готовиться к смешанной речи"],
+  audioUczmySiePolskiego: ["Слушать живой учебный польский", "Брать лексику из контекста серии", "Связывать аудирование со словарём и коротким пересказом"]
 };
 
 const isPracticeItem = (item) => item.type !== "note" && item.type !== "audio";
 
-function loadSavedCourse() {
+function getProfileStorageKey(profileId) {
+  return `${PROFILE_STORAGE_PREFIX}-${profileId}`;
+}
+
+function createDefaultProfileMeta() {
+  return {
+    activeProfileId: "profile-1",
+    profiles: [
+      { id: "profile-1", name: "Виталий" },
+      { id: "profile-2", name: "Кристина" }
+    ]
+  };
+}
+
+function normalizeProfileMeta(meta) {
+  const fallback = createDefaultProfileMeta();
+  const profiles = Array.isArray(meta?.profiles) ? [...meta.profiles] : [];
+  if (!profiles.find((profile) => profile.id === "profile-1")) {
+    profiles.unshift(fallback.profiles[0]);
+  }
+  if (!profiles.find((profile) => profile.id === "profile-2")) {
+    profiles.push(fallback.profiles[1]);
+  }
+  const normalizedProfiles = profiles.map((profile) => {
+    if (profile.id === "profile-1") return { ...profile, name: "Виталий" };
+    if (profile.id === "profile-2") return { ...profile, name: "Кристина" };
+    return profile;
+  });
+  const activeProfileId = normalizedProfiles.find((profile) => profile.id === meta?.activeProfileId) ? meta.activeProfileId : normalizedProfiles[0].id;
+  return { activeProfileId, profiles: normalizedProfiles };
+}
+
+function loadProfileMeta() {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
+    const raw = window.localStorage.getItem(PROFILE_META_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.profiles?.length) return normalizeProfileMeta(parsed);
+    }
+  } catch {}
+  return normalizeProfileMeta(createDefaultProfileMeta());
+}
+
+function loadProfileCourse(profileId) {
+  try {
+    const raw = window.localStorage.getItem(getProfileStorageKey(profileId));
+    if (raw) return JSON.parse(raw);
+    if (profileId === "profile-1") {
+      const legacyRaw = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+      return legacyRaw ? JSON.parse(legacyRaw) : {};
+    }
+    return {};
   } catch {
     return {};
   }
+}
+
+function saveProfileMeta(meta) {
+  window.localStorage.setItem(PROFILE_META_KEY, JSON.stringify(meta));
+}
+
+function saveProfileCourse(profileId, data) {
+  window.localStorage.setItem(getProfileStorageKey(profileId), JSON.stringify(data));
 }
 
 function evaluateAnswer(item, answer) {
@@ -1265,6 +1401,15 @@ function AnswerBlock({ item, state, setState, addWord }) {
       <div style={styles.note}>
         <strong>{item.title}</strong>
         <div style={item.body.includes("\n") ? styles.template : { marginTop: 8 }}>{item.body}</div>
+        {item.links?.length > 0 && (
+          <div style={{ marginTop: 10 }}>
+            {item.links.map((link) => (
+              <div key={link.url} style={{ marginTop: 6 }}>
+                <a href={link.url} target="_blank" rel="noreferrer">{link.label}</a>
+              </div>
+            ))}
+          </div>
+        )}
         {item.words?.length > 0 && (
           <div style={{ marginTop: 10 }}>
             <strong>Добавить в мой словарь</strong>
@@ -1336,7 +1481,12 @@ function AnswerBlock({ item, state, setState, addWord }) {
 
 export default function App() {
   const topicKeys = Object.keys(topics);
-  const saved = useMemo(loadSavedCourse, []);
+  const profileMeta = useMemo(loadProfileMeta, []);
+  const initialActiveProfileId = profileMeta.activeProfileId || profileMeta.profiles[0].id;
+  const saved = useMemo(() => loadProfileCourse(initialActiveProfileId), [initialActiveProfileId]);
+  const [profiles, setProfiles] = useState(profileMeta.profiles);
+  const [activeProfileId, setActiveProfileId] = useState(initialActiveProfileId);
+  const [loadedProfileId, setLoadedProfileId] = useState(initialActiveProfileId);
   const [topicKey, setTopicKey] = useState(saved.topicKey || topicKeys[0]);
   const [exerciseIndex, setExerciseIndex] = useState(saved.exerciseIndex || 0);
   const [answers, setAnswers] = useState(saved.answers || {});
@@ -1345,6 +1495,7 @@ export default function App() {
   const [newWordPl, setNewWordPl] = useState("");
   const [newWordRu, setNewWordRu] = useState("");
   const [dictionaryOpen, setDictionaryOpen] = useState(false);
+  const [dictionaryDockOpen, setDictionaryDockOpen] = useState(false);
   const initialModuleTitle = courseModules.find((module) => module.keys.includes(saved.topicKey || topicKeys[0]))?.title || courseModules[0].title;
   const [openModules, setOpenModules] = useState({ [initialModuleTitle]: true });
   const [openTopics, setOpenTopics] = useState({ [saved.topicKey || topicKeys[0]]: true });
@@ -1360,8 +1511,34 @@ export default function App() {
   const currentFlat = flat.findIndex((x) => x.key === safeTopicKey && x.i === safeExerciseIndex);
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ topicKey: safeTopicKey, exerciseIndex: safeExerciseIndex, answers, review, userWords }));
-  }, [answers, review, userWords, safeTopicKey, safeExerciseIndex]);
+    saveProfileMeta({ activeProfileId, profiles });
+  }, [activeProfileId, profiles]);
+
+  useEffect(() => {
+    if (activeProfileId === loadedProfileId) return;
+    const course = loadProfileCourse(activeProfileId);
+    const nextTopicKey = topics[course.topicKey] ? course.topicKey : topicKeys[0];
+    const nextExerciseIndex = topics[nextTopicKey].exercises[course.exerciseIndex] ? course.exerciseIndex : 0;
+    const nextModuleTitle = courseModules.find((module) => module.keys.includes(nextTopicKey))?.title || courseModules[0].title;
+    setTopicKey(nextTopicKey);
+    setExerciseIndex(nextExerciseIndex);
+    setAnswers(course.answers || {});
+    setReview(course.review || {});
+    setUserWords(course.userWords || []);
+    setNewWordPl("");
+    setNewWordRu("");
+    setDictionaryOpen(false);
+    setDictionaryDockOpen(false);
+    setOpenModules({ [nextModuleTitle]: true });
+    setOpenTopics({ [nextTopicKey]: true });
+    setRulesOpen(true);
+    setLoadedProfileId(activeProfileId);
+  }, [activeProfileId, loadedProfileId, topicKeys]);
+
+  useEffect(() => {
+    if (activeProfileId !== loadedProfileId) return;
+    saveProfileCourse(activeProfileId, { topicKey: safeTopicKey, exerciseIndex: safeExerciseIndex, answers, review, userWords });
+  }, [answers, review, userWords, safeTopicKey, safeExerciseIndex, activeProfileId, loadedProfileId]);
 
   const progress = useMemo(() => {
     const ids = currentItems.map((item, i) => isPracticeItem(item) ? `${safeTopicKey}-${safeExerciseIndex}-${i}` : null).filter(Boolean);
@@ -1470,6 +1647,30 @@ export default function App() {
     setNewWordPl("");
     setNewWordRu("");
   }
+  function switchProfile(nextProfileId) {
+    if (nextProfileId && nextProfileId !== activeProfileId) {
+      setActiveProfileId(nextProfileId);
+    }
+  }
+  function createProfile() {
+    const nextNumber = profiles.length + 1;
+    const id = `profile-${Date.now()}`;
+    const customName = window.prompt("Имя нового профиля", `Пользователь ${nextNumber}`);
+    if (customName === null) return;
+    const name = String(customName || "").trim() || `Пользователь ${nextNumber}`;
+    setProfiles((prev) => [...prev, { id, name }]);
+    saveProfileCourse(id, {});
+    setActiveProfileId(id);
+  }
+  function renameProfile() {
+    const current = profiles.find((profile) => profile.id === activeProfileId);
+    if (!current) return;
+    const nextName = window.prompt("Новое имя профиля", current.name);
+    if (nextName === null) return;
+    const cleanName = String(nextName || "").trim();
+    if (!cleanName) return;
+    setProfiles((prev) => prev.map((profile) => profile.id === activeProfileId ? { ...profile, name: cleanName } : profile));
+  }
   function removeWord(pl) {
     setUserWords((prev) => prev.filter((word) => norm(word.pl) !== norm(pl)));
   }
@@ -1488,7 +1689,7 @@ export default function App() {
     setAnswers({});
     setReview({});
     setUserWords([]);
-    window.localStorage.removeItem(STORAGE_KEY);
+    window.localStorage.removeItem(getProfileStorageKey(activeProfileId));
   }
 
   return (
@@ -1498,6 +1699,14 @@ export default function App() {
           <div>
             <h1>Polish Trainer A2 → B1</h1>
             <p>Курс-тренажёр: маршрут, цели уроков, повторение ошибок и проверка каждого ответа.</p>
+            <div style={styles.profileBar}>
+              <span style={styles.badge}>Профиль</span>
+              <select value={activeProfileId} onChange={(e) => switchProfile(e.target.value)} style={{ ...styles.input, width: 220 }}>
+                {profiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.name}</option>)}
+              </select>
+              <button style={styles.btn} onClick={createProfile}>Новый профиль</button>
+              <button style={styles.btn} onClick={renameProfile}>Переименовать</button>
+            </div>
             <ProgressBar value={courseStats.percent} />
             <div style={{ marginTop: 8 }}>
               <span style={styles.badge}>Курс: {courseStats.percent}%</span>
@@ -1519,34 +1728,40 @@ export default function App() {
           </div>
         </div>
 
-        <section style={{ ...styles.card, marginBottom: 18 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "flex-start", flexWrap: "wrap" }}>
-            <div>
-              <h2>Мой словарь</h2>
-              <p>Добавляй слова из текстов или записывай свои. Это твоя личная лексика для повторения.</p>
-            </div>
-            <div>
-              <span style={styles.badge}>{userWords.length} слов</span>
-              <button style={styles.primary} onClick={() => setDictionaryOpen(true)}>Открыть полностью</button>
-            </div>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8, alignItems: "center" }}>
-            <input value={newWordPl} onChange={(e) => setNewWordPl(e.target.value)} style={styles.input} placeholder="polskie słowo..." />
-            <input value={newWordRu} onChange={(e) => setNewWordRu(e.target.value)} style={styles.input} placeholder="перевод..." />
-            <button style={styles.primary} onClick={addManualWord}>Добавить</button>
-          </div>
-          {userWords.length > 0 && (
-            <div style={{ marginTop: 12, maxHeight: 220, overflow: "auto" }}>
-              {userWords.slice(0, 30).map((word) => (
-                <div key={`${word.pl}-${word.addedAt}`} style={styles.dictionaryItem}>
-                  <div><strong>{word.pl}</strong> · {word.ru}<br /><small>{word.source === "manual" ? "добавлено вручную" : word.source}</small></div>
-                  <button style={styles.btn} onClick={() => removeWord(word.pl)}>Удалить</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
         {dictionaryOpen && <DictionaryModal words={userWords} onClose={() => setDictionaryOpen(false)} onRemove={removeWord} />}
+        {dictionaryDockOpen && (
+          <div style={styles.floatingDictionaryPanel}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
+              <div>
+                <strong>Мой словарь</strong>
+                <div><small>{userWords.length} слов в активном профиле</small></div>
+              </div>
+              <button style={styles.btn} onClick={() => setDictionaryDockOpen(false)}>Свернуть</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8, alignItems: "center" }}>
+              <input value={newWordPl} onChange={(e) => setNewWordPl(e.target.value)} style={styles.input} placeholder="polskie słowo..." />
+              <input value={newWordRu} onChange={(e) => setNewWordRu(e.target.value)} style={styles.input} placeholder="перевод..." />
+              <button style={styles.primary} onClick={addManualWord}>Добавить</button>
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
+              <button style={styles.primary} onClick={() => setDictionaryOpen(true)}>Открыть полностью</button>
+              <span style={styles.badge}>{userWords.length} слов</span>
+            </div>
+            {userWords.length > 0 && (
+              <div style={{ marginTop: 12, maxHeight: 220, overflow: "auto" }}>
+                {userWords.slice(0, 12).map((word) => (
+                  <div key={`${word.pl}-${word.addedAt}`} style={styles.dictionaryItem}>
+                    <div><strong>{word.pl}</strong> · {word.ru}<br /><small>{word.source === "manual" ? "добавлено вручную" : word.source}</small></div>
+                    <button style={styles.btn} onClick={() => removeWord(word.pl)}>Удалить</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        <button style={{ ...styles.primary, ...styles.floatingDictionaryButton }} onClick={() => setDictionaryDockOpen((value) => !value)}>
+          {dictionaryDockOpen ? "Скрыть словарь" : `Словарь · ${userWords.length}`}
+        </button>
 
         <div style={styles.layout}>
           <aside style={styles.card}>
@@ -1557,7 +1772,7 @@ export default function App() {
               const modulePercent = moduleTotal ? Math.round((moduleCorrect / moduleTotal) * 100) : 0;
 
               return (
-                <div key={module.title}>
+                <div key={module.title} style={styles.moduleCard}>
                   <button style={styles.moduleBtn} onClick={() => toggleModule(module.title)}>
                     <span>{openModules[module.title] ? "▾" : "▸"} {module.title} · {modulePercent}%</span>
                     <span>{module.keys.length}</span>
@@ -1566,20 +1781,24 @@ export default function App() {
                   {openModules[module.title] && (
                     <div style={{ marginTop: 10 }}>
                       {module.keys.map((key) => (
-                      <div key={key} style={{ marginBottom: 14 }}>
+                      <div key={key} style={styles.topicPanel}>
                         <button onClick={() => {
                           if (key === safeTopicKey) toggleTopic(key);
                           else selectTopic(key);
-                        }} style={{ ...styles.topicBtn, ...(key === safeTopicKey ? styles.activeTopic : {}) }}>
+                        }} style={{ ...styles.topicBtn, marginBottom: 0, ...(key === safeTopicKey ? styles.activeTopic : {}) }}>
                           <strong>{openTopics[key] ? "▾" : "▸"} {topics[key].title}</strong><br />
                           <small>{topics[key].description}</small><br />
                           <small>{courseStats.byTopic[key].percent}% освоено · {topics[key].exercises.length} упр.</small>
                         </button>
-                        {openTopics[key] && topics[key].exercises.map((ex, i) => (
-                          <button key={i} onClick={() => selectExercise(key, i)} style={{ ...styles.exBtn, ...(key === safeTopicKey && i === safeExerciseIndex ? { border: "1px solid #1f4f6f", background: "#e8f1f5" } : {}) }}>
-                            {i + 1}. {ex.title}
-                          </button>
-                        ))}
+                        {openTopics[key] && (
+                          <div style={styles.exerciseList}>
+                            {topics[key].exercises.map((ex, i) => (
+                              <button key={i} onClick={() => selectExercise(key, i)} style={{ ...styles.exBtn, width: "100%", marginLeft: 0, ...(key === safeTopicKey && i === safeExerciseIndex ? { border: "1px solid #1f4f6f", background: "#e8f1f5" } : {}) }}>
+                                {i + 1}. {ex.title}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                       ))}
                     </div>
