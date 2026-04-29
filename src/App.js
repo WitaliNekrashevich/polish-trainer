@@ -1852,47 +1852,13 @@ function genAudioListening() {
 function genUczmySiePolskiego() {
   return [
     note(
-      "Uczmy się polskiego — jak pracować z serialem",
-      "To jest klasyczny serial edukacyjny do nauki polskiego. Najlepiej pracować tak: 1) obejrzyj 10-15 minut bez zatrzymywania, 2) obejrzyj drugi raz i wypisz 5-10 fraz, 3) dodaj nowe słowa do słownika, 4) wróć do odcinka po 2-3 dniach. Najpierw bierz odcinki 1-15, bo to kurs podstawowy i bardziej pasuje do naszego A2-B1.",
+      "VIDEO",
+      "Открой плейлист и смотри серии по порядку. Это единая точка входа для всего раздела.",
       [],
       [
-        { label: "Playlist YouTube: Uczmy się polskiego (30 odcinków)", url: "https://www.youtube.com/watch?v=NOJVwQK1pOE&list=PLsqlYowH737T5hAxqs0wja9niCQoEGg7I" },
-        { label: "Opis kursu Uniwersytetu Śląskiego", url: "https://www.sjikp.us.edu.pl/pl/uczmy-sie-polskiego-1-kurs-podstawowy-lets-learn-polish-basic/" }
+        { label: "VIDEO", url: "https://www.youtube.com/watch?v=NOJVwQK1pOE&list=PLsqlYowH737T5hAxqs0wja9niCQoEGg7I" }
       ]
-    ),
-    note(
-      "Startowe odcinki z bezpośrednimi linkami",
-      "Zacznij od odcinków codziennych i praktycznych. One dobrze rozwijają słownictwo o rodzinie, mieszkaniu, telefonie, drodze, zakupach, zdrowiu i podróży.",
-      [],
-      [
-        { label: "Odcinek 1 — Nowi lokatorzy", url: "https://www.youtube.com/watch?v=NOJVwQK1pOE" },
-        { label: "Odcinek 2 — Pierwsze kłopoty", url: "https://www.youtube.com/watch?v=mbv404A-n1s" },
-        { label: "Odcinek 3 — Halo, tu mieszkanie Grzegorzewskich", url: "https://www.youtube.com/watch?v=SJWJY-1GlQM" },
-        { label: "Odcinek 4 — Jak znaleźć dom cioci Ani", url: "https://www.youtube.com/watch?v=2pIcsFGZzA0" },
-        { label: "Odcinek 7 — Szpital w domu", url: "https://www.youtube.com/watch?v=MzFTzAzC8HA" },
-        { label: "Odcinek 9 — Podróżująca rodzinka", url: "https://www.youtube.com/watch?v=5k_kwFiXnFM" }
-      ]
-    ),
-    note(
-      "Plan odcinków 1-15",
-      "1. Nowi lokatorzy\n2. Pierwsze kłopoty\n3. Halo, tu mieszkanie Grzegorzewskich\n4. Jak znaleźć dom cioci Ani\n5. Zakupy\n6. Proszę nie ruszać moich rzeczy\n7. Szpital w domu\n8. Wesołych świąt\n9. Podróżująca rodzinka\n10. Kto jest lepszy\n11. Prezent urodzinowy\n12. Witamy w Warszawie\n13. Musimy się lepiej poznać\n14. Rozstania i powroty\n15. Ach, co to będzie za ślub",
-      [],
-      [
-        { label: "Otwórz playlistę i wybierz odcinek 1-15", url: "https://www.youtube.com/watch?v=NOJVwQK1pOE&list=PLsqlYowH737T5hAxqs0wja9niCQoEGg7I" },
-        { label: "Podręcznik / teksty — część 1", url: "https://docer.pl/doc/xncxv8" },
-        { label: "Podręcznik / teksty — część 2", url: "https://docer.pl/doc/x8v8x0e" }
-      ]
-    ),
-    note(
-      "Plan odcinków 16-30",
-      "16. Każdy chce czego innego\n17. Propozycja nie do odrzucenia\n18. Świetny pomysł\n19. Droga pełna przeszkód\n20. Ach, co to był za ślub\n21. Pierwsze małżeńskie problemy\n22. Dobrze, powtórzę\n23. Niech żyje socjologia\n24. Gdzie mamy mieszkać\n25. Szukam pracy\n26. On to powiedział\n27. Proszę o spokój\n28. Kłopoty z pogodą\n29. Plany na przyszłość\n30. Pożegnanie",
-      [],
-      [
-        { label: "Otwórz playlistę i wybierz odcinek 16-30", url: "https://www.youtube.com/watch?v=NOJVwQK1pOE&list=PLsqlYowH737T5hAxqs0wja9niCQoEGg7I" }
-      ]
-    ),
-    free("Po obejrzeniu odcinka napisz 2-4 zdania: o czym był odcinek, jakie 3 nowe słowa zapamiętałeś i jaka scena była dla ciebie najłatwiejsza do zrozumienia.", "Użyj minimum 1 связку: ponieważ / dlatego / jednak / oprócz tego."),
-    free("Po 2-3 odcinkach napisz krótki komentarz: które tematy rozumiesz już lepiej dzięki serialowi — mieszkanie, zakupy, zdrowie, podróż czy rodzina?", "Napisz 4-6 zdań i dodaj 3 polskie frazy z serialu.")
+    )
   ];
 }
 
