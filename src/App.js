@@ -315,20 +315,129 @@ function genOniOne() { const items = []; dict.mascPlural.forEach(([, pl]) => ite
 function genPluralMistakes() { return cap50([input("To są dobre studenci", "to są dobrzy studenci"), input("To są polskie lekarze", "to są polscy lekarze"), input("To są wysokie mężczyźni", "to są wysocy mężczyźni"), input("To są nowe klienci", "to są nowi klienci"), input("To są młode chłopaki", "to są młodzi chłopaki"), input("To są duże pracownicy", "to są duzi pracownicy"), input("To są miłe nauczyciele", "to są mili nauczyciele"), input("To są stare sąsiedzi", "to są starzy sąsiedzi"), input("To są znane aktorzy", "to są znani aktorzy"), input("To są dobre profesorowie", "to są dobrzy profesorowie"), input("To są polscy kobiety", "to są polskie kobiety"), input("To są dobrzy książki", "to są dobre książki"), input("To są nowi samochody", "to są nowe samochody"), input("To są wysocy domy", "to są wysokie domy"), input("To są młodzi dzieci", "to są młode dzieci")]); }
 function genAccusativeForms() {
   const items = [];
-  dict.biernik.animate.forEach(([sg, acc]) => items.push(input(`Uzupełnij: Widzę (${sg}).`, acc, "męski żywotny")));
-  dict.biernik.inanimate.forEach(([sg, acc]) => items.push(input(`Uzupełnij: Mam (${sg}).`, acc, "męski nieżywotny")));
-  dict.biernik.feminine.forEach(([sg, acc]) => items.push(input(`Uzupełnij: Kupuję (${sg}).`, acc, "rodzaj żeński")));
-  dict.biernik.mascPlural.forEach(([nom, acc]) => items.push(input(`Uzupełnij: Znam (${nom}).`, acc, "biernik liczby mnogiej męskoosobowej")));
+  const animateVerbs = ["Widzę", "Spotykam", "Znam", "Słyszę", "Pamiętam", "Odwiedzam"];
+  const inanimateVerbs = ["Mam", "Kupuję", "Biorę", "Otwieram", "Czytam", "Wybieram"];
+  const feminineVerbs = ["Kupuję", "Piję", "Widzę", "Czytam", "Piszę", "Zamawiam"];
+  const pluralVerbs = ["Znam", "Widzę", "Spotykam", "Zapraszam", "Odwiedzam"];
+  dict.biernik.animate.forEach(([sg, acc], index) => items.push(input(`Uzupełnij: ${animateVerbs[index % animateVerbs.length]} (${sg}).`, acc, "biernik: rodzaj męski żywotny")));
+  dict.biernik.inanimate.forEach(([sg, acc], index) => items.push(input(`Uzupełnij: ${inanimateVerbs[index % inanimateVerbs.length]} (${sg}).`, acc, "biernik: rodzaj męski nieżywotny")));
+  dict.biernik.feminine.forEach(([sg, acc], index) => items.push(input(`Uzupełnij: ${feminineVerbs[index % feminineVerbs.length]} (${sg}).`, acc, "biernik: rodzaj żeński")));
+  dict.biernik.mascPlural.forEach(([nom, acc], index) => items.push(input(`Uzupełnij: ${pluralVerbs[index % pluralVerbs.length]} (${nom}).`, acc, "biernik liczby mnogiej męskoosobowej")));
   return cap50(items);
 }
 function genAccusativeAdjectives() {
   const items = [];
   dict.adjectives.forEach(([base, , , mascAcc, femAcc]) => {
-    dict.biernik.animate.slice(0, 8).forEach(([sg, acc]) => items.push(input(`Uzupełnij: Widzę (${base} ${sg}).`, `${mascAcc} ${acc}`)));
-    dict.biernik.feminine.slice(0, 8).forEach(([sg, acc]) => items.push(input(`Uzupełnij: Kupuję (${base} ${sg}).`, `${femAcc} ${acc}`)));
-    dict.biernik.inanimate.slice(0, 8).forEach(([sg, acc]) => items.push(input(`Uzupełnij: Mam (${base} ${sg}).`, `${base} ${acc}`)));
+    dict.biernik.animate.slice(0, 8).forEach(([sg, acc], index) => items.push(input(`Uzupełnij: ${["Widzę", "Spotykam", "Odwiedzam", "Zapraszam"][index % 4]} (${base} ${sg}).`, `${mascAcc} ${acc}`)));
+    dict.biernik.feminine.slice(0, 8).forEach(([sg, acc], index) => items.push(input(`Uzupełnij: ${["Kupuję", "Piję", "Czytam", "Biorę"][index % 4]} (${base} ${sg}).`, `${femAcc} ${acc}`)));
+    dict.biernik.inanimate.slice(0, 8).forEach(([sg, acc], index) => items.push(input(`Uzupełnij: ${["Mam", "Kupuję", "Wybieram", "Otwieram"][index % 4]} (${base} ${sg}).`, `${base} ${acc}`)));
   });
   return cap50(items);
+}
+
+function genAccusativeVariety() {
+  return cap50([
+    input("Uzupełnij: Codziennie oglądam (serial).", "serial"),
+    input("Uzupełnij: W restauracji zamawiam (zupa pomidorowa).", "zupę pomidorową"),
+    input("Uzupełnij: Rano piję (mocna kawa).", "mocną kawę"),
+    input("Uzupełnij: Wieczorem czytam (interesująca książka).", "interesującą książkę"),
+    input("Uzupełnij: W sklepie wybieram (nowy telefon).", "nowy telefon"),
+    input("Uzupełnij: Na dworcu kupuję (bilet miesięczny).", "bilet miesięczny"),
+    input("Uzupełnij: Jutro odwiedzam (stary kolega).", "starego kolegę"),
+    input("Uzupełnij: Na zdjęciu widzę (małe dziecko).", "małe dziecko"),
+    input("Uzupełnij: Szef zaprasza (nowi pracownicy).", "nowych pracowników"),
+    input("Uzupełnij: Po pracy spotykam (miły sąsiad).", "miłego sąsiada"),
+    input("Uzupełnij: Na lekcji słyszę (ważne pytanie).", "ważne pytanie"),
+    input("Uzupełnij: W domu otwieram (duże okno).", "duże okno"),
+    input("Uzupełnij: W aptece biorę (tańszy lek).", "tańszy lek"),
+    input("Uzupełnij: Na uczelni znam (dobrzy profesorowie).", "dobrych profesorów"),
+    input("Uzupełnij: W weekend oglądam (ciekawy film).", "ciekawy film"),
+    input("Uzupełnij: W urzędzie pokazuję (ważny dokument).", "ważny dokument"),
+    input("Uzupełnij: Na obiad gotuję (smaczna zupa).", "smaczną zupę"),
+    input("Uzupełnij: Wieczorem piszę (krótka wiadomość).", "krótką wiadomość"),
+    input("Uzupełnij: W pracy pamiętam (nowy termin).", "nowy termin"),
+    input("Uzupełnij: Na ulicy mijam (młody turysta).", "młodego turystę"),
+    choice("Które zdanie jest poprawne?", ["Rano piję gorącą herbatę.", "Rano piję gorąca herbata.", "Rano piję gorącej herbaty."], "Rano piję gorącą herbatę."),
+    choice("Które zdanie jest poprawne?", ["Widzę nowego klienta.", "Widzę nowy klient.", "Widzę nowemu klientowi."], "Widzę nowego klienta."),
+    choice("Które zdanie jest poprawne?", ["Kupuję świeży chleb.", "Kupuję świeżego chleba.", "Kupuję świeżym chlebem."], "Kupuję świeży chleb."),
+    choice("Które zdanie jest poprawne?", ["Spotykam dobrych znajomych.", "Spotykam dobrzy znajomi.", "Spotykam dobrym znajomym."], "Spotykam dobrych znajomych."),
+    free("Napisz 4 zdania w bierniku z różnymi czasownikami. Użyj przynajmniej: kupować, oglądać, spotykać, zamawiać.", "Не повторяй один и тот же глагол. Покажи разные типы дополнения: человека, вещь, еду, документ.")
+  ]);
+}
+function genGenitiveVariety() {
+  return cap50([
+    input("Uzupełnij: Rano słucham (polskie radio).", "polskiego radia"),
+    input("Uzupełnij: W nowym mieście szukam (spokojne mieszkanie).", "spokojnego mieszkania"),
+    input("Uzupełnij: Po pracy potrzebuję (chwila spokoju).", "chwili spokoju"),
+    input("Uzupełnij: W kuchni używam (duży nóż).", "dużego noża"),
+    input("Uzupełnij: Dziś nie ma (wolny termin).", "wolnego terminu"),
+    input("Uzupełnij: Na kursie uczę się (polska wymowa).", "polskiej wymowy"),
+    input("Uzupełnij: Wieczorem nie mam (siła).", "siły"),
+    input("Uzupełnij: W sklepie szukam (świeży chleb).", "świeżego chleba"),
+    input("Uzupełnij: W pracy potrzebuję (dobry komputer).", "dobrego komputera"),
+    input("Uzupełnij: W tej dzielnicy nie ma (duży park).", "dużego parku"),
+    choice("Które zdanie jest poprawne?", ["Potrzebuję nowego dokumentu.", "Potrzebuję nowy dokument.", "Potrzebuję nowemu dokumentowi."], "Potrzebuję nowego dokumentu."),
+    choice("Które zdanie jest poprawne?", ["Nie ma wolnego miejsca.", "Nie ma wolne miejsce.", "Nie ma wolnym miejscem."], "Nie ma wolnego miejsca."),
+    free("Napisz 4 zdania w dopełniaczu. Użyj przynajmniej: nie ma, potrzebuję, szukam, używam.", "Пусть в предложениях будут разные ситуации: дом, работа, магазин, учёба.")
+  ]);
+}
+function genDativeVariety() {
+  return cap50([
+    input("Uzupełnij: Tłumaczę zadanie (nowy student).", "nowemu studentowi"),
+    input("Uzupełnij: Wysyłam wiadomość (moja siostra).", "mojej siostrze"),
+    input("Uzupełnij: Pokazuję drogę (starsza pani).", "starszej pani"),
+    input("Uzupełnij: Daję dokument (kierownik).", "kierownikowi"),
+    input("Uzupełnij: Pomagam (małe dziecko).", "małemu dziecku"),
+    input("Uzupełnij: Mówię prawdę (dobry kolega).", "dobremu koledze"),
+    input("Uzupełnij: Na lekcji odpowiadam (nauczyciel).", "nauczycielowi"),
+    input("Uzupełnij: Tłumaczę problem (moja mama).", "mojej mamie"),
+    choice("Które zdanie jest poprawne?", ["Pomagam starszemu sąsiadowi.", "Pomagam starszego sąsiada.", "Pomagam starszym sąsiadem."], "Pomagam starszemu sąsiadowi."),
+    choice("Które zdanie jest poprawne?", ["Daję książkę mojej koleżance.", "Daję książkę moją koleżankę.", "Daję książkę mojej koleżanką."], "Daję książkę mojej koleżance."),
+    free("Napisz 4 zdania w celowniku. Użyj przynajmniej: dawać, pomagać, tłumaczyć, wysyłać.", "Покажи разные адресаты: человек, родственник, коллега, ребёнок.")
+  ]);
+}
+function genLocativeVariety() {
+  return cap50([
+    input("Uzupełnij: Mieszkam w (spokojna dzielnica).", "spokojnej dzielnicy"),
+    input("Uzupełnij: Rozmawiamy o (ważny egzamin).", "ważnym egzaminie"),
+    input("Uzupełnij: Czytam o (nowa praca).", "nowej pracy"),
+    input("Uzupełnij: Myślę o (krótki urlop).", "krótkim urlopie"),
+    input("Uzupełnij: Jestem na (długie spotkanie).", "długim spotkaniu"),
+    input("Uzupełnij: Mówię o (trudny problem).", "trudnym problemie"),
+    input("Uzupełnij: Byłem w (mały sklep).", "małym sklepie"),
+    input("Uzupełnij: Jestem po (ciężki dzień).", "ciężkim dniu"),
+    choice("Które zdanie jest poprawne?", ["Jestem w nowym biurze.", "Jestem w nowe biuro.", "Jestem w nowego biura."], "Jestem w nowym biurze."),
+    choice("Które zdanie jest poprawne?", ["Myślę o ważnym terminie.", "Myślę o ważny termin.", "Myślę o ważnego terminu."], "Myślę o ważnym terminie."),
+    free("Napisz 4 zdania w miejscowniku. Użyj przynajmniej: w, na, o, po.", "Пусть одно предложение будет о месте, одно о встрече, одно о теме разговора, одно о дне.")
+  ]);
+}
+function genPresentVariety() {
+  return cap50([
+    input("Uzupełnij: Rano ja (pić) kawę przed pracą.", "piję"),
+    input("Uzupełnij: Wieczorem my (oglądać) serial po kolacji.", "oglądamy"),
+    input("Uzupełnij: W pracy oni (mówić) po polsku i po angielsku.", "mówią"),
+    input("Uzupełnij: W domu ty (robić) zakupy online.", "robisz"),
+    input("Uzupełnij: Na kursie wy (uczyć się) nowych słów.", "uczycie się"),
+    input("Uzupełnij: Codziennie on (czytać) wiadomości rano.", "czyta"),
+    input("Uzupełnij: Ja często (mieć) mało czasu po pracy.", "mam"),
+    input("Uzupełnij: My zwykle (mieszkać) blisko centrum.", "mieszkamy"),
+    choice("Które zdanie jest poprawne?", ["Oni pracują w biurze.", "Oni pracuje w biurze.", "Oni pracujesz w biurze."], "Oni pracują w biurze."),
+    choice("Które zdanie jest poprawne?", ["Ty uczysz się codziennie.", "Ty uczę się codziennie.", "Ty uczymy się codziennie."], "Ty uczysz się codziennie."),
+    free("Napisz 5 zdań w czasie teraźniejszym o swoim dniu. Użyj różnych czasowników.", "Не повторяй всё время `być` и `mieć`. Добавь хотя бы 4 разных глагола.")
+  ]);
+}
+function genComplexSentenceVariety() {
+  return cap50([
+    input("Uzupełnij: Zostaję w domu, ___ jestem zmęczony.", "bo"),
+    input("Uzupełnij: Uczę się codziennie, ___ chcę zdać egzamin.", "bo"),
+    input("Uzupełnij: Mam dziś dużo pracy, ___ oddzwonię wieczorem.", "dlatego"),
+    input("Uzupełnij: Zabiorę dokumenty, ___ złożyć wniosek.", "żeby"),
+    input("Uzupełnij: ___ będę mieć czas, pójdę na spacer.", "jeśli"),
+    input("Uzupełnij: Wiem, ___ to jest ważne.", "że"),
+    choice("Które zdanie jest poprawne?", ["Nie przyszedłem, bo byłem chory.", "Nie przyszedłem, dlatego byłem chory.", "Nie przyszedłem, żeby byłem chory."], "Nie przyszedłem, bo byłem chory."),
+    choice("Które zdanie jest poprawne?", ["Uczę się, żeby lepiej mówić.", "Uczę się, dlatego lepiej mówić.", "Uczę się, bo lepiej mówić."], "Uczę się, żeby lepiej mówić."),
+    free("Napisz 4 zdania złożone. Użyj przynajmniej: bo, dlatego, żeby, jeśli.", "Каждую связку используй в отдельном предложении, не повторяй одну и ту же модель.")
+  ]);
 }
 function genGenitive() {
   const verbs = [
@@ -336,7 +445,9 @@ function genGenitive() {
     ["Uzupełnij: Nie ma", "negacja + dopełniacz"],
     ["Uzupełnij: Szukam", "czasownik wymaga dopełniacza"],
     ["Uzupełnij: Potrzebuję", "czasownik wymaga dopełniacza"],
-    ["Uzupełnij: Używam", "czasownik wymaga dopełniacza"]
+    ["Uzupełnij: Używam", "czasownik wymaga dopełniacza"],
+    ["Uzupełnij: Słucham", "czasownik wymaga dopełniacza"],
+    ["Uzupełnij: Uczę się", "czasownik wymaga dopełniacza"]
   ];
   const items = [];
   dict.genitive.forEach(([sg, gen]) => verbs.forEach(([v, hint]) => items.push(input(`${v} (${sg}).`, gen, hint))));
@@ -347,7 +458,9 @@ function genDative() {
     ["Uzupełnij: Daję prezent", "komu? = celownik"],
     ["Uzupełnij: Pomagam", "komu? = celownik"],
     ["Uzupełnij: Mówię prawdę", "komu? = celownik"],
-    ["Uzupełnij: Pokazuję drogę", "komu? = celownik"]
+    ["Uzupełnij: Pokazuję drogę", "komu? = celownik"],
+    ["Uzupełnij: Tłumaczę zadanie", "komu? = celownik"],
+    ["Uzupełnij: Wysyłam wiadomość", "komu? = celownik"]
   ];
   const items = [];
   dict.dative.forEach(([sg, dat]) => verbs.forEach(([v, hint]) => items.push(input(`${v} (${sg}).`, dat, hint))));
@@ -355,26 +468,38 @@ function genDative() {
 }
 function genInstrumental() {
   const items = [];
-  dict.instrumental.forEach(([sg, ins]) => {
-    items.push(input(`Idę z (${sg})`, ins));
-    items.push(input(`Jestem (${sg})`, ins));
-    items.push(input(`Rozmawiam z (${sg})`, ins));
+  const contexts = ["Idę z", "Jestem", "Rozmawiam z", "Interesuję się", "Jadę z"];
+  dict.instrumental.forEach(([sg, ins], index) => {
+    items.push(input(`Uzupełnij: ${contexts[index % contexts.length]} (${sg}).`, ins));
+    items.push(input(`Uzupełnij: ${contexts[(index + 1) % contexts.length]} (${sg}).`, ins));
   });
   return cap50(items);
 }
 function genLocative() {
   const items = [];
-  dict.locative.forEach(([sg, loc]) => {
-    items.push(input(`Jestem w (${sg})`, loc));
-    items.push(input(`Myślę o (${sg})`, loc));
-    items.push(input(`Rozmawiam o (${sg})`, loc));
+  const contexts = [
+    (sg) => `Uzupełnij: Jestem w (${sg}).`,
+    (sg) => `Uzupełnij: Myślę o (${sg}).`,
+    (sg) => `Uzupełnij: Rozmawiam o (${sg}).`,
+    (sg) => `Uzupełnij: Czytam o (${sg}).`,
+    (sg) => `Uzupełnij: Mówię o (${sg}).`
+  ];
+  dict.locative.forEach(([sg, loc], index) => {
+    items.push(input(contexts[index % contexts.length](sg), loc));
+    items.push(input(contexts[(index + 2) % contexts.length](sg), loc));
   });
   return cap50(items);
 }
 function genPresent() {
   const persons = ["ja", "ty", "on", "my", "wy", "oni"];
   const items = [];
-  dict.present.forEach(([verb, forms]) => forms.forEach((form, i) => items.push(input(`Uzupełnij formę: ${persons[i]} (${verb}).`, form))));
+  const contexts = [
+    (person, verb) => `Uzupełnij formę: ${person} (${verb}) codziennie rano.`,
+    (person, verb) => `Uzupełnij formę: ${person} (${verb}) po pracy.`,
+    (person, verb) => `Uzupełnij formę: ${person} (${verb}) w domu.`,
+    (person, verb) => `Uzupełnij formę: ${person} (${verb}) po polsku.`
+  ];
+  dict.present.forEach(([verb, forms]) => forms.forEach((form, i) => items.push(input(contexts[(i + verb.length) % contexts.length](persons[i], verb), form))));
   return cap50(items);
 }
 function genIrregularVerbs() {
@@ -394,7 +519,7 @@ function genIrregularVerbs() {
   return cap50(verbs.flatMap(([verb, forms]) => forms.map((form, index) => input(`${persons[index]} (${verb})`, form))));
 }
 function genPast() {
-  const base = [["Uzupełnij formę: ja, mężczyzna (robić).", "robiłem"], ["Uzupełnij formę: ja, kobieta (robić).", "robiłam"], ["Uzupełnij formę: ty, mężczyzna (robić).", "robiłeś"], ["Uzupełnij formę: ty, kobieta (robić).", "robiłaś"], ["Uzupełnij formę: on (robić).", "robił"], ["Uzupełnij formę: ona (robić).", "robiła"], ["Uzupełnij formę: my, mężczyźni (robić).", "robiliśmy"], ["Uzupełnij formę: my, kobiety (robić).", "robiłyśmy"], ["Uzupełnij formę: wy, mężczyźni (robić).", "robiliście"], ["Uzupełnij formę: wy, kobiety (robić).", "robiłyście"], ["Uzupełnij formę: oni (robić).", "robili"], ["Uzupełnij formę: one (robić).", "robiły"], ["Uzupełnij formę: ja, mężczyzna (być).", "byłem"], ["Uzupełnij formę: ja, kobieta (być).", "byłam"], ["Uzupełnij formę: ja, mężczyzna (pójść).", "poszedłem"], ["Uzupełnij formę: ja, kobieta (pójść).", "poszłam"], ["Uzupełnij formę: ja, mężczyzna (wrócić).", "wróciłem"], ["Uzupełnij formę: ja, kobieta (wrócić).", "wróciłam"]];
+  const base = [["Uzupełnij formę: ja, mężczyzna (robić) wczoraj wieczorem.", "robiłem"], ["Uzupełnij formę: ja, kobieta (robić) wczoraj wieczorem.", "robiłam"], ["Uzupełnij formę: ty, mężczyzna (robić) w domu.", "robiłeś"], ["Uzupełnij formę: ty, kobieta (robić) w domu.", "robiłaś"], ["Uzupełnij formę: on (robić) zadanie.", "robił"], ["Uzupełnij formę: ona (robić) zakupy.", "robiła"], ["Uzupełnij formę: my, mężczyźni (robić) raport.", "robiliśmy"], ["Uzupełnij formę: my, kobiety (robić) kolację.", "robiłyśmy"], ["Uzupełnij formę: wy, mężczyźni (robić) to razem.", "robiliście"], ["Uzupełnij formę: wy, kobiety (robić) to razem.", "robiłyście"], ["Uzupełnij formę: oni (robić) projekt.", "robili"], ["Uzupełnij formę: one (robić) zdjęcia.", "robiły"], ["Uzupełnij formę: ja, mężczyzna (być) w pracy.", "byłem"], ["Uzupełnij formę: ja, kobieta (być) w pracy.", "byłam"], ["Uzupełnij formę: ja, mężczyzna (pójść) do sklepu.", "poszedłem"], ["Uzupełnij formę: ja, kobieta (pójść) do sklepu.", "poszłam"], ["Uzupełnij formę: ja, mężczyzna (wrócić) późno.", "wróciłem"], ["Uzupełnij formę: ja, kobieta (wrócić) późno.", "wróciłam"]];
   return cap50(base.map(([q, a]) => input(q, a)));
 }
 function genFuture() {
@@ -546,12 +671,12 @@ function genPronouns() {
   ];
   return cap50([
     ...pronounForms.map(([q, a]) => input(q, a)),
-    input("Uzupełnij: Daję książkę (ja).", "mi"),
-    input("Uzupełnij: Pomagam (ty).", "ci"),
-    input("Uzupełnij: Widzę (ona).", "ją"),
-    input("Uzupełnij: Nie znam (on).", "go"),
+    input("Uzupełnij: Daję znać (ja).", "mi"),
+    input("Uzupełnij: Pomagam codziennie (ty).", "ci"),
+    input("Uzupełnij: Widzę dziś (ona).", "ją"),
+    input("Uzupełnij: Nie znam dobrze (on).", "go"),
     input("Uzupełnij: Mówię prawdę (oni).", "im"),
-    input("Uzupełnij: Czekasz na (my).", "nas"),
+    input("Uzupełnij: Czekasz na przystanku na (my).", "nas"),
     choice("Podoba ___ się ten kurs.", ["mi", "mnie", "mną"], "mi"),
     choice("Znam ___ bardzo dobrze.", ["go", "mu", "nim"], "go"),
     choice("Pomagam ___ codziennie.", ["mu", "go", "jego"], "mu"),
@@ -2090,19 +2215,19 @@ const topics = {
   diagnosticB1: { title: "Диагностика B1", description: "Карта сильных и слабых мест", theory: ["Начни здесь, если хочешь понять текущий уровень.", "20 вопросов смешивают падежи, времена, аспект, лексику и экзаменационные реакции.", "После прохождения смотри проценты по темам и тренируй слабые блоки."], exercises: [makeExercise("Диагностика: 20 вопросов", genDiagnostic())] },
   mixed20: { title: "Смешанный тест 20", description: "Активное вспоминание из всего курса", theory: ["Это режим для памяти: вопросы идут вперемешку, как в реальной речи.", "Запускай после 2–3 тем или в конце дня.", "Цель — 80% правильных без подсказок."], exercises: [makeExercise("Mixed practice 20", genMixed20())] },
   pluralNominative: { title: "Mianownik liczby mnogiej", description: "Множественное число: oni / one", theory: ["Mianownik liczby mnogiej отвечает на pytanie kto? co? и нужен, когда мы просто называем группу: To są studenci. To są książki.", "Самое важное деление: `oni` = męskoosobowy, `one` = niemęskoosobowy. Если в группе есть мужчины или группа смешанная, очень часто будет `oni`.", "Męskoosobowy: studenci, lekarze, koledzy, rodzice. Niemęskoosobowy: kobiety, dzieci, psy, auta, książki.", "Смотри сразу на прилагательное: dobrzy studenci, mili koledzy, ale dobre książki, nowe mieszkania, małe dzieci.", "Практическое правило: сначала реши `oni czy one`, а уже потом выбирай форму прилагательного и существительного."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("pluralNominative")), makeExercise("Разбор по шагам", genGrammarStepByStep("pluralNominative")), makeExercise("Męskoosobowy — rzeczowniki", genMascPlural()), makeExercise("Niemęskoosobowy — rzeczowniki", genNonMascPlural()), makeExercise("Przymiotnik + rzeczownik", genPluralAdjectives()), makeExercise("Oni czy one?", genOniOne()), makeExercise("Исправь ошибку", genPluralMistakes()), makeExercise("Разговор", speakingPrompts)] },
-  accusative: { title: "Biernik — kogo? co?", description: "Винительный падеж", theory: ["Biernik нужен, когда действие направлено на объект: `widzę`, `mam`, `kupuję`, `znam`, `spotykam`, `lubię`.", "Удобная логика такая: сначала найди глагол, потом спроси `kogo? co?`, и только потом меняй форму слова.", "Мужской одушевлённый обычно похож на dopełniacz: widzę lekarza, znam kolegę, mam psa. Мужской неодушевлённый часто не меняется: mam telefon, kupuję chleb.", "Женский род часто даёт окончания `-ę / -ą`: kawę, herbatę, dobrą książkę. Средний род обычно совпадает с mianownik: widzę dziecko.", "Очень полезно учить готовыми кусками: `widzę nowego lekarza`, `kupuję czarną kawę`, `mam ważny dokument`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("accusative")), makeExercise("Разбор по шагам", genGrammarStepByStep("accusative")), makeExercise("Формы biernik", genAccusativeForms()), makeExercise("Прилагательные в biernik", genAccusativeAdjectives()), makeExercise("Типичные ошибки", cap50([input("Widzę dobry lekarz", "widzę dobrego lekarza"), input("Mam nowego samochodu", "mam nowy samochód"), input("Kupuję czarna kawa", "kupuję czarną kawę"), input("Znam polscy studentów", "znam polskich studentów"), input("Spotykam nowy kolegę", "spotykam nowego kolegę")])), makeExercise("Разговор", speakingPrompts)] },
-  genitive: { title: "Dopełniacz — kogo? czego?", description: "Родительный падеж", theory: ["Dopełniacz очень частый в живой речи. Он появляется после отрицания `nie ma / nie mam`, после количества `dużo / mało / trochę` и после глаголов `szukam`, `potrzebuję`, `używam`.", "Хороший способ запомнить: dopełniacz часто отвечает за идею `нет чего-то`, `нужно что-то`, `ищу что-то`.", "Типичные пары: mam czas -> nie mam czasu, jest kawa -> nie ma kawy, mam pracę -> szukam pracy.", "После чисел и слов количества dopełniacz особенно важен: dużo ludzi, mało pieniędzy, trochę wody.", "На B1 полезно не просто знать форму, а держать готовые конструкции: `potrzebuję pomocy`, `używam telefonu`, `nie mam czasu`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("genitive")), makeExercise("Разбор по шагам", genGrammarStepByStep("genitive")), makeExercise("Dopełniacz — формы", genGenitive()), makeExercise("Исправь ошибку", cap50([input("Nie mam czas", "nie mam czasu"), input("Nie ma kawa", "nie ma kawy"), input("Szukam pracę", "szukam pracy"), input("Potrzebuję pomoc", "potrzebuję pomocy"), input("Dużo ludzie", "dużo ludzi"), input("Używam telefon", "używam telefonu"), input("Mało pieniądze", "mało pieniędzy"), input("Trochę wodę", "trochę wody")])), makeExercise("Разговор", speakingPrompts)] },
-  dative: { title: "Celownik — komu? czemu?", description: "Дательный падеж", theory: ["Celownik показывает адресата действия: кому я даю, кому помогаю, кому говорю, кому объясняю.", "Самые полезные формы для жизни: `mi`, `ci`, `mu`, `jej`, `nam`, `wam`, `im`. Они встречаются постоянно: podoba mi się, pomagam ci, mówię mu.", "У существительных часто видим формы: studentowi, koledze, kobiecie, dziecku, mamie, bratu.", "Запоминай с глаголом целиком: `pomagam koledze`, `daję dziecku prezent`, `mówię mamie prawdę`.", "Частая ошибка B1: ставить biernik вместо celownik. После `pomagać` и `dawać komuś` почти всегда нужен именно celownik."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("dative")), makeExercise("Разбор по шагам", genGrammarStepByStep("dative")), makeExercise("Celownik — формы", genDative()), makeExercise("Исправь ошибку", cap50([input("Praca daje mnie satysfakcję", "praca daje mi satysfakcję"), input("Pomagam mój kolega", "pomagam mojemu koledze"), input("Daję książkę brat", "daję książkę bratu"), input("Pokazuję droga student", "pokazuję drogę studentowi"), input("Pomagam ona", "pomagam jej"), input("Daję jemu prezent", "daję mu prezent"), input("Mówię do ci", "mówię ci"), input("Pomagam ludzie", "pomagam ludziom")])), makeExercise("Разговор", speakingPrompts)] },
+  accusative: { title: "Biernik — kogo? co?", description: "Винительный падеж", theory: ["Biernik нужен, когда действие направлено на объект: `widzę`, `mam`, `kupuję`, `znam`, `spotykam`, `lubię`.", "Удобная логика такая: сначала найди глагол, потом спроси `kogo? co?`, и только потом меняй форму слова.", "Мужской одушевлённый обычно похож на dopełniacz: widzę lekarza, znam kolegę, mam psa. Мужской неодушевлённый часто не меняется: mam telefon, kupuję chleb.", "Женский род часто даёт окончания `-ę / -ą`: kawę, herbatę, dobrą książkę. Средний род обычно совпадает с mianownik: widzę dziecko.", "Очень полезно учить готовыми кусками: `widzę nowego lekarza`, `kupuję czarną kawę`, `mam ważny dokument`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("accusative")), makeExercise("Разбор по шагам", genGrammarStepByStep("accusative")), makeExercise("Формы biernik", genAccusativeForms()), makeExercise("Прилагательные в biernik", genAccusativeAdjectives()), makeExercise("Biernik w sytuacji", genAccusativeVariety()), makeExercise("Типичные ошибки", cap50([input("Widzę dobry lekarz", "widzę dobrego lekarza"), input("Mam nowego samochodu", "mam nowy samochód"), input("Kupuję czarna kawa", "kupuję czarną kawę"), input("Znam polscy studentów", "znam polskich studentów"), input("Spotykam nowy kolegę", "spotykam nowego kolegę")])), makeExercise("Разговор", speakingPrompts)] },
+  genitive: { title: "Dopełniacz — kogo? czego?", description: "Родительный падеж", theory: ["Dopełniacz очень частый в живой речи. Он появляется после отрицания `nie ma / nie mam`, после количества `dużo / mało / trochę` и после глаголов `szukam`, `potrzebuję`, `używam`.", "Хороший способ запомнить: dopełniacz часто отвечает за идею `нет чего-то`, `нужно что-то`, `ищу что-то`.", "Типичные пары: mam czas -> nie mam czasu, jest kawa -> nie ma kawy, mam pracę -> szukam pracy.", "После чисел и слов количества dopełniacz особенно важен: dużo ludzi, mało pieniędzy, trochę wody.", "На B1 полезно не просто знать форму, а держать готовые конструкции: `potrzebuję pomocy`, `używam telefonu`, `nie mam czasu`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("genitive")), makeExercise("Разбор по шагам", genGrammarStepByStep("genitive")), makeExercise("Dopełniacz — формы", genGenitive()), makeExercise("Dopełniacz w sytuacji", genGenitiveVariety()), makeExercise("Исправь ошибку", cap50([input("Nie mam czas", "nie mam czasu"), input("Nie ma kawa", "nie ma kawy"), input("Szukam pracę", "szukam pracy"), input("Potrzebuję pomoc", "potrzebuję pomocy"), input("Dużo ludzie", "dużo ludzi"), input("Używam telefon", "używam telefonu"), input("Mało pieniądze", "mało pieniędzy"), input("Trochę wodę", "trochę wody")])), makeExercise("Разговор", speakingPrompts)] },
+  dative: { title: "Celownik — komu? czemu?", description: "Дательный падеж", theory: ["Celownik показывает адресата действия: кому я даю, кому помогаю, кому говорю, кому объясняю.", "Самые полезные формы для жизни: `mi`, `ci`, `mu`, `jej`, `nam`, `wam`, `im`. Они встречаются постоянно: podoba mi się, pomagam ci, mówię mu.", "У существительных часто видим формы: studentowi, koledze, kobiecie, dziecku, mamie, bratu.", "Запоминай с глаголом целиком: `pomagam koledze`, `daję dziecku prezent`, `mówię mamie prawdę`.", "Частая ошибка B1: ставить biernik вместо celownik. После `pomagać` и `dawać komuś` почти всегда нужен именно celownik."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("dative")), makeExercise("Разбор по шагам", genGrammarStepByStep("dative")), makeExercise("Celownik — формы", genDative()), makeExercise("Celownik w sytuacji", genDativeVariety()), makeExercise("Исправь ошибку", cap50([input("Praca daje mnie satysfakcję", "praca daje mi satysfakcję"), input("Pomagam mój kolega", "pomagam mojemu koledze"), input("Daję książkę brat", "daję książkę bratu"), input("Pokazuję droga student", "pokazuję drogę studentowi"), input("Pomagam ona", "pomagam jej"), input("Daję jemu prezent", "daję mu prezent"), input("Mówię do ci", "mówię ci"), input("Pomagam ludzie", "pomagam ludziom")])), makeExercise("Разговор", speakingPrompts)] },
   instrumental: { title: "Narzędnik — z kim? z czym?", description: "Творительный падеж", theory: ["Narzędnik часто нужен в двух базовых ситуациях: после `z` и после `być`, когда мы называем профессию, роль или состояние.", "С `z` это обычно ответ на `с кем? с чем?`: z kolegą, z rodziną, z dokumentem. После `jestem` это `кем? чем?`: jestem programistą, jestem studentem.", "Типичные окончания хорошо слышны в готовых фразах: kolegą, kobietą, rodziną, dzieckiem, nauczycielem, lekarzem.", "На уровне B1 старайся учить narzędnik не списком, а в живых конструкциях: `pracuję z ludźmi`, `jadę samochodem`, `jestem zainteresowany kursem`.", "Если видишь `z` в значении `вместе с`, очень вероятно нужен narzędnik. Но `z pracy` и `z Polski` — это уже dopełniacz, потому что там значение `откуда`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("instrumental")), makeExercise("Разбор по шагам", genGrammarStepByStep("instrumental")), makeExercise("Narzędnik — формы", genInstrumental()), makeExercise("Исправь ошибку", cap50([input("Jestem programista", "jestem programistą"), input("Idę z kolega", "idę z kolegą"), input("Bawię się z córka", "bawię się z córką"), input("Rozmawiam z nauczyciel", "rozmawiam z nauczycielem"), input("Jadę samochód", "jadę samochodem"), input("On jest lekarz", "on jest lekarzem"), input("Spotykam się z rodzina", "spotykam się z rodziną"), input("Pracuję z ludzie", "pracuję z ludźmi")])), makeExercise("Разговор", speakingPrompts)] },
-  locative: { title: "Miejscownik — o kim? o czym?", description: "Местный / предложный падеж", theory: ["Miejscownik почти всегда приходит с предлогом. Самые частые друзья этого падежа: `w`, `na`, `o`, `po`, `przy`.", "Он нужен, когда мы говорим gdzie что-то находится или о чём говорим: w Polsce, w pracy, na kursie, o rodzinie, o problemie.", "Для памяти хорошо держать связки готовыми блоками: `w domu`, `w sklepie`, `na spotkaniu`, `o języku polskim`, `po pracy`.", "Частая ловушка: после `w` и `na` нужно понять смысл. `na kurs` = куда? biernik. `na kursie` = где? miejscownik.", "Чтобы miejscownik стал удобным, полезно учить не одно слово, а мини-фразу: `mieszkam w Polsce`, `myślę o egzaminie`, `rozmawiam o pracy`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("locative")), makeExercise("Разбор по шагам", genGrammarStepByStep("locative")), makeExercise("Miejscownik — формы", genLocative()), makeExercise("Исправь ошибку", cap50([input("Mieszkam w Polska", "mieszkam w Polsce"), input("Jestem w praca", "jestem w pracy"), input("Mówię o rodzina", "mówię o rodzinie"), input("Byłem w sklep", "byłem w sklepie"), input("Myślę o kurs", "myślę o kursie"), input("Czytam o język polski", "czytam o języku polskim"), input("Jestem na spotkanie", "jestem na spotkaniu"), input("Spaceruję po park", "spaceruję po parku")])), makeExercise("Разговор", speakingPrompts)] },
-  verbsPresent: { title: "Czas teraźniejszy", description: "Настоящее время", theory: ["Czas teraźniejszy нужен для привычек, распорядка, фактов и того, что происходит сейчас: pracuję, uczę się, mieszkam, wiem.", "Самый удобный старт — видеть модели. `-ować`: pracuję, pracujesz. `-ać`: mieszkam, mieszkasz. `-ić / -yć`: robię, robisz; mówię, mówisz.", "Некоторые глаголы надо просто запомнить как частотные: być, mieć, iść, jeść, móc. Они дают опору почти во всей речи.", "Учись не отдельной форме, а короткой репликой: `pracuję w firmie`, `mieszkam w Warszawie`, `nie mam czasu`, `idziemy do sklepu`.", "Частая ошибка на старте B1 — путать окончания по лицам. Если не уверен, сначала определи `ja / ty / on / my / wy / oni`, и только потом выбирай форму."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("verbsPresent")), makeExercise("Спряжение", genPresent()), makeExercise("Исправь ошибку", cap50([input("ja pracuje", "ja pracuję"), input("ty piję kawę", "ty pijesz kawę"), input("oni mówi po polsku", "oni mówią po polsku"), input("my mieszka w Polsce", "my mieszkamy w Polsce"), input("wy robią zadanie", "wy robicie zadanie"), input("on pijesz kawę", "on pije kawę"), input("ja masz czas", "ja mam czas")])), makeExercise("Разговор", speakingPrompts)] },
+  locative: { title: "Miejscownik — o kim? o czym?", description: "Местный / предложный падеж", theory: ["Miejscownik почти всегда приходит с предлогом. Самые частые друзья этого падежа: `w`, `na`, `o`, `po`, `przy`.", "Он нужен, когда мы говорим gdzie что-то находится или о чём говорим: w Polsce, w pracy, na kursie, o rodzinie, o problemie.", "Для памяти хорошо держать связки готовыми блоками: `w domu`, `w sklepie`, `na spotkaniu`, `o języku polskim`, `po pracy`.", "Частая ловушка: после `w` и `na` нужно понять смысл. `na kurs` = куда? biernik. `na kursie` = где? miejscownik.", "Чтобы miejscownik стал удобным, полезно учить не одно слово, а мини-фразу: `mieszkam w Polsce`, `myślę o egzaminie`, `rozmawiam o pracy`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("locative")), makeExercise("Разбор по шагам", genGrammarStepByStep("locative")), makeExercise("Miejscownik — формы", genLocative()), makeExercise("Miejscownik w sytuacji", genLocativeVariety()), makeExercise("Исправь ошибку", cap50([input("Mieszkam w Polska", "mieszkam w Polsce"), input("Jestem w praca", "jestem w pracy"), input("Mówię o rodzina", "mówię o rodzinie"), input("Byłem w sklep", "byłem w sklepie"), input("Myślę o kurs", "myślę o kursie"), input("Czytam o język polski", "czytam o języku polskim"), input("Jestem na spotkanie", "jestem na spotkaniu"), input("Spaceruję po park", "spaceruję po parku")])), makeExercise("Разговор", speakingPrompts)] },
+  verbsPresent: { title: "Czas teraźniejszy", description: "Настоящее время", theory: ["Czas teraźniejszy нужен для привычек, распорядка, фактов и того, что происходит сейчас: pracuję, uczę się, mieszkam, wiem.", "Самый удобный старт — видеть модели. `-ować`: pracuję, pracujesz. `-ać`: mieszkam, mieszkasz. `-ić / -yć`: robię, robisz; mówię, mówisz.", "Некоторые глаголы надо просто запомнить как частотные: być, mieć, iść, jeść, móc. Они дают опору почти во всей речи.", "Учись не отдельной форме, а короткой репликой: `pracuję w firmie`, `mieszkam w Warszawie`, `nie mam czasu`, `idziemy do sklepu`.", "Частая ошибка на старте B1 — путать окончания по лицам. Если не уверен, сначала определи `ja / ty / on / my / wy / oni`, и только потом выбирай форму."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("verbsPresent")), makeExercise("Спряжение", genPresent()), makeExercise("Czas teraźniejszy w sytuacji", genPresentVariety()), makeExercise("Исправь ошибку", cap50([input("ja pracuje", "ja pracuję"), input("ty piję kawę", "ty pijesz kawę"), input("oni mówi po polsku", "oni mówią po polsku"), input("my mieszka w Polsce", "my mieszkamy w Polsce"), input("wy robią zadanie", "wy robicie zadanie"), input("on pijesz kawę", "on pije kawę"), input("ja masz czas", "ja mam czas")])), makeExercise("Разговор", speakingPrompts)] },
   irregularVerbs: { title: "Czasowniki nieregularne", description: "Неправильные глаголы и спряжение", theory: ["Это глаголы, которые лучше не выводить по правилу, а запомнить как готовые формы. Они очень частые и дают основу для живой речи.", "Самые важные для повседневного B1: być, mieć, iść, jechać, jeść, móc, chcieć, wiedzieć, brać, dać.", "Лучше учить их в коротких фразах: `jestem w domu`, `mam czas`, `idę do pracy`, `mogę pomóc`, `chcę się uczyć`.", "Обрати внимание на формы, которые часто ломают автоматизм: `idę`, `jadę`, `jem`, `mogę`, `biorę`, `wiem`.", "Задача этого блока не просто узнать таблицу, а начать быстро узнавать и использовать эти формы без остановки."], exercises: [makeExercise("Спряжение nieregularne", genIrregularVerbs()), makeExercise("Исправь ошибку", cap50([input("Ja jest w domu", "ja jestem w domu"), input("Ty moża mi pomóc", "ty możesz mi pomóc"), input("My wiedzą o problemie", "my wiemy o problemie"), input("Oni jecha do pracy", "oni jadą do pracy"), input("Ja bierzesz dokument", "ja biorę dokument"), input("Wy dają odpowiedź", "wy dajecie odpowiedź"), input("On chcie iść", "on chce iść"), input("Ona jem obiad", "ona je obiad")])), makeExercise("Разговор", speakingPrompts)] },
   verbsPast: { title: "Czas przeszły", description: "Прошедшее время", theory: ["Прошедшее время зависит от рода: robiłem / robiłam.", "On robił, ona robiła, oni robili, one robiły.", "В 1-м и 2-м лице полезно сразу держать пары: byłem / byłam, miałem / miałam, chciałem / chciałam.", "Если рассказываешь о вчерашнем дне, лучше строить не отдельные формы, а маленький рассказ: `wczoraj wróciłem do domu, zjadłem obiad i odpoczywałem`.", "pójść: poszedłem / poszłam."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("verbsPast")), makeExercise("Czas przeszły — формы", genPast()), makeExercise("Разговор", speakingPrompts)] },
   verbsFuture: { title: "Czas przyszły", description: "Будущее время", theory: ["В польском будущем важно сначала понять: ты говоришь о процессе или о результате. Это сразу влияет на форму.", "Если речь о процессе или плане без акцента на завершение, часто будет `będę + bezokolicznik` или `będę + forma przeszła`: będę pracować, będę czytać, będę pracował.", "Если нужен результат, обычно берём совершенный вид: zrobię, kupię, napiszę, przeczytam, pojadę.", "Сравнение: `jutro będę pisać raport` = процесс; `jutro napiszę raport` = закончу и будет готово.", "Будущее почти всегда дружит с маркерами времени: jutro, pojutrze, za godzinę, za tydzień, w przyszłym miesiącu, o ósmej."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("verbsFuture")), makeExercise("Czas przyszły — формы", genFuture()), makeExercise("Будущее + время", genFutureWithTime()), makeExercise("Разговор", speakingPrompts)] },
   aspect: { title: "Aspekt — robić vs zrobić", description: "Несовершенный и совершенный вид", theory: ["Aspekt в польском — это взгляд на действие: как на процесс или как на результат. Это одна из самых важных тем для сильного B1.", "Niedokonany показывает процесс, привычку, повторяемость, длительность: robić, czytać, pisać, uczyć się.", "Dokonany показывает завершение или конкретный итог: zrobić, przeczytać, napisać, nauczyć się.", "Подсказки в предложении очень помогают. `zawsze`, `często`, `teraz`, `długo` тянут к niedokonany. `już`, `do końca`, `w końcu`, `na jutro` часто тянут к dokonany.", "Хорошая привычка: учить глаголы парами и сразу в контексте, например `czytać książkę` и `przeczytać książkę do końca`."], exercises: [makeExercise("Почему так? Разбор смысла", genGrammarNuance("aspect")), makeExercise("Выбери аспект", genAspectChoice()), makeExercise("Пары aspektowe", genAspectPairs()), makeExercise("Разговор", speakingPrompts)] },
   prepositions: { title: "Przyimki + przypadki", description: "Предлоги и падежи", theory: ["В польском предлог почти никогда не живёт один: он тянет за собой конкретный падеж. Поэтому учить надо не `do`, а `do + dopełniacz`, не `z`, а разные значения `z`.", "База для жизни: `do sklepu`, `do pracy`, `z pracy`, `w Polsce`, `na kursie`, `na kurs`, `o problemie`, `z rodziną`.", "Самая частая путаница: `na` и `w`, а также разные значения `z`. `z rodziną` = вместе с кем? narzędnik. `z Polski` = откуда? dopełniacz.", "Полезный способ учить: не список предлогов, а мини-маршрут. `Idę do sklepu. Jestem w sklepie. Wracam ze sklepu.`", "Если ты сначала спрашиваешь себя `куда? где? откуда? с кем? о чём?`, падеж выбирается намного легче."], exercises: [makeExercise("Почему так? Смысл и падеж", genGrammarNuance("prepositions")), makeExercise("Przyimki", genPrepositions()), makeExercise("Разговор", speakingPrompts)] },
   numbersTime: { title: "Liczby i czas", description: "Числа, часы, деньги и выражения времени", theory: ["Числа нужны для времени, дат, цен, адресов и количества.", "После 1 обычно форма единственного числа: jeden złoty, jeden grosz.", "После 2, 3, 4 — форма множественного: dwa złote, trzy grosze, cztery pieniądze.", "После 5+ обычно dopełniacz liczby mnogiej: pięć złotych, pięć groszy, pięć pieniędzy.", "Важно: 22/23/24 → złote/grosze/pieniądze, но 12/13/14 → złotych/groszy/pieniędzy.", "Время: która godzina? ósma; o której? o ósmej. Для будущих планов: Jutro o ósmej będę pracować."], exercises: [makeExercise("Liczby 0–100", genNumbers()), makeExercise("Pieniądze: złoty / złote / złotych", genMoney()), makeExercise("Правила 1–4 / 5+", genNumberRules()), makeExercise("Która godzina?", genClock()), makeExercise("Wyrażenia czasu", genTimePhrases()), makeExercise("Czas + przyszłość", genFutureWithTime()), makeExercise("Разговор", speakingPrompts)] },
-  complexSentences: { title: "Zdania złożone", description: "Сложные предложения", theory: ["На B1 сложное предложение нужно не ради сложности, а чтобы нормально объяснять причины, цели, условия и мнение.", "`że` помогает передавать мысль: `myślę, że...`, `uważam, że...`.", "`bo / ponieważ` дают причину, `dlatego` показывает результат, `żeby` — цель, `jeśli` — условие.", "Удобный шаблон ответа: `Myślę, że...`, `bo...`, `dlatego...`, `na przykład...`.", "Чем чаще ты собираешь длинную мысль из простых связок, тем живее и сильнее звучит речь."], exercises: [makeExercise("Почему так? Связность B1", genGrammarNuance("complexSentences")), makeExercise("Spójniki", genComplexSentences()), makeExercise("Разговор", speakingPrompts)] },
+  complexSentences: { title: "Zdania złożone", description: "Сложные предложения", theory: ["На B1 сложное предложение нужно не ради сложности, а чтобы нормально объяснять причины, цели, условия и мнение.", "`że` помогает передавать мысль: `myślę, że...`, `uważam, że...`.", "`bo / ponieważ` дают причину, `dlatego` показывает результат, `żeby` — цель, `jeśli` — условие.", "Удобный шаблон ответа: `Myślę, że...`, `bo...`, `dlatego...`, `na przykład...`.", "Чем чаще ты собираешь длинную мысль из простых связок, тем живее и сильнее звучит речь."], exercises: [makeExercise("Почему так? Связность B1", genGrammarNuance("complexSentences")), makeExercise("Разбор по шагам", genGrammarStepByStep("complexSentences")), makeExercise("Spójniki", genComplexSentences()), makeExercise("Zdania złożone w sytuacji", genComplexSentenceVariety()), makeExercise("Разговор", speakingPrompts)] },
   politeConditional: { title: "Tryb warunkowy", description: "Вежливые просьбы и условное", theory: ["Tryb warunkowy нужен для вежливого B1-письма и просьб.", "Главные формы: chciałbym/chciałabym, mógłbym/mogłabym, mogliby Państwo.", "В условии: gdybym miał czas, zadzwoniłbym."], exercises: [makeExercise("Вежливые формы", genPoliteConditional()), makeExercise("Разговор", speakingPrompts)] },
   imperatives: { title: "Tryb rozkazujący", description: "Инструкции и просьбы", theory: ["Повелительное нужно для инструкций, просьб и запретов.", "Для pan/pani часто используем: proszę + bezokolicznik.", "Для запрета: nie zapomnij, nie rób, proszę nie palić."], exercises: [makeExercise("Rozkazujący", genImperatives()), makeExercise("Разговор", speakingPrompts)] },
   pronouns: { title: "Zaimki w przypadkach", description: "Местоимения: mi, mnie, go, mu", theory: ["На B1 важно не путать короткие формы местоимений.", "Celownik: mi, ci, mu, jej, nam, wam, im.", "Biernik/dopełniacz: mnie, cię/ciebie, go/jego, ją, nas, was, ich.", "Самый рабочий подход: не зубрить таблицу отдельно, а держать пары с глаголом: `pomóż mi`, `widzę go`, `nie ma mnie`, `daj jej znać`.", "Если сначала задаёшь вопрос `komu? kogo? czego?`, форма местоимения вспоминается намного легче."], exercises: [makeExercise("Почему так? Местоимение и падеж", genGrammarNuance("pronouns")), makeExercise("Местоимения", genPronouns()), makeExercise("Разговор", speakingPrompts)] },
