@@ -313,10 +313,46 @@ function genNonMascPlural() { return cap50(dict.nonMascPlural.map(([sg, pl]) => 
 function genPluralAdjectives() { const items = []; dict.adjectives.forEach(([base, mascPl, nonMascPl]) => { dict.mascPlural.slice(0, 15).forEach(([sg, pl]) => items.push(input(`${base} ${sg} →`, `${mascPl} ${pl}`))); dict.nonMascPlural.slice(0, 15).forEach(([sg, pl]) => items.push(input(`${base} ${sg} →`, `${nonMascPl} ${pl}`))); }); return cap50(items); }
 function genOniOne() { const items = []; dict.mascPlural.forEach(([, pl]) => items.push(choice(`___ to ${pl}`, ["oni", "one"], "oni"))); dict.nonMascPlural.forEach(([, pl]) => items.push(choice(`___ to ${pl}`, ["oni", "one"], "one"))); return cap50(items); }
 function genPluralMistakes() { return cap50([input("To są dobre studenci", "to są dobrzy studenci"), input("To są polskie lekarze", "to są polscy lekarze"), input("To są wysokie mężczyźni", "to są wysocy mężczyźni"), input("To są nowe klienci", "to są nowi klienci"), input("To są młode chłopaki", "to są młodzi chłopaki"), input("To są duże pracownicy", "to są duzi pracownicy"), input("To są miłe nauczyciele", "to są mili nauczyciele"), input("To są stare sąsiedzi", "to są starzy sąsiedzi"), input("To są znane aktorzy", "to są znani aktorzy"), input("To są dobre profesorowie", "to są dobrzy profesorowie"), input("To są polscy kobiety", "to są polskie kobiety"), input("To są dobrzy książki", "to są dobre książki"), input("To są nowi samochody", "to są nowe samochody"), input("To są wysocy domy", "to są wysokie domy"), input("To są młodzi dzieci", "to są młode dzieci")]); }
-function genAccusativeForms() { const items = []; dict.biernik.animate.forEach(([sg, acc]) => items.push(input(`widzę (${sg})`, acc, "męski żywotny"))); dict.biernik.inanimate.forEach(([sg, acc]) => items.push(input(`mam (${sg})`, acc, "męski nieżywotny"))); dict.biernik.feminine.forEach(([sg, acc]) => items.push(input(`kupuję (${sg})`, acc, "żeński"))); dict.biernik.mascPlural.forEach(([nom, acc]) => items.push(input(`znam (${nom})`, acc, "męskoosobowy plural"))); return cap50(items); }
-function genAccusativeAdjectives() { const items = []; dict.adjectives.forEach(([base, , , mascAcc, femAcc]) => { dict.biernik.animate.slice(0, 8).forEach(([sg, acc]) => items.push(input(`widzę (${base} ${sg})`, `${mascAcc} ${acc}`))); dict.biernik.feminine.slice(0, 8).forEach(([sg, acc]) => items.push(input(`kupuję (${base} ${sg})`, `${femAcc} ${acc}`))); dict.biernik.inanimate.slice(0, 8).forEach(([sg, acc]) => items.push(input(`mam (${base} ${sg})`, `${base} ${acc}`))); }); return cap50(items); }
-function genGenitive() { const verbs = ["nie mam", "nie ma", "szukam", "potrzebuję", "używam"]; const items = []; dict.genitive.forEach(([sg, gen]) => verbs.forEach((v) => items.push(input(`${v} (${sg})`, gen)))); return cap50(items); }
-function genDative() { const verbs = ["daję", "pomagam", "mówię", "pokazuję drogę"]; const items = []; dict.dative.forEach(([sg, dat]) => verbs.forEach((v) => items.push(input(`${v} (${sg})`, dat)))); return cap50(items); }
+function genAccusativeForms() {
+  const items = [];
+  dict.biernik.animate.forEach(([sg, acc]) => items.push(input(`Uzupełnij: Widzę (${sg}).`, acc, "męski żywotny")));
+  dict.biernik.inanimate.forEach(([sg, acc]) => items.push(input(`Uzupełnij: Mam (${sg}).`, acc, "męski nieżywotny")));
+  dict.biernik.feminine.forEach(([sg, acc]) => items.push(input(`Uzupełnij: Kupuję (${sg}).`, acc, "rodzaj żeński")));
+  dict.biernik.mascPlural.forEach(([nom, acc]) => items.push(input(`Uzupełnij: Znam (${nom}).`, acc, "biernik liczby mnogiej męskoosobowej")));
+  return cap50(items);
+}
+function genAccusativeAdjectives() {
+  const items = [];
+  dict.adjectives.forEach(([base, , , mascAcc, femAcc]) => {
+    dict.biernik.animate.slice(0, 8).forEach(([sg, acc]) => items.push(input(`Uzupełnij: Widzę (${base} ${sg}).`, `${mascAcc} ${acc}`)));
+    dict.biernik.feminine.slice(0, 8).forEach(([sg, acc]) => items.push(input(`Uzupełnij: Kupuję (${base} ${sg}).`, `${femAcc} ${acc}`)));
+    dict.biernik.inanimate.slice(0, 8).forEach(([sg, acc]) => items.push(input(`Uzupełnij: Mam (${base} ${sg}).`, `${base} ${acc}`)));
+  });
+  return cap50(items);
+}
+function genGenitive() {
+  const verbs = [
+    ["Uzupełnij: Nie mam", "negacja + dopełniacz"],
+    ["Uzupełnij: Nie ma", "negacja + dopełniacz"],
+    ["Uzupełnij: Szukam", "czasownik wymaga dopełniacza"],
+    ["Uzupełnij: Potrzebuję", "czasownik wymaga dopełniacza"],
+    ["Uzupełnij: Używam", "czasownik wymaga dopełniacza"]
+  ];
+  const items = [];
+  dict.genitive.forEach(([sg, gen]) => verbs.forEach(([v, hint]) => items.push(input(`${v} (${sg}).`, gen, hint))));
+  return cap50(items);
+}
+function genDative() {
+  const verbs = [
+    ["Uzupełnij: Daję prezent", "komu? = celownik"],
+    ["Uzupełnij: Pomagam", "komu? = celownik"],
+    ["Uzupełnij: Mówię prawdę", "komu? = celownik"],
+    ["Uzupełnij: Pokazuję drogę", "komu? = celownik"]
+  ];
+  const items = [];
+  dict.dative.forEach(([sg, dat]) => verbs.forEach(([v, hint]) => items.push(input(`${v} (${sg}).`, dat, hint))));
+  return cap50(items);
+}
 function genInstrumental() {
   const items = [];
   dict.instrumental.forEach(([sg, ins]) => {
@@ -335,7 +371,12 @@ function genLocative() {
   });
   return cap50(items);
 }
-function genPresent() { const persons = ["ja", "ty", "on", "my", "wy", "oni"]; const items = []; dict.present.forEach(([verb, forms]) => forms.forEach((form, i) => items.push(input(`${persons[i]} (${verb})`, form)))); return cap50(items); }
+function genPresent() {
+  const persons = ["ja", "ty", "on", "my", "wy", "oni"];
+  const items = [];
+  dict.present.forEach(([verb, forms]) => forms.forEach((form, i) => items.push(input(`Uzupełnij formę: ${persons[i]} (${verb}).`, form))));
+  return cap50(items);
+}
 function genIrregularVerbs() {
   const verbs = [
     ["być", ["jestem", "jesteś", "jest", "jesteśmy", "jesteście", "są"]],
@@ -352,11 +393,57 @@ function genIrregularVerbs() {
   const persons = ["ja", "ty", "on", "my", "wy", "oni"];
   return cap50(verbs.flatMap(([verb, forms]) => forms.map((form, index) => input(`${persons[index]} (${verb})`, form))));
 }
-function genPast() { const base = [["ja-mężczyzna (robić)", "robiłem"], ["ja-kobieta (robić)", "robiłam"], ["ty-mężczyzna (robić)", "robiłeś"], ["ty-kobieta (robić)", "robiłaś"], ["on (robić)", "robił"], ["ona (robić)", "robiła"], ["my-mężczyźni (robić)", "robiliśmy"], ["my-kobiety (robić)", "robiłyśmy"], ["wy-mężczyźni (robić)", "robiliście"], ["wy-kobiety (robić)", "robiłyście"], ["oni (robić)", "robili"], ["one (robić)", "robiły"], ["ja-mężczyzna (być)", "byłem"], ["ja-kobieta (być)", "byłam"], ["ja-mężczyzna (pójść)", "poszedłem"], ["ja-kobieta (pójść)", "poszłam"], ["ja-mężczyzna (wrócić)", "wróciłem"], ["ja-kobieta (wrócić)", "wróciłam"]]; return cap50(base.map(([q, a]) => input(q, a))); }
-function genFuture() { return cap50([input("ja (pracować) jutro", "będę pracować"), input("ty (pracować) jutro", "będziesz pracować"), input("on (pracować) jutro", "będzie pracować"), input("my (pracować) jutro", "będziemy pracować"), input("wy (pracować) jutro", "będziecie pracować"), input("oni (pracować) jutro", "będą pracować"), input("ja (zrobić) zadanie", "zrobię zadanie"), input("ty (kupić) chleb", "kupisz chleb"), input("on (napisać) mail", "napisze mail"), input("my (przeczytać) książkę", "przeczytamy książkę"), input("wy (pójść) do sklepu", "pójdziecie do sklepu"), input("oni (wrócić) do domu", "wrócą do domu"), input("ja (nauczyć się) tego", "nauczę się tego"), input("ona (ugotować) obiad", "ugotuje obiad"), input("my (spotkać) kolegę", "spotkamy kolegę"), input("oni (zobaczyć) film", "zobaczą film"), input("Jutro o 8:00 (ja pracować)", "będę pracować"), input("W przyszłym tygodniu (my pojechać) do Krakowa", "pojedziemy do Krakowa"), input("Za godzinę (ja zadzwonić)", "zadzwonię"), input("Pojutrze (oni wrócić)", "wrócą"), input("Wieczorem (ja czytać)", "będę czytać"), input("Rano (ona zrobić) śniadanie", "zrobi śniadanie")]); }
+function genPast() {
+  const base = [["Uzupełnij formę: ja, mężczyzna (robić).", "robiłem"], ["Uzupełnij formę: ja, kobieta (robić).", "robiłam"], ["Uzupełnij formę: ty, mężczyzna (robić).", "robiłeś"], ["Uzupełnij formę: ty, kobieta (robić).", "robiłaś"], ["Uzupełnij formę: on (robić).", "robił"], ["Uzupełnij formę: ona (robić).", "robiła"], ["Uzupełnij formę: my, mężczyźni (robić).", "robiliśmy"], ["Uzupełnij formę: my, kobiety (robić).", "robiłyśmy"], ["Uzupełnij formę: wy, mężczyźni (robić).", "robiliście"], ["Uzupełnij formę: wy, kobiety (robić).", "robiłyście"], ["Uzupełnij formę: oni (robić).", "robili"], ["Uzupełnij formę: one (robić).", "robiły"], ["Uzupełnij formę: ja, mężczyzna (być).", "byłem"], ["Uzupełnij formę: ja, kobieta (być).", "byłam"], ["Uzupełnij formę: ja, mężczyzna (pójść).", "poszedłem"], ["Uzupełnij formę: ja, kobieta (pójść).", "poszłam"], ["Uzupełnij formę: ja, mężczyzna (wrócić).", "wróciłem"], ["Uzupełnij formę: ja, kobieta (wrócić).", "wróciłam"]];
+  return cap50(base.map(([q, a]) => input(q, a)));
+}
+function genFuture() {
+  return cap50([
+    input("Uzupełnij: Jutro ja (pracować).", "będę pracować"),
+    input("Uzupełnij: Jutro ty (pracować).", "będziesz pracować"),
+    input("Uzupełnij: Jutro on (pracować).", "będzie pracować"),
+    input("Uzupełnij: Jutro my (pracować).", "będziemy pracować"),
+    input("Uzupełnij: Jutro wy (pracować).", "będziecie pracować"),
+    input("Uzupełnij: Jutro oni (pracować).", "będą pracować"),
+    input("Uzupełnij: Ja (zrobić) zadanie.", "zrobię zadanie"),
+    input("Uzupełnij: Ty (kupić) chleb.", "kupisz chleb"),
+    input("Uzupełnij: On (napisać) mail.", "napisze mail"),
+    input("Uzupełnij: My (przeczytać) książkę.", "przeczytamy książkę"),
+    input("Uzupełnij: Wy (pójść) do sklepu.", "pójdziecie do sklepu"),
+    input("Uzupełnij: Oni (wrócić) do domu.", "wrócą do domu"),
+    input("Uzupełnij: Ja (nauczyć się) tego.", "nauczę się tego"),
+    input("Uzupełnij: Ona (ugotować) obiad.", "ugotuje obiad"),
+    input("Uzupełnij: My (spotkać) kolegę.", "spotkamy kolegę"),
+    input("Uzupełnij: Oni (zobaczyć) film.", "zobaczą film"),
+    input("Uzupełnij: Jutro o 8:00 ja (pracować).", "będę pracować"),
+    input("Uzupełnij: W przyszłym tygodniu my (pojechać) do Krakowa.", "pojedziemy do Krakowa"),
+    input("Uzupełnij: Za godzinę ja (zadzwonić).", "zadzwonię"),
+    input("Uzupełnij: Pojutrze oni (wrócić).", "wrócą"),
+    input("Uzupełnij: Wieczorem ja (czytać) książkę.", "będę czytać"),
+    input("Uzupełnij: Rano ona (zrobić) śniadanie.", "zrobi śniadanie")
+  ]);
+}
 function genAspectChoice() { return cap50([choice("Codziennie ___ zadanie", ["robię", "zrobię"], "robię", "codziennie = powtarzalność"), choice("Jutro ___ zadanie do końca", ["będę robić", "zrobię"], "zrobię", "do końca = rezultat"), choice("Wczoraj długo ___ książkę", ["czytałem", "przeczytałem"], "czytałem", "długo = proces"), choice("Wczoraj ___ całą książkę", ["czytałem", "przeczytałem"], "przeczytałem", "całą = rezultat"), choice("Często ___ kawę w domu", ["robię", "zrobię"], "robię"), choice("Za chwilę ___ kawę", ["zrobię", "robię"], "zrobię"), choice("Uczę się, żeby ___ polskiego", ["uczyć się", "nauczyć się"], "nauczyć się"), choice("Teraz ___ polskiego", ["uczę się", "nauczę się"], "uczę się"), choice("Muszę ___ maila", ["napisać", "pisać"], "napisać"), choice("Lubię ___ maile rano", ["pisać", "napisać"], "pisać")]); }
 function genAspectPairs() { return cap50(dict.perfectivePairs.map(([imp, perf]) => input(`${imp} →`, perf))); }
-function genPrepositions() { return cap50([input("idę ___ sklepu", "do", "do + dopełniacz"), input("jestem ___ pracy", "w", "w + miejscownik"), input("idę ___ spacer", "na", "na + biernik"), input("jestem ___ spacerze", "na", "na + miejscownik"), input("wracam ___ pracy", "z", "z + dopełniacz"), input("jadę ___ Polski", "do", "do + dopełniacz"), input("mieszkam ___ Polsce", "w", "w + miejscownik"), input("spotykam się ___ kolegą", "z", "z + narzędnik"), input("czekam ___ autobus", "na", "na + biernik"), input("rozmawiam ___ rodziną", "z", "z + narzędnik"), input("myślę ___ pracy", "o", "o + miejscownik"), input("to jest prezent ___ dziecka", "dla", "dla + dopełniacz"), input("idę ___ lekarza", "do"), input("jestem ___ kursie", "na"), input("rozmawiam ___ problemie", "o")]); }
+function genPrepositions() {
+  return cap50([
+    input("Uzupełnij: Idę ___ sklepu.", "do", "do + dopełniacz"),
+    input("Uzupełnij: Jestem ___ pracy.", "w", "w + miejscownik"),
+    input("Uzupełnij: Idę ___ spacer.", "na", "na + biernik"),
+    input("Uzupełnij: Jestem ___ spacerze.", "na", "na + miejscownik"),
+    input("Uzupełnij: Wracam ___ pracy.", "z", "z + dopełniacz"),
+    input("Uzupełnij: Jadę ___ Polski.", "do", "do + dopełniacz"),
+    input("Uzupełnij: Mieszkam ___ Polsce.", "w", "w + miejscownik"),
+    input("Uzupełnij: Spotykam się ___ kolegą.", "z", "z + narzędnik"),
+    input("Uzupełnij: Czekam ___ autobus.", "na", "na + biernik"),
+    input("Uzupełnij: Rozmawiam ___ rodziną.", "z", "z + narzędnik"),
+    input("Uzupełnij: Myślę ___ pracy.", "o", "o + miejscownik"),
+    input("Uzupełnij: To jest prezent ___ dziecka.", "dla", "dla + dopełniacz"),
+    input("Uzupełnij: Idę ___ lekarza.", "do"),
+    input("Uzupełnij: Jestem ___ kursie.", "na"),
+    input("Uzupełnij: Rozmawiam ___ problemie.", "o")
+  ]);
+}
 function genNumbers() { return cap50(dict.numbers.map(([num, word]) => input(`${num} →`, word))); }
 function genMoney() { return cap50(dict.money.map(([short, full]) => input(`${short} →`, full))); }
 function genNumberRules() { return cap50([
@@ -379,7 +466,25 @@ function genFutureWithTime() { return cap50([
   input("В 8:00 я начну работу", "o ósmej zacznę pracę"), input("В 18:00 мы пойдём на прогулку", "o osiemnastej pójdziemy na spacer"), input("Завтра вечером я прочитаю текст", "jutro wieczorem przeczytam tekst"),
   input("Через неделю я напишу тест", "za tydzień napiszę test"), input("Сегодня вечером я буду читать", "dzisiaj wieczorem będę czytać"), input("Завтра утром я куплю хлеб", "jutro rano kupię chleb")
 ]); }
-function genComplexSentences() { return cap50([input("Myślę, ___ to dobry pomysł", "że"), input("Wiem, ___ muszę się uczyć", "że"), input("___ wracam z pracy, jestem zmęczony", "kiedy"), input("___ mam czas, uczę się polskiego", "jeśli"), input("Uczę się, ___ chcę mieszkać w Polsce", "bo"), input("Nie mam czasu, ___ pracuję", "bo"), input("Pracuję dużo, ___ jestem zmęczony", "dlatego"), input("Uczę się polskiego dlatego, ___ lepiej mówić", "żeby"), input("Zostanę w domu, ___ będzie padać", "jeśli"), input("Powiedziałem, ___ wrócę później", "że"), input("Idę na kurs, ___ mówić lepiej", "żeby"), input("Jestem zmęczony, ___ pracowałem długo", "bo"), input("Mam kurs, ___ nie mogę przyjść", "dlatego"), input("___ będę mieć czas, zadzwonię", "jeśli"), input("Nie wiem, ___ to zrobić", "jak")]); }
+function genComplexSentences() {
+  return cap50([
+    input("Uzupełnij: Myślę, ___ to dobry pomysł.", "że"),
+    input("Uzupełnij: Wiem, ___ muszę się uczyć.", "że"),
+    input("Uzupełnij: ___ wracam z pracy, jestem zmęczony.", "kiedy"),
+    input("Uzupełnij: ___ mam czas, uczę się polskiego.", "jeśli"),
+    input("Uzupełnij: Uczę się, ___ chcę mieszkać w Polsce.", "bo"),
+    input("Uzupełnij: Nie mam czasu, ___ pracuję.", "bo"),
+    input("Uzupełnij: Pracuję dużo, ___ jestem zmęczony.", "dlatego"),
+    input("Uzupełnij: Uczę się polskiego, ___ lepiej mówić.", "żeby"),
+    input("Uzupełnij: Zostanę w domu, ___ będzie padać.", "jeśli"),
+    input("Uzupełnij: Powiedziałem, ___ wrócę później.", "że"),
+    input("Uzupełnij: Idę na kurs, ___ mówić lepiej.", "żeby"),
+    input("Uzupełnij: Jestem zmęczony, ___ pracowałem długo.", "bo"),
+    input("Uzupełnij: Mam kurs, ___ nie mogę przyjść.", "dlatego"),
+    input("Uzupełnij: ___ będę mieć czas, zadzwonię.", "jeśli"),
+    input("Uzupełnij: Nie wiem, ___ to zrobić.", "jak")
+  ]);
+}
 function genB1Mistakes() { return cap50([input("Muszę uszyć się polskiego", "muszę uczyć się polskiego", "uszyć = сшить; uczyć się = учиться"), input("Mi się podoba język polski", "podoba mi się język polski"), input("Praca daje mnie satysfakcję", "praca daje mi satysfakcję"), input("Bawiłem z córką", "bawiłem się z córką"), input("Idę w pracy", "idę do pracy"), input("Jestem programista", "jestem programistą"), input("Nie mam czas", "nie mam czasu"), input("Widzę dobry lekarz", "widzę dobrego lekarza"), input("Mieszkam w Polska", "mieszkam w Polsce"), input("Jutro będę zrobię zadanie", "jutro zrobię zadanie"), input("Uczę się dlatego żeby łatwo mówić", "uczę się dlatego, żeby łatwo mówić"), input("Spotykam nowego kolegu", "spotykam nowego kolegę"), input("To są dobre studenci", "to są dobrzy studenci"), input("Kupuję świeżego chleb", "kupuję świeży chleb"), input("Ja pracuje", "ja pracuję"), input("Szukam pracę", "szukam pracy"), input("Pomagam mój kolega", "pomagam mojemu koledze"), input("Rozmawiam z kolega", "rozmawiam z kolegą"), input("Jestem na kurs", "jestem na kursie"), input("Idę do spacer", "idę na spacer"), input("Nie mogę przyjść, dlatego że mam spotkanie, jednak zadzwonię później", "nie mogę przyjść, ponieważ mam spotkanie, jednak zadzwonię później"), input("Chciałbym zapytać o termin i oprócz tego proszę odpowiedź", "chciałbym zapytać o termin i oprócz tego proszę o odpowiedź"), input("W załączniku wysyłam dokumenty, dlatego proszę o informację", "w załączniku wysyłam dokumenty i proszę o informację"), input("Z jednej strony kurs jest ciekawy, dlatego z drugiej strony trudny", "z jednej strony kurs jest ciekawy, z drugiej strony trudny"), input("Wczoraj zrobiłem powtórkę, ponieważ nie miałem czasu", "wczoraj zrobiłem powtórkę, chociaż nie miałem czasu")]); }
 
 function genPoliteConditional() {
@@ -417,11 +522,11 @@ function genPoliteConditional() {
 function genImperatives() {
   const forms = [["napisać", "napisz", "napiszcie"], ["zrobić", "zrób", "zróbcie"], ["poczekać", "poczekaj", "poczekajcie"], ["sprawdzić", "sprawdź", "sprawdźcie"], ["wziąć", "weź", "weźcie"], ["przeczytać", "przeczytaj", "przeczytajcie"], ["zadzwonić", "zadzwoń", "zadzwońcie"], ["powtórzyć", "powtórz", "powtórzcie"]];
   return cap50([
-    ...forms.flatMap(([inf, ty, wy]) => [input(`ty: (${inf})`, ty), input(`wy: (${inf})`, wy)]),
-    input("proszę (wypełnić) formularz", "wypełnić"),
-    input("ty: (napisać) wiadomość", "napisz"),
-    input("ty: (poczekać) chwilę", "poczekaj"),
-    input("wy: (zrobić) zadanie", "zróbcie"),
+    ...forms.flatMap(([inf, ty, wy]) => [input(`Uzupełnij rozkaz: ty (${inf}).`, ty), input(`Uzupełnij rozkaz: wy (${inf}).`, wy)]),
+    input("Uzupełnij grzeczną prośbę: Proszę ___ formularz.", "wypełnić"),
+    input("Uzupełnij rozkaz: ty (napisać) wiadomość.", "napisz"),
+    input("Uzupełnij rozkaz: ty (poczekać) chwilę.", "poczekaj"),
+    input("Uzupełnij rozkaz: wy (zrobić) zadanie.", "zróbcie"),
     input("Не забудь документ", "nie zapomnij dokumentu"),
     input("Пожалуйста, подпишите заявление", "proszę podpisać wniosek"),
     input("Пожалуйста, не курите здесь", "proszę tu nie palić"),
@@ -435,18 +540,18 @@ function genImperatives() {
 
 function genPronouns() {
   const pronounForms = [
-    ["Daję (ja) książkę", "mi"], ["Pomagam (ty)", "ci"], ["Mówię (on) prawdę", "mu"], ["Pokazuję (ona) drogę", "jej"],
-    ["Daję (my) informację", "nam"], ["Pomagam (wy)", "wam"], ["Mówię (oni) prawdę", "im"],
-    ["Widzę (ona)", "ją"], ["Znam (on)", "go"], ["Czekam na (my)", "nas"], ["Zapraszam (wy)", "was"], ["Rozumiem (oni)", "ich"]
+    ["Uzupełnij: Daję książkę (ja).", "mi"], ["Uzupełnij: Pomagam (ty).", "ci"], ["Uzupełnij: Mówię prawdę (on).", "mu"], ["Uzupełnij: Pokazuję drogę (ona).", "jej"],
+    ["Uzupełnij: Daję informację (my).", "nam"], ["Uzupełnij: Pomagam (wy).", "wam"], ["Uzupełnij: Mówię prawdę (oni).", "im"],
+    ["Uzupełnij: Widzę (ona).", "ją"], ["Uzupełnij: Znam (on).", "go"], ["Uzupełnij: Czekam na (my).", "nas"], ["Uzupełnij: Zapraszam (wy).", "was"], ["Uzupełnij: Rozumiem (oni).", "ich"]
   ];
   return cap50([
     ...pronounForms.map(([q, a]) => input(q, a)),
-    input("Daję (ja) książkę", "mi"),
-    input("Pomagam (ty)", "ci"),
-    input("Widzę (ona)", "ją"),
-    input("Nie znam (on)", "go"),
-    input("Mówię (oni) prawdę", "im"),
-    input("Czekasz na (my)", "nas"),
+    input("Uzupełnij: Daję książkę (ja).", "mi"),
+    input("Uzupełnij: Pomagam (ty).", "ci"),
+    input("Uzupełnij: Widzę (ona).", "ją"),
+    input("Uzupełnij: Nie znam (on).", "go"),
+    input("Uzupełnij: Mówię prawdę (oni).", "im"),
+    input("Uzupełnij: Czekasz na (my).", "nas"),
     choice("Podoba ___ się ten kurs.", ["mi", "mnie", "mną"], "mi"),
     choice("Znam ___ bardzo dobrze.", ["go", "mu", "nim"], "go"),
     choice("Pomagam ___ codziennie.", ["mu", "go", "jego"], "mu"),
@@ -1670,11 +1775,11 @@ function genExamSpeaking() {
 
 function genExamMixed() {
   return cap50([
-    input("Nie mam (czas)", "czasu"),
-    input("Muszę złożyć (wniosek)", "wniosek"),
-    input("Rozmawiam z (kierownik)", "kierownikiem"),
-    input("Mieszkam w (centrum)", "centrum"),
-    input("Potrzebuję (recepta)", "recepty"),
+    input("Uzupełnij: Nie mam (czas).", "czasu"),
+    input("Uzupełnij: Muszę złożyć (wniosek).", "wniosek"),
+    input("Uzupełnij: Rozmawiam z (kierownik).", "kierownikiem"),
+    input("Uzupełnij: Mieszkam w (centrum).", "centrum"),
+    input("Uzupełnij: Potrzebuję (recepta).", "recepty"),
     choice("Jutro ___ raport do końca.", ["będę pisać", "napiszę"], "napiszę"),
     choice("Codziennie ___ do pracy tramwajem.", ["jeżdżę", "pojadę"], "jeżdżę"),
     choice("Idę ___ lekarza.", ["do", "w", "na"], "do"),
@@ -1686,13 +1791,13 @@ function genExamMixed() {
 function genDiagnostic() {
   return cap50([
     choice("To są ___ studenci.", ["dobrzy", "dobre", "dobrego"], "dobrzy", "męskoosobowy plural"),
-    input("Widzę (dobry lekarz)", "dobrego lekarza", "biernik"),
-    input("Nie mam (czas)", "czasu", "dopełniacz"),
-    input("Pomagam (mój kolega)", "mojemu koledze", "celownik"),
-    input("Rozmawiam z (nauczyciel)", "nauczycielem", "narzędnik"),
-    input("Mieszkam w (Polska)", "Polsce", "miejscownik"),
-    input("ja (pracować)", "pracuję", "czas teraźniejszy"),
-    input("ja-kobieta (być)", "byłam", "czas przeszły"),
+    input("Uzupełnij: Widzę (dobry lekarz).", "dobrego lekarza", "biernik"),
+    input("Uzupełnij: Nie mam (czas).", "czasu", "dopełniacz"),
+    input("Uzupełnij: Pomagam (mój kolega).", "mojemu koledze", "celownik"),
+    input("Uzupełnij: Rozmawiam z (nauczyciel).", "nauczycielem", "narzędnik"),
+    input("Uzupełnij: Mieszkam w (Polska).", "Polsce", "miejscownik"),
+    input("Uzupełnij formę: ja (pracować).", "pracuję", "czas teraźniejszy"),
+    input("Uzupełnij formę: ja, kobieta (być).", "byłam", "czas przeszły"),
     choice("Jutro ___ zadanie do końca.", ["będę robić", "zrobię"], "zrobię", "aspekt"),
     choice("Idę ___ sklepu.", ["do", "w", "na"], "do", "przyimki"),
     input("Через неделю я напишу тест", "za tydzień napiszę test", "czas + przyszłość"),
