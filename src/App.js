@@ -270,17 +270,33 @@ const ruleTables = {
   dative: [{ title: "Celownik — komu? czemu?", headers: ["mianownik", "celownik", "przykład"], rows: [["ja", "mi", "daje mi"], ["ty", "ci", "pomagam ci"], ["on", "mu", "mówię mu"], ["student", "studentowi", "pomagam studentowi"], ["kolega", "koledze", "mówię koledze"], ["kobieta", "kobiecie", "pomagam kobiecie"], ["dziecko", "dziecku", "daję dziecku"]] }],
   instrumental: [{ title: "Narzędnik — z kim? z czym?", headers: ["mianownik", "narzędnik", "przykład"], rows: [["programista", "programistą", "jestem programistą"], ["student", "studentem", "jestem studentem"], ["lekarz", "lekarzem", "jestem lekarzem"], ["kolega", "kolegą", "z kolegą"], ["rodzina", "rodziną", "z rodziną"], ["dziecko", "dzieckiem", "z dzieckiem"], ["ludzie", "ludźmi", "z ludźmi"]] }],
   locative: [{ title: "Miejscownik — o kim? o czym?", headers: ["mianownik", "miejscownik", "przykład"], rows: [["Polska", "Polsce", "w Polsce"], ["praca", "pracy", "w pracy"], ["sklep", "sklepie", "w sklepie"], ["dom", "domu", "w domu"], ["kurs", "kursie", "na kursie"], ["rodzina", "rodzinie", "o rodzinie"], ["dziecko", "dziecku", "o dziecku"]] }],
-  verbsPresent: [{ title: "Czas teraźniejszy", headers: ["osoba", "pracować", "robić", "mówić", "mieć"], rows: [["ja", "pracuję", "robię", "mówię", "mam"], ["ty", "pracujesz", "robisz", "mówisz", "masz"], ["on/ona", "pracuje", "robi", "mówi", "ma"], ["my", "pracujemy", "robimy", "mówimy", "mamy"], ["wy", "pracujecie", "robicie", "mówicie", "macie"], ["oni/one", "pracują", "robią", "mówią", "mają"]] }],
-  irregularVerbs: [
-    { title: "Najważniejsze czasowniki nieregularne", headers: ["bezokolicznik", "ja", "ty", "on/ona", "my", "wy", "oni/one"], rows: [["być", "jestem", "jesteś", "jest", "jesteśmy", "jesteście", "są"], ["mieć", "mam", "masz", "ma", "mamy", "macie", "mają"], ["iść", "idę", "idziesz", "idzie", "idziemy", "idziecie", "idą"], ["jechać", "jadę", "jedziesz", "jedzie", "jedziemy", "jedziecie", "jadą"], ["jeść", "jem", "jesz", "je", "jemy", "jecie", "jedzą"]] },
-    { title: "Druga grupa do zapamiętania", headers: ["bezokolicznik", "ja", "ty", "on/ona", "my", "wy", "oni/one"], rows: [["móc", "mogę", "możesz", "może", "możemy", "możecie", "mogą"], ["chcieć", "chcę", "chcesz", "chce", "chcemy", "chcecie", "chcą"], ["wiedzieć", "wiem", "wiesz", "wie", "wiemy", "wiecie", "wiedzą"], ["brać", "biorę", "bierzesz", "bierze", "bierzemy", "bierzecie", "biorą"], ["dać", "dam", "dasz", "da", "damy", "dacie", "dadzą"]] }
+  verbsPresent: [
+    { title: "Czas teraźniejszy — быстрый ориентир по лицам", headers: ["osoba", "pracować", "robić", "mówić", "mieć"], rows: [["ja", "pracuję", "robię", "mówię", "mam"], ["ty", "pracujesz", "robisz", "mówisz", "masz"], ["on/ona", "pracuje", "robi", "mówi", "ma"], ["my", "pracujemy", "robimy", "mówimy", "mamy"], ["wy", "pracujecie", "robicie", "mówicie", "macie"], ["oni/one", "pracują", "robią", "mówią", "mają"]] },
+    { title: "Группа -ować / -ywać / -iwać", headers: ["model", "ja", "ty", "my", "oni/one"], rows: [["pracować", "pracuję", "pracujesz", "pracujemy", "pracują"], ["pokazywać", "pokazuję", "pokazujesz", "pokazujemy", "pokazują"], ["potakiwać", "potakuję", "potakujesz", "potakujemy", "potakują"], ["правило", "-uję", "-ujesz", "-ujemy", "-ują"]] },
+    { title: "Группа -ać с моделью -am / -asz", headers: ["model", "ja", "ty", "my", "oni/one"], rows: [["mieszkać", "mieszkam", "mieszkasz", "mieszkamy", "mieszkają"], ["czekać", "czekam", "czekasz", "czekamy", "czekają"], ["czytać", "czytam", "czytasz", "czytamy", "czytają"], ["znać", "znam", "znasz", "znamy", "znają"]] },
+    { title: "Группа -ić / -yć / часть -eć", headers: ["model", "ja", "ty", "my", "oni/one"], rows: [["mówić", "mówię", "mówisz", "mówimy", "mówią"], ["prosić", "proszę", "prosisz", "prosimy", "proszą"], ["uczyć", "uczę", "uczysz", "uczymy", "uczą"], ["widzieć", "widzę", "widzisz", "widzimy", "widzą"], ["milczeć", "milczę", "milczysz", "milczymy", "milczą"]] },
+    { title: "Чередования и формы, которые надо учить отдельно", headers: ["bezokolicznik", "ja", "ty", "oni/one", "uwaga"], rows: [["brać", "biorę", "bierzesz", "biorą", "меняется основа"], ["nieść", "niosę", "niesiesz", "niosą", "меняется основа"], ["wieźć", "wiozę", "wieziesz", "wiozą", "меняется основа"], ["pisać", "piszę", "piszesz", "piszą", "sz/sz/ą"], ["piec", "piekę", "pieczesz", "pieką", "k/cz/ką"], ["dać", "dam", "dasz", "dadzą", "они/one: dadzą"]] }
   ],
-  verbsPast: [{ title: "Czas przeszły", headers: ["osoba", "męski", "żeński / niemęskoos."], rows: [["ja", "robiłem", "robiłam"], ["ty", "robiłeś", "robiłaś"], ["on/ona", "robił", "robiła"], ["my", "robiliśmy", "robiłyśmy"], ["wy", "robiliście", "robiłyście"], ["oni/one", "robili", "robiły"]] }],
-  verbsFuture: [{ title: "Czas przyszły", headers: ["typ", "przykład", "znaczenie"], rows: [["będę + infinitiv", "będę pracować", "proces"], ["będę + forma przeszła", "będę pracował", "proces"], ["dokonany", "zrobię", "rezultat"], ["dokonany", "kupię", "rezultat"], ["dokonany", "przeczytam", "rezultat"]] }],
-  aspect: [{ title: "Aspekt", headers: ["sytuacja", "niedokonany", "dokonany"], rows: [["proces", "robić", "—"], ["rezultat", "—", "zrobić"], ["często / zawsze", "robię", "—"], ["już / do końca", "—", "zrobiłem / zrobię"], ["długo", "czytałem", "—"], ["całą książkę", "—", "przeczytałem"]] }],
+  irregularVerbs: [
+    { title: "Самые частые неправильные глаголы", headers: ["bezokolicznik", "ja", "ty", "on/ona", "my", "wy", "oni/one"], rows: [["być", "jestem", "jesteś", "jest", "jesteśmy", "jesteście", "są"], ["mieć", "mam", "masz", "ma", "mamy", "macie", "mają"], ["iść", "idę", "idziesz", "idzie", "idziemy", "idziecie", "idą"], ["jechać", "jadę", "jedziesz", "jedzie", "jedziemy", "jedziecie", "jadą"], ["jeść", "jem", "jesz", "je", "jemy", "jecie", "jedzą"]] },
+    { title: "Вторая группа, которую надо узнавать сразу", headers: ["bezokolicznik", "ja", "ty", "on/ona", "my", "wy", "oni/one"], rows: [["móc", "mogę", "możesz", "może", "możemy", "możecie", "mogą"], ["chcieć", "chcę", "chcesz", "chce", "chcemy", "chcecie", "chcą"], ["wiedzieć", "wiem", "wiesz", "wie", "wiemy", "wiecie", "wiedzą"], ["brać", "biorę", "bierzesz", "bierze", "bierzemy", "bierzecie", "biorą"], ["dać", "dam", "dasz", "da", "damy", "dacie", "dadzą"]] },
+    { title: "На что смотреть в первую очередь", headers: ["глагол", "опасная форма", "что запомнить"], rows: [["być", "są", "не `jestą`"], ["iść", "idę / idą", "не `iszę`, не `idzą`"], ["jechać", "jadę / jadą", "основа `jad-`"], ["móc", "mogę / mogą", "g/gą"], ["brać", "biorę / biorą", "основа меняется"], ["dać", "dadzą", "не `dają` в значении `дадут`"]] }
+  ],
+  verbsPast: [
+    { title: "Czas przeszły — окончания", headers: ["osoba", "męski", "żeński / niemęskoos."], rows: [["ja", "robiłem", "robiłam"], ["ty", "robiłeś", "robiłaś"], ["on/ona", "robił", "robiła"], ["my", "robiliśmy", "robiłyśmy"], ["wy", "robiliście", "robiłyście"], ["oni/one", "robili", "robiły"]] },
+    { title: "Что здесь важно видеть", headers: ["ситуация", "форма", "подсказка"], rows: [["муж. ед. ч.", "-łem / -łeś / -ł", "robiłem, robiłeś, robił"], ["жен. ед. ч.", "-łam / -łaś / -ła", "robiłam, robiłaś, robiła"], ["męskoosobowy мн.", "-liśmy / -liście / -li", "robiliśmy, robiliście, robili"], ["niemęskoosobowy мн.", "-łyśmy / -łyście / -ły", "robiłyśmy, robiłyście, robiły"], ["движение", "poszedłem / poszłam", "учить отдельно"]] }
+  ],
+  verbsFuture: [
+    { title: "Czas przyszły — два типа", headers: ["typ", "przykład", "znaczenie"], rows: [["będę + infinitiv", "będę pracować", "процесс"], ["będę + forma przeszła", "będę pracował", "процесс"], ["dokonany", "zrobię", "результат"], ["dokonany", "kupię", "результат"], ["dokonany", "przeczytam", "результат"]] },
+    { title: "Formy być w czasie przyszłym", headers: ["osoba", "forma"], rows: [["ja", "będę"], ["ty", "będziesz"], ["on/ona/ono", "będzie"], ["my", "będziemy"], ["wy", "będziecie"], ["oni/one", "będą"]] }
+  ],
+  aspect: [
+    { title: "Aspekt — когда что брать", headers: ["sytuacja", "niedokonany", "dokonany"], rows: [["процесс", "robić", "—"], ["результат", "—", "zrobić"], ["często / zawsze", "robię", "—"], ["już / do końca", "—", "zrobiłem / zrobię"], ["długo", "czytałem", "—"], ["całą książkę", "—", "przeczytałem"]] },
+    { title: "Маркер → тип глагола", headers: ["маркер", "чаще нужен", "пример"], rows: [["teraz, często, zwykle", "niedokonany", "Teraz czytam."], ["już, w końcu, do końca", "dokonany", "Już przeczytałem."], ["jutro będę...", "процесс", "Jutro będę pisać."], ["jutro zrobię...", "результат", "Jutro napiszę raport."]] }
+  ],
   prepositions: [{ title: "Przyimki + przypadki", headers: ["przyimek", "przypadek", "przykład"], rows: [["do", "dopełniacz", "do sklepu"], ["z = od/skąd", "dopełniacz", "z pracy"], ["z = razem", "narzędnik", "z rodziną"], ["w = gdzie", "miejscownik", "w Polsce"], ["na = gdzie", "miejscownik", "na kursie"], ["na = dokąd", "biernik", "na kurs"], ["o", "miejscownik", "o pracy"]] }],
   numbersTime: [
-    { title: "Liczby 1–4 i 5+", headers: ["liczba", "forma", "przykład"], rows: [["1", "mianownik pojedynczy", "jeden złoty, jeden grosz"], ["2, 3, 4", "mianownik liczby mnogiej", "dwa złote, trzy grosze"], ["5–21", "dopełniacz liczby mnogiej", "pięć złotych, pięć groszy"], ["22, 23, 24", "jak 2–4", "dwadzieścia dwa złote"], ["25–31", "jak 5+", "dwadzieścia pięć złotych"], ["pieniądze", "2/3/4 pieniądze, 5 pieniędzy", "mam dwa pieniądze / dużo pieniędzy"]] },
+    { title: "Liczby 1–4 i 5+", headers: ["liczba", "forma", "przykład"], rows: [["1", "mianownik pojedynczy", "jeden złoty, jeden grosz"], ["2, 3, 4", "mianownik liczby mnogiej", "dwa złote, trzy grosze"], ["5–21", "dopełniacz liczby mnogiej", "pięć złotych, pięć groszy"], ["22, 23, 24", "jak 2–4", "dwadzieścia dwa złote"], ["25–31", "jak 5+", "dwadzieścia pięć złotych"], ["godziny / minuty", "2/3/4 godziny, 5 godzin", "mam dwie godziny / pięć minut"]] },
     { title: "Czas i godziny", headers: ["pytanie", "forma", "przykład"], rows: [["która godzina?", "pierwsza, druga, trzecia", "Jest druga."], ["o której?", "o pierwszej, o drugiej", "Spotkanie jest o drugiej."], ["pełna godzina", "ósma, dziewiąta", "Jest ósma."], ["oficjalnie", "13:00 = trzynasta", "Spotkanie o trzynastej."] ] }
   ],
   complexSentences: [{ title: "Zdania złożone", headers: ["spójnik", "znaczenie", "przykład"], rows: [["że", "что", "Myślę, że to dobry pomysł."], ["kiedy/gdy", "когда", "Kiedy wracam, jem obiad."], ["jeśli/jeżeli", "если", "Jeśli mam czas, uczę się."], ["bo", "потому что", "Uczę się, bo chcę mówić."], ["dlatego", "поэтому", "Pracuję dużo, dlatego jestem zmęczony."], ["żeby", "чтобы", "Uczę się, żeby mówić lepiej."]] }],
@@ -295,6 +311,114 @@ const ruleTables = {
   b1Connectors: [{ title: "Łączniki B1", headers: ["łącznik", "znaczenie", "przykład"], rows: [["jednak", "однако", "Chciałem przyjść, jednak nie miałem czasu."], ["natomiast", "а вот / тогда как", "Ja wolę kurs online, natomiast brat woli szkołę."], ["oprócz tego", "кроме того", "Uczę się słów, oprócz tego czytam teksty."], ["z tego powodu", "по этой причине", "Był remont, z tego powodu autobus się spóźnił."], ["podsumowując", "подводя итог", "Podsumowując, to dobry pomysł."]] }]
 };
 
+const topicRuleSheets = {
+  pluralNominative: [
+    { title: "С чего начать", body: "Сначала не думай об окончаниях. Сначала реши только одно: `oni` или `one`. Если там мужчины или смешанная группа, чаще будет `oni`. Если женщины, вещи, дети, животные — чаще `one`." },
+    { title: "Как выбирать форму", body: "Шаг 1: определяешь группу `oni/one`. Шаг 2: выбираешь форму существительного. Шаг 3: согласуешь прилагательное: `dobrzy studenci`, но `dobre książki`." },
+    { title: "Где чаще всего ошибка", body: "Обычно ошибка не в самом слове, а в согласовании: человек ставит `dobre studenci` или `polskie lekarze`. Здесь надо видеть пару целиком: прилагательное + существительное." }
+  ],
+  accusative: [
+    { title: "Что это за падеж", body: "Biernik показывает объект действия. Если ты что-то видишь, покупаешь, знаешь, любишь, встречаешь — очень часто нужен именно он." },
+    { title: "Как мыслить пошагово", body: "Шаг 1: найди глагол. Шаг 2: задай вопрос `kogo? co?`. Шаг 3: реши род и тип слова. Шаг 4: только потом меняй окончание." },
+    { title: "Главная ловушка", body: "Самая частая путаница — мужской одушевлённый против мужского неодушевлённого: `widzę lekarza`, но `mam telefon`. То есть один меняется, а другой часто нет." }
+  ],
+  genitive: [
+    { title: "Когда он нужен", body: "Dopełniacz часто появляется после отрицания, количества и глаголов типа `szukam`, `potrzebuję`, `używam`. Это падеж нехватки, отсутствия, количества и потребности." },
+    { title: "Как его узнавать", body: "Если по-русски хочется сказать `нет чего-то`, `много чего-то`, `ищу что-то`, `нужно что-то` — почти наверняка здесь будет dopełniacz." },
+    { title: "Главная ловушка", body: "Не пытайся вывести все окончания одной формулой. Здесь лучше помнить частые блоки: `nie mam czasu`, `szukam pracy`, `potrzebuję pomocy`, `dużo ludzi`." }
+  ],
+  dative: [
+    { title: "Что передаёт celownik", body: "Этот падеж показывает адресата: кому даю, кому помогаю, кому говорю, кому нравится. Он отвечает за `кому?`." },
+    { title: "Как думать", body: "Если в ситуации есть получатель действия, сначала найди его: `daję książkę bratu`, `pomagam koledze`, `podoba mi się kurs`." },
+    { title: "Главная ловушка", body: "После `pomagać`, `dawać`, `mówić`, `pokazywać` нельзя машинально ставить biernik. Сначала спроси: это объект действия или адресат?" }
+  ],
+  instrumental: [
+    { title: "Две главные ситуации", body: "Narzędnik чаще всего нужен после `z` в значении `с кем/с чем` и после `być`, когда называем профессию, роль или состояние: `z kolegą`, `jestem lekarzem`." },
+    { title: "Как не путаться", body: "Если `z` значит `вместе с`, это narzędnik. Если `z` значит `откуда`, это уже не он, а чаще dopełniacz: `z pracy`, `z Polski`." },
+    { title: "Практический способ", body: "Лучше учить готовыми кусками: `jadę samochodem`, `rozmawiam z nauczycielem`, `jestem studentem`, `pracuję z ludźmi`." }
+  ],
+  locative: [
+    { title: "Почему он кажется сложным", body: "Miejscownik почти не живёт один: он приходит с предлогами `w`, `na`, `o`, `po`, `przy`. Поэтому здесь надо учить не слово, а связку." },
+    { title: "Как выбирать", body: "Сначала определи смысл: `где?` или `о чём?`. Тогда появляются блоки `w pracy`, `na kursie`, `o rodzinie`, `po pracy`." },
+    { title: "Главная ловушка", body: "Предлог `na` может тянуть разные падежи: `na kurs` = куда? biernik, а `na kursie` = где? miejscownik." }
+  ],
+  verbsPresent: [
+    { title: "Главная идея темы", body: "Здесь нельзя учить только инфинитив. Нужно сразу видеть модель спряжения и окончания по лицам: `я`, `ты`, `он`, `мы`, `вы`, `они`." },
+    { title: "Как учить глагол правильно", body: "Не `pracować = работать`, а `pracować -> pracuję, pracujesz...`; не `mówić = говорить`, а `mówię, mówisz...`. То есть учим сразу мини-парадигмой." },
+    { title: "Что делать на практике", body: "Сначала распознавай группу, потом подставляй окончания, потом говори целую фразу. Именно поэтому после правила сразу должны идти упражнения по моделям." }
+  ],
+  irregularVerbs: [
+    { title: "Как к ним относиться", body: "Эти глаголы не надо пытаться домыслить. Их надо узнавать как готовые частые формы: `jestem`, `mam`, `idę`, `mogę`, `wiem`." },
+    { title: "Что учить первым", body: "В первую очередь формы `ja`, `ty` и `oni/one`, потому что именно они чаще всего ломают автоматизм: `idę`, `idziesz`, `idą`; `biorę`, `bierzesz`, `biorą`." },
+    { title: "Как закреплять", body: "Не таблицей в вакууме, а через короткие фразы: `mam czas`, `mogę przyjść`, `idę do pracy`, `oni wiedzą`, `wy dacie odpowiedź`." }
+  ],
+  verbsPast: [
+    { title: "Что здесь главное", body: "В прошедшем времени сначала смотри не на глагол, а на `кто говорит` и `какой род`. От этого зависит половина формы." },
+    { title: "Как собирать форму", body: "Если это `я, мужчина` — чаще увидишь `-łem`; если `я, женщина` — `-łam`. Для множественного числа важно различать `robiliśmy` и `robiłyśmy`." },
+    { title: "Где больше всего ошибок", body: "Чаще всего теряется род или путаются формы движения: `poszedłem / poszłam`, `przyszedłem / przyszłam`." }
+  ],
+  verbsFuture: [
+    { title: "Сначала смысл, потом форма", body: "В будущем ты сначала решаешь: говорю о процессе или о результате. От этого зависит, будет `będę robić` или `zrobię`." },
+    { title: "Две линии будущего", body: "Процесс = `będę + bezokolicznik / forma przeszła`. Результат = совершенный глагол без `będę`: `napiszę`, `kupię`, `przeczytam`." },
+    { title: "Главная ловушка", body: "Нельзя смешивать две модели в одну, например `będę zrobię`. Это одна из самых частых ошибок на B1." }
+  ],
+  aspect: [
+    { title: "Что такое aspekt по-человечески", body: "Это не “сложная грамматика”, а выбор между процессом и результатом. Ты либо показываешь, что действие длится/повторяется, либо что оно завершится или уже завершилось." },
+    { title: "Как выбирать", body: "Слова `często`, `zwykle`, `teraz`, `długo` тянут к процессу. Слова `już`, `do końca`, `na jutro`, `w końcu` часто тянут к результату." },
+    { title: "Что надо довести до автоматизма", body: "Учить парами: `czytać / przeczytać`, `pisać / napisać`, `robić / zrobić`, и сразу на примерах, а не в отрыве." }
+  ],
+  prepositions: [
+    { title: "Как учить предлоги", body: "Не `do = в`, а `do + dopełniacz`; не `na = на`, а `na + biernik` или `na + miejscownik` в зависимости от смысла." },
+    { title: "Нормальный порядок мысли", body: "Сначала задай вопрос: `куда?`, `где?`, `откуда?`, `с кем?`, `о чём?` — и только потом выбирай предлог и падеж." },
+    { title: "Где чаще всего путаются", body: "В парах `do / w / na`, а ещё в предлоге `z`, потому что он может значить и `с кем`, и `откуда`." }
+  ],
+  numbersTime: [
+    { title: "Зачем эта тема вообще важна", body: "Числа и время — это не “вспомогательная тема”, а повседневная речь: часы, даты, цены, адреса, планы, транспорт, работа." },
+    { title: "Что надо видеть сразу", body: "После `1`, после `2-4`, после `5+` будут разные формы. То же касается времени: `która godzina?` и `o której?` — это разные модели." },
+    { title: "Как учить полезно", body: "Не отдельно числа и отдельно часы, а через реальные блоки: `Spotkanie jest o ósmej`, `Bilet kosztuje dwadzieścia dwa złote`, `Za godzinę wychodzę`." }
+  ],
+  complexSentences: [
+    { title: "Почему это уже B1", body: "На B1 мало назвать факт. Нужно объяснить причину, мнение, цель, условие. Для этого и нужны сложные предложения." },
+    { title: "Как строить длинную мысль", body: "Начинай с простого каркаса: `Myślę, że...`, `bo...`, `dlatego...`, `żeby...`, `jeśli...`. Этого уже хватает для сильного ответа." },
+    { title: "Главная ловушка", body: "Не надо пытаться сразу строить очень длинную фразу. Сильная речь — это 2–3 простые части, связанные правильно." }
+  ],
+  pronouns: [
+    { title: "Почему местоимения мешают", body: "Потому что короткие формы выглядят похоже, но отвечают на разные вопросы: `mi`, `mnie`, `go`, `mu`, `jej`." },
+    { title: "Как не путаться", body: "Не учи их списком. Сначала задавай вопрос `кому?`, `кого?`, `чего?`, а потом вспоминай форму: `daj mi`, `widzę go`, `nie ma mnie`." },
+    { title: "Как закреплять", body: "Только в парах с глаголом: `pomóż mi`, `powiedz jej`, `znam go`, `potrzebuję ich`." }
+  ],
+  reflexiveSie: [
+    { title: "Что делать с się", body: "Не пытайся учить `się` отдельно. Нужно учить целую конструкцию: `uczyć się`, `bać się`, `spotykać się`, `podobać się`." },
+    { title: "Как мыслить", body: "Если глагол живёт с `się`, он меняет не только форму, но часто и логику управления: `bać się czegoś`, `podobać się komuś`." },
+    { title: "Главная ловушка", body: "Люди часто теряют `się` или ставят его хаотично. Здесь надо довести до привычки готовую фразу." }
+  ],
+  comparisons: [
+    { title: "Зачем сравнения нужны на B1", body: "Они делают речь точнее: ты уже не просто говоришь `dobry`, а сравниваешь, оцениваешь, аргументируешь." },
+    { title: "Что учить", body: "Обычные модели, `naj-` и самые частые неправильные формы: `lepszy`, `gorszy`, `większy`, `mniejszy`." },
+    { title: "Как использовать", body: "Лучше не отдельно слово, а мысль целиком: `Ten вариант jest wygodniejszy niż tamten`, `To było najlepsze rozwiązanie`." }
+  ],
+  modalVerbs: [
+    { title: "Почему это практичная тема", body: "Модальные конструкции нужны в повседневной жизни постоянно: обязанности, разрешения, советы, запреты, планы." },
+    { title: "Что помнить", body: "После `muszę`, `mogę`, `powinienem` обычно идёт bezokolicznik: `muszę iść`, `mogę wejść`, `powinienem zadzwonić`." },
+    { title: "Где ошибка", body: "Часто человек после модального ставит уже спрягаемую форму. Здесь надо держать модель `модальный + инфинитив`." }
+  ],
+  impersonal: [
+    { title: "Зачем нужны безличные формы", body: "Они важны для объявлений, правил, писем и официального тона. Это очень жизненный слой польского." },
+    { title: "Как их понимать", body: "Это способ говорить нейтрально, без конкретного `я` или `ты`: `można`, `trzeba`, `należy`, `warto`." },
+    { title: "Как строить фразу", body: "Обычно схема очень простая: `trzeba + bezokolicznik`, `można + bezokolicznik`, `warto + bezokolicznik`." }
+  ],
+  wordOrder: [
+    { title: "Почему порядок слов пугает", body: "Потому что в польском он гибкий, но это не значит, что он хаотичный. Есть нейтральный естественный порядок, к которому всегда можно вернуться." },
+    { title: "Базовая опора", body: "Начинай с прямой модели: `кто / тема -> глагол -> остальная информация`. Потом уже добавляй время, вопрос, `się`, местоимения." },
+    { title: "Главные якоря", body: "`nie` обычно перед глаголом, `się` часто сразу после глагола, короткие местоимения любят устойчивые места: `podoba mi się`, `daj mi znać`." }
+  ],
+  b1Connectors: [
+    { title: "Почему связки важны", body: "Связки делают из отдельных предложений нормальную речь уровня B1. Без них ответ кажется рубленым и детским." },
+    { title: "Как использовать", body: "Бери не много, а точно: одна связка для причины, одна для противопоставления, одна для вывода — этого уже достаточно." },
+    { title: "Практический каркас", body: "`Moim zdaniem...`, `ponieważ...`, `jednak...`, `oprócz tego...`, `podsumowując...` — уже даёт связный короткий ответ." }
+  ]
+};
+
 function renderTables(topicKey) {
   const tables = ruleTables[topicKey] || [];
   return tables.map((table, index) => (
@@ -304,6 +428,16 @@ function renderTables(topicKey) {
         <thead><tr>{table.headers.map((h) => <th key={h} style={styles.th}>{h}</th>)}</tr></thead>
         <tbody>{table.rows.map((row, i) => <tr key={i}>{row.map((cell, j) => <td key={j} style={styles.td}>{cell}</td>)}</tr>)}</tbody>
       </table>
+    </div>
+  ));
+}
+
+function renderRuleSheets(topicKey) {
+  const sheets = topicRuleSheets[topicKey] || [];
+  return sheets.map((sheet, index) => (
+    <div key={index} style={{ ...styles.note, marginTop: 10 }}>
+      <strong>{sheet.title}</strong>
+      <div style={{ marginTop: 6, whiteSpace: "pre-wrap" }}>{sheet.body}</div>
     </div>
   ));
 }
@@ -566,6 +700,57 @@ function genWordOrderVariety() {
     choice("Które zdanie brzmi naturalniej?", ["Wieczorem będę czytać książkę.", "Będę książkę czytać wieczorem ja."], "Wieczorem będę czytać książkę."),
     choice("Które zdanie brzmi naturalniej?", ["Podoba mi się ten pomysł.", "Ten pomysł mi się podoba bardzo jest."], "Podoba mi się ten pomysł."),
     free("Napisz 4 zdania w naturalnym szyku. Użyj: dziś, jutro, nie, się.", "Сделай одно утверждение, один вопрос, одну фразу с `się` и одну с `nie`.")
+  ]);
+}
+function genPresentConjugationGuide() {
+  return [
+    note(
+      "Как учить спряжение, чтобы оно работало",
+      "Сначала всегда ищи 3 вещи: `инфинитив`, `группу`, `лицо`.\n\nЕсли ты видишь только слово `pracować`, этого ещё мало. Нужно сразу привязывать его к модели: `pracuję, pracujesz, pracuje, pracujemy, pracujecie, pracują`.\n\nСамый полезный порядок такой:\n1. определить группу\n2. посмотреть, что происходит с основой\n3. подставить окончания по лицам\n4. сразу сказать готовую фразу"
+    ),
+    note(
+      "Группа 1: -ować / -ywać / -iwać",
+      "Для этой группы характерна модель `-uję, -ujesz, -uje, -ujemy, -ujecie, -ują`.\n\nГлавный сигнал: в инфинитиве есть `-ować`, а в спряжении кусок `-owa-` обычно меняется на `-uj-`.\n\n`pracować -> pracuję, pracujesz, pracuje, pracujemy, pracujecie, pracują`\n`pokazywać -> pokazuję, pokazujesz, pokazuje, pokazujemy, pokazujecie, pokazują`\n`potakiwać -> potakuję, potakujesz, potakuje, potakujemy, potakujecie, potakują`\n\nЭту группу удобно запомнить через форму `ty`: если слышишь `pracujesz`, почти наверняка это эта модель."
+    ),
+    note(
+      "Группа 2: -ać с моделью -am / -asz",
+      "Очень частая разговорная группа. Для неё характерны окончания `-am, -asz, -a, -amy, -acie, -ają`.\n\n`mieszkać -> mieszkam, mieszkasz, mieszka, mieszkamy, mieszkacie, mieszkają`\n`czekać -> czekam, czekasz, czeka, czekamy, czekacie, czekają`\n`czytać -> czytam, czytasz, czyta, czytamy, czytacie, czytają`\n`znać -> znam, znasz, zna, znamy, znacie, znają`\n\nЭто одна из самых полезных моделей для быта, потому что в неё попадает много частых глаголов."
+    ),
+    note(
+      "Группа 3: -ić / -yć / часть -eć и некоторые особые -ać",
+      "Для этой группы характерны окончания типа `-ę, -isz/-ysz, -i/-y, -imy/-ymy, -icie/-ycie, -ą`.\n\n`mówić -> mówię, mówisz, mówi, mówimy, mówicie, mówią`\n`prosić -> proszę, prosisz, prosi, prosimy, prosicie, proszą`\n`uczyć (się) -> uczę (się), uczysz (się), uczy (się), uczymy (się), uczycie (się), uczą (się)`\n`milczeć -> milczę, milczysz, milczy, milczymy, milczycie, milczą`\n`widzieć -> widzę, widzisz, widzi, widzimy, widzicie, widzą`\n\nЗдесь уже чаще бывают чередования в основе, поэтому форму `ja` и `ty` лучше запоминать сразу парой."
+    ),
+    note(
+      "Глаголы с чередованием основы",
+      "Есть частые глаголы, где меняются не только окончания, но и сам корень. Их надо учить как готовые наборы.\n\n`brać -> biorę, bierzesz, bierze, bierzemy, bierzecie, biorą`\n`nieść -> niosę, niesiesz, niesie, niesiemy, niesiecie, niosą`\n`wieźć -> wiozę, wioziesz, wiezie, wieziemy, wieziecie, wiozą`\n`pisać -> piszę, piszesz, pisze, piszemy, piszecie, piszą`\n`piec -> piekę, pieczesz, piecze, pieczemy, pieczecie, pieką`\n`dać -> dam, dasz, da, damy, dacie, dadzą`\n\nИменно эти глаголы чаще всего ломают автоматизм, если их не выучить как отдельную модель."
+    ),
+    note(
+      "Частотные неправильные формы, которые надо знать в лицо",
+      "`być -> jestem, jesteś, jest, jesteśmy, jesteście, są`\n`mieć -> mam, masz, ma, mamy, macie, mają`\n`iść -> idę, idziesz, idzie, idziemy, idziecie, idą`\n`jechać -> jadę, jedziesz, jedzie, jedziemy, jedziecie, jadą`\n`jeść -> jem, jesz, je, jemy, jecie, jedzą`\n`móc -> mogę, możesz, może, możemy, możecie, mogą`\n`wiedzieć -> wiem, wiesz, wie, wiemy, wiecie, wiedzą`\n\nИх лучше учить не по одному слову, а сразу в коротких живых фразах."
+    )
+  ];
+}
+function genPresentConjugationDrills() {
+  return cap50([
+    input("Uzupełnij model: pracować -> ja pracuję, ty ___, my pracujemy.", "pracujesz"),
+    input("Uzupełnij model: mieszkać -> ja mieszkam, ty ___, oni ___.", ["mieszkasz", "mieszkają"]),
+    input("Uzupełnij model: mówić -> ja mówię, ty ___, wy ___.", ["mówisz", "mówicie"]),
+    input("Uzupełnij model: prosić -> ja proszę, ty ___, oni ___.", ["prosisz", "proszą"]),
+    input("Uzupełnij model: widzieć -> ja widzę, ty ___, my ___.", ["widzisz", "widzimy"]),
+    input("Uzupełnij model: brać -> ja biorę, ty ___, oni ___.", ["bierzesz", "biorą"]),
+    input("Uzupełnij model: nieść -> ja niosę, ty ___, my ___.", ["niesiesz", "niesiemy"]),
+    input("Uzupełnij model: pisać -> ja piszę, ty ___, wy ___.", ["piszesz", "piszecie"]),
+    input("Uzupełnij model: dać -> ja dam, ty ___, oni ___.", ["dasz", "dadzą"]),
+    choice("Która grupa pasuje do `pracować`?", ["-uję / -ujesz / -ują", "-am / -asz / -ają", "-ę / -isz / -ą"], "-uję / -ujesz / -ują"),
+    choice("Która grupa pasuje do `mieszkać`?", ["-am / -asz / -ają", "-uję / -ujesz / -ują", "-ę / -isz / -ą"], "-am / -asz / -ają"),
+    choice("Która grupa pasuje do `mówić`?", ["-ę / -isz / -ą", "-am / -asz / -ają", "-uję / -ujesz / -ują"], "-ę / -isz / -ą"),
+    choice("Które zdanie jest poprawne?", ["Ty pracujesz w biurze.", "Ty pracuję w biurze.", "Ty pracujasz w biurze."], "Ty pracujesz w biurze."),
+    choice("Które zdanie jest poprawne?", ["My mieszkamy w Krakowie.", "My mieszkim w Krakowie.", "My mieszkają w Krakowie."], "My mieszkamy w Krakowie."),
+    choice("Które zdanie jest poprawne?", ["Oni mówią po polsku.", "Oni mówi po polsku.", "Oni mówie po polsku."], "Oni mówią po polsku."),
+    choice("Które zdanie jest poprawne?", ["Ja biorę dokument.", "Ja bierzę dokument.", "Ja bierzę dokument."], "Ja biorę dokument."),
+    choice("Które zdanie jest poprawne?", ["Wy piszecie maila.", "Wy piszacie maila.", "Wy piszą maila."], "Wy piszecie maila."),
+    choice("Które zdanie jest poprawne?", ["Oni dadzą odpowiedź jutro.", "Oni dajądzą odpowiedź jutro.", "Oni dają odpowiedź jutro."], "Oni dadzą odpowiedź jutro."),
+    free("Napisz 8 zdań: po dwa z grupą `-ować`, `-ać`, `-ić/-yć` i dwa z czasownikami z чередованием.", "Используй реальные глаголы и подпиши себе мысленно, к какой модели относится каждый.")
   ]);
 }
 function genGenitive() {
@@ -2349,7 +2534,7 @@ const topics = {
   dative: { title: "Celownik — komu? czemu?", description: "Дательный падеж", theory: ["Celownik показывает адресата действия: кому я даю, кому помогаю, кому говорю, кому объясняю.", "Самые полезные формы для жизни: `mi`, `ci`, `mu`, `jej`, `nam`, `wam`, `im`. Они встречаются постоянно: `podoba mi się`, `pomagam ci`, `mówię mu`.", "У существительных полезно видеть типичные окончания: мужской род часто `-owi / -u` (`student -> studentowi`, `brat -> bratu`), женский часто `-ie / -y` (`kobieta -> kobiecie`, `mama -> mamie`), средний часто `-u` (`dziecko -> dziecku`).", "Во множественном числе очень часты формы `-om`: `studentom`, `kobietom`, `dzieciom`, `ludziom`.", "Запоминай с глаголом целиком: `pomagam koledze`, `daję dziecku prezent`, `mówię mamie prawdę`. Частая ошибка B1: ставить biernik вместо celownik. После `pomagać` и `dawać komuś` почти всегда нужен именно celownik."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("dative")), makeExercise("Разбор по шагам", genGrammarStepByStep("dative")), makeExercise("Celownik — формы", genDative()), makeExercise("Celownik w sytuacji", genDativeVariety()), makeExercise("Исправь ошибку", cap50([input("Praca daje mnie satysfakcję", "praca daje mi satysfakcję"), input("Pomagam mój kolega", "pomagam mojemu koledze"), input("Daję książkę brat", "daję książkę bratu"), input("Pokazuję droga student", "pokazuję drogę studentowi"), input("Pomagam ona", "pomagam jej"), input("Daję jemu prezent", "daję mu prezent"), input("Mówię do ci", "mówię ci"), input("Pomagam ludzie", "pomagam ludziom")])), makeExercise("Разговор", speakingPrompts)] },
   instrumental: { title: "Narzędnik — z kim? z czym?", description: "Творительный падеж", theory: ["Narzędnik часто нужен в двух базовых ситуациях: после `z` и после `być`, когда мы называем профессию, роль или состояние.", "С `z` это обычно ответ на `с кем? с чем?`: `z kolegą`, `z rodziną`, `z dokumentem`. После `jestem` это `кем? чем?`: `jestem programistą`, `jestem studentem`.", "Полезные ориентиры по окончаниям: мужской и средний род в единственном числе часто дают `-em` (`studentem`, `samochodem`, `dzieckiem`), женский чаще `-ą` (`kobietą`, `rodziną`, `książką`).", "Во множественном числе очень часты формы `-ami / -mi`: `z kolegami`, `z dziećmi`, `z ludźmi`, `samochodami`.", "На уровне B1 старайся учить narzędnik не списком, а в живых конструкциях: `pracuję z ludźmi`, `jadę samochodem`, `jestem zainteresowany kursem`. Если видишь `z` в значении `вместе с`, очень вероятно нужен narzędnik. Но `z pracy` и `z Polski` — это уже dopełniacz, потому что там значение `откуда`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("instrumental")), makeExercise("Разбор по шагам", genGrammarStepByStep("instrumental")), makeExercise("Narzędnik — формы", genInstrumental()), makeExercise("Исправь ошибку", cap50([input("Jestem programista", "jestem programistą"), input("Idę z kolega", "idę z kolegą"), input("Bawię się z córka", "bawię się z córką"), input("Rozmawiam z nauczyciel", "rozmawiam z nauczycielem"), input("Jadę samochód", "jadę samochodem"), input("On jest lekarz", "on jest lekarzem"), input("Spotykam się z rodzina", "spotykam się z rodziną"), input("Pracuję z ludzie", "pracuję z ludźmi")])), makeExercise("Разговор", speakingPrompts)] },
   locative: { title: "Miejscownik — o kim? o czym?", description: "Местный / предложный падеж", theory: ["Miejscownik почти всегда приходит с предлогом. Самые частые друзья этого падежа: `w`, `na`, `o`, `po`, `przy`.", "Он нужен, когда мы говорим gdzie что-то находится или о чём говорим: `w Polsce`, `w pracy`, `na kursie`, `o rodzinie`, `o problemie`.", "Полезные ориентиры по окончаниям: очень часто встречаются формы `-e / -ie / -u`: `Polska -> Polsce`, `kurs -> kursie`, `praca -> pracy`, `język -> języku`, `park -> parku`, `biuro -> biurze`.", "Для памяти хорошо держать связки готовыми блоками: `w domu`, `w sklepie`, `na spotkaniu`, `o języku polskim`, `po pracy`.", "Частая ловушка: после `w` и `na` нужно понять смысл. `na kurs` = куда? biernik. `na kursie` = где? miejscownik. Чтобы miejscownik стал удобным, полезно учить не одно слово, а мини-фразу: `mieszkam w Polsce`, `myślę o egzaminie`, `rozmawiam o pracy`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("locative")), makeExercise("Разбор по шагам", genGrammarStepByStep("locative")), makeExercise("Miejscownik — формы", genLocative()), makeExercise("Miejscownik w sytuacji", genLocativeVariety()), makeExercise("Исправь ошибку", cap50([input("Mieszkam w Polska", "mieszkam w Polsce"), input("Jestem w praca", "jestem w pracy"), input("Mówię o rodzina", "mówię o rodzinie"), input("Byłem w sklep", "byłem w sklepie"), input("Myślę o kurs", "myślę o kursie"), input("Czytam o język polski", "czytam o języku polskim"), input("Jestem na spotkanie", "jestem na spotkaniu"), input("Spaceruję po park", "spaceruję po parku")])), makeExercise("Разговор", speakingPrompts)] },
-  verbsPresent: { title: "Czas teraźniejszy", description: "Настоящее время", theory: ["Czas teraźniejszy нужен для привычек, распорядка, фактов и того, что происходит сейчас: `pracuję`, `uczę się`, `mieszkam`, `wiem`.", "Сначала всегда определи лицо: `ja / ty / on-ona-ono / my / wy / oni-one`. От этого зависит окончание.", "Полезные модели спряжения: `-ować -> -uję, -ujesz, -uje, -ujemy, -ujecie, -ują` (`pracować -> pracuję`); `-ać -> -am, -asz, -a, -amy, -acie, -ają` (`mieszkać -> mieszkam`); многие глаголы на `-ić / -yć / -eć` дают тип `-ę, -isz/-ysz, -i/-y, -imy/-ymy, -icie/-ycie, -ą` (`robić -> robię, robisz`, `mówić -> mówię, mówisz`).", "Очень частая опора для памяти: `ja` часто заканчивается на `-ę` или `-m`, `ty` часто на `-sz`, `my` на `-my`, `wy` на `-cie`, `oni/one` часто на `-ą / -ją`.", "Некоторые глаголы надо просто запомнить как частотные: `być`, `mieć`, `iść`, `jeść`, `móc`. Учись не отдельной форме, а короткой репликой: `pracuję w firmie`, `mieszkam w Warszawie`, `nie mam czasu`, `idziemy do sklepu`.", "Частая ошибка на старте B1 — путать окончания по лицам. Если не уверен, сначала определи `ja / ty / on / my / wy / oni`, и только потом выбирай форму."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("verbsPresent")), makeExercise("Разбор по шагам", genGrammarStepByStep("verbsPresent")), makeExercise("Спряжение", genPresent()), makeExercise("Czas teraźniejszy w sytuacji", genPresentVariety()), makeExercise("Исправь ошибку", cap50([input("ja pracuje", "ja pracuję"), input("ty piję kawę", "ty pijesz kawę"), input("oni mówi po polsku", "oni mówią po polsku"), input("my mieszka w Polsce", "my mieszkamy w Polsce"), input("wy robią zadanie", "wy robicie zadanie"), input("on pijesz kawę", "on pije kawę"), input("ja masz czas", "ja mam czas")])), makeExercise("Разговор", speakingPrompts)] },
+  verbsPresent: { title: "Czas teraźniejszy", description: "Настоящее время", theory: ["Czas teraźniejszy нужен для привычек, распорядка, фактов и того, что происходит сейчас: `pracuję`, `uczę się`, `mieszkam`, `wiem`.", "Сначала всегда определи лицо: `ja / ty / on-ona-ono / my / wy / oni-one`. От этого зависит окончание.", "Полезные модели спряжения: `-ować -> -uję, -ujesz, -uje, -ujemy, -ujecie, -ują` (`pracować -> pracuję`); `-ać -> -am, -asz, -a, -amy, -acie, -ają` (`mieszkać -> mieszkam`); многие глаголы на `-ić / -yć / -eć` дают тип `-ę, -isz/-ysz, -i/-y, -imy/-ymy, -icie/-ycie, -ą` (`robić -> robię, robisz`, `mówić -> mówię, mówisz`).", "Очень частая опора для памяти: `ja` часто заканчивается на `-ę` или `-m`, `ty` часто на `-sz`, `my` на `-my`, `wy` на `-cie`, `oni/one` часто на `-ą / -ją`.", "Некоторые глаголы надо просто запомнить как частотные: `być`, `mieć`, `iść`, `jeść`, `móc`. Учись не отдельной форме, а короткой репликой: `pracuję w firmie`, `mieszkam w Warszawie`, `nie mam czasu`, `idziemy do sklepu`.", "Частая ошибка на старте B1 — путать окончания по лицам. Если не уверен, сначала определи `ja / ty / on / my / wy / oni`, и только потом выбирай форму."], exercises: [makeExercise("Grupy i końcówki — jak to działa", genPresentConjugationGuide()), makeExercise("Model końcówek", genPresentConjugationDrills()), makeExercise("Почему так? Разбор формы", genGrammarNuance("verbsPresent")), makeExercise("Разбор по шагам", genGrammarStepByStep("verbsPresent")), makeExercise("Спряжение", genPresent()), makeExercise("Czas teraźniejszy w sytuacji", genPresentVariety()), makeExercise("Исправь ошибку", cap50([input("ja pracuje", "ja pracuję"), input("ty piję kawę", "ty pijesz kawę"), input("oni mówi po polsku", "oni mówią po polsku"), input("my mieszka w Polsce", "my mieszkamy w Polsce"), input("wy robią zadanie", "wy robicie zadanie"), input("on pijesz kawę", "on pije kawę"), input("ja masz czas", "ja mam czas")])), makeExercise("Разговор", speakingPrompts)] },
   irregularVerbs: { title: "Czasowniki nieregularne", description: "Неправильные глаголы и спряжение", theory: ["Это глаголы, которые лучше не выводить по правилу, а запомнить как готовые формы. Они очень частые и дают основу для живой речи.", "Самые важные для повседневного B1: `być`, `mieć`, `iść`, `jechać`, `jeść`, `móc`, `chcieć`, `wiedzieć`, `brać`, `dać`.", "Здесь особенно важно учить не только инфинитив, но и ключевые личные формы. Например: `być -> jestem, jesteś, jest, jesteśmy, jesteście, są`; `mieć -> mam, masz, ma, mamy, macie, mają`.", "Ещё несколько частотных опор: `iść -> idę, idziesz`; `jechać -> jadę, jedziesz`; `jeść -> jem, jesz`; `móc -> mogę, możesz`; `chcieć -> chcę, chcesz`; `wiedzieć -> wiem, wiesz`; `brać -> biorę, bierzesz`; `dać -> dam, dasz`.", "Лучше учить их в коротких фразах: `jestem w domu`, `mam czas`, `idę do pracy`, `mogę pomóc`, `chcę się uczyć`. Обрати внимание на формы, которые чаще всего ломают автоматизм: `idę`, `jadę`, `jem`, `mogę`, `biorę`, `wiem`.", "Задача этого блока не просто узнать таблицу, а начать быстро узнавать и использовать эти формы без остановки."], exercises: [makeExercise("Спряжение nieregularne", genIrregularVerbs()), makeExercise("Nieregularne w sytuacji", genIrregularVerbsVariety()), makeExercise("Исправь ошибку", cap50([input("Ja jest w domu", "ja jestem w domu"), input("Ty moża mi pomóc", "ty możesz mi pomóc"), input("My wiedzą o problemie", "my wiemy o problemie"), input("Oni jecha do pracy", "oni jadą do pracy"), input("Ja bierzesz dokument", "ja biorę dokument"), input("Wy dają odpowiedź", "wy dajecie odpowiedź"), input("On chcie iść", "on chce iść"), input("Ona jem obiad", "ona je obiad")])), makeExercise("Разговор", speakingPrompts)] },
   verbsPast: { title: "Czas przeszły", description: "Прошедшее время", theory: ["Прошедшее время в польском зависит от рода и числа, поэтому сначала смотри: кто говорит и о ком идёт речь.", "В единственном числе полезно держать схему: `ja/on` часто `-łem / -ł`, `ja/ona` часто `-łam / -ła`. Например: `robiłem / robiłam`, `miałem / miałam`, `poszedłem / poszłam`.", "Во множественном числе часто видим `-liśmy / -łyśmy`, `-liście / -łyście`, `-li / -ły`: `robiliśmy`, `robiłyśmy`, `zrobili`, `zrobiły`.", "В 1-м и 2-м лице полезно сразу держать пары: `byłem / byłam`, `miałem / miałam`, `chciałem / chciałam`.", "Если рассказываешь о вчерашнем дне, лучше строить не отдельные формы, а маленький рассказ: `wczoraj wróciłem do domu, zjadłem obiad i odpoczywałem`.", "Отдельно запомни частотные нестандартные формы движения: `pójść -> poszedłem / poszłam`, `przyjść -> przyszedłem / przyszłam`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("verbsPast")), makeExercise("Разбор по шагам", genGrammarStepByStep("verbsPast")), makeExercise("Czas przeszły — формы", genPast()), makeExercise("Разговор", speakingPrompts)] },
   verbsFuture: { title: "Czas przyszły", description: "Будущее время", theory: ["В польском будущем важно сначала понять: ты говоришь о процессе или о результате. Это сразу влияет на форму.", "Если речь о процессе или плане без акцента на завершение, часто будет `będę + bezokolicznik` или `będę + forma przeszła`: `będę pracować`, `będę czytać`, `będę pracował`.", "Формы `być` в будущем такие: `będę, będziesz, będzie, będziemy, będziecie, będą`. Это база для всего будущего процесса.", "Если нужен результат, обычно берём совершенный вид: `zrobię`, `kupię`, `napiszę`, `przeczytam`, `pojadę`. Здесь уже нет `będę`: нельзя говорить `będę zrobię`.", "Сравнение: `jutro będę pisać raport` = процесс; `jutro napiszę raport` = закончу и будет готово.", "Будущее почти всегда дружит с маркерами времени: `jutro`, `pojutrze`, `za godzinę`, `za tydzień`, `w przyszłym miesiącu`, `o ósmej`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("verbsFuture")), makeExercise("Разбор по шагам", genGrammarStepByStep("verbsFuture")), makeExercise("Czas przyszły — формы", genFuture()), makeExercise("Czas przyszły w sytuacji", genFutureVariety()), makeExercise("Будущее + время", genFutureWithTime()), makeExercise("Разговор", speakingPrompts)] },
@@ -3180,6 +3365,7 @@ export default function App() {
                       {(topicGoals[safeTopicKey] || []).map((goal) => <span key={goal} style={styles.skillBadge}>{goal}</span>)}
                     </div>
                   </div>
+                  {renderRuleSheets(safeTopicKey)}
                   {topic.theory.map((r, i) => <div key={i} style={styles.rule}>{r}</div>)}
                   {renderTables(safeTopicKey)}
                 </>
