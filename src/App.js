@@ -3040,6 +3040,7 @@ export default function App() {
 
   const safeTopicKey = topics[topicKey] ? topicKey : topicKeys[0];
   const topic = topics[safeTopicKey];
+  const hasRuleSheets = (topicRuleSheets[safeTopicKey] || []).length > 0;
   const safeExerciseIndex = topic.exercises[exerciseIndex] ? exerciseIndex : 0;
   const exercise = topic.exercises[safeExerciseIndex];
   const currentItems = exercise.items;
@@ -3366,7 +3367,15 @@ export default function App() {
                     </div>
                   </div>
                   {renderRuleSheets(safeTopicKey)}
-                  {topic.theory.map((r, i) => <div key={i} style={styles.rule}>{r}</div>)}
+                  {!hasRuleSheets && topic.theory.map((r, i) => <div key={i} style={styles.rule}>{r}</div>)}
+                  {hasRuleSheets && topic.theory.length > 0 && (
+                    <div style={{ ...styles.note, marginTop: 12 }}>
+                      <strong>Короткая памятка</strong>
+                      <div style={{ marginTop: 8 }}>
+                        {topic.theory.map((r, i) => <div key={i} style={{ marginBottom: i === topic.theory.length - 1 ? 0 : 8 }}>{r}</div>)}
+                      </div>
+                    </div>
+                  )}
                   {renderTables(safeTopicKey)}
                 </>
               )}
