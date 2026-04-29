@@ -2489,7 +2489,30 @@ function genGrammarNuance(topic) {
       choice("Что лучше для результата?", ["pracuję dużo, dlatego jestem zmęczony", "pracuję dużo, bo dlatego", "pracuję dużo, żeby zmęczony"], "pracuję dużo, dlatego jestem zmęczony")
     ]
   };
-  return blocks[topic] || [];
+  return uniqueExerciseItems([...(blocks[topic] || []), ...genGrammarNuancePractice(topic)]).slice(0, 30);
+}
+
+function genGrammarNuancePractice(topic) {
+  const pick = (...groups) => uniqueExerciseItems(groups.flat()).slice(0, 28);
+  const map = {
+    pluralNominative: pick(genPluralVariety(), genPluralAdjectives(), genOniOne(), genPluralMistakes()),
+    accusative: pick(genAccusativeVariety(), genAccusativeForms(), genAccusativeAdjectives()),
+    genitive: pick(genGenitiveVariety(), genGenitive()),
+    dative: pick(genDativeVariety(), genDative()),
+    instrumental: pick(genInstrumental(), genInstrumental(), genInstrumental()),
+    locative: pick(genLocativeVariety(), genLocative()),
+    verbsPresent: pick(genPresentConjugationDrills(), genPresentVariety(), genPresent()),
+    verbsPast: pick(genPast(), genPast(), genPast()),
+    verbsFuture: pick(genFutureVariety(), genFuture(), genFutureWithTime()),
+    aspect: pick(genAspectVariety(), genAspectChoice(), genAspectPairs()),
+    prepositions: pick(genPrepositionVariety(), genPrepositions()),
+    pronouns: pick(genPronouns(), genPronouns()),
+    reflexiveSie: pick(genReflexiveSie(), genReflexiveSie()),
+    comparisons: pick(genComparisons(), genComparisonVariety()),
+    wordOrder: pick(genWordOrder(), genWordOrderVariety()),
+    complexSentences: pick(genComplexSentences(), genComplexSentenceVariety())
+  };
+  return map[topic] || [];
 }
 
 function genGrammarStepByStep(topic) {
