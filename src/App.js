@@ -65,7 +65,33 @@ const free = (q, hint = "Ответ свободный. Напиши 4–8 пр�
 const note = (title, body, words = [], links = []) => ({ type: "note", title, body, words, links });
 const audio = (title, body, src = "", links = [], transcript = "") => ({ type: "audio", title, body, src, links, transcript });
 const cloze = (q, title, lines, blanks, explanation = "") => ({ type: "cloze", q, title, lines, blanks, explanation });
-const makeExercise = (title, items) => ({ title, items });
+
+function itemSignature(item) {
+  if (!item) return "";
+  if (item.type === "input") return `input|${norm(item.q)}|${(item.a || []).map(norm).join("|")}`;
+  if (item.type === "choice") return `choice|${norm(item.q)}|${(item.options || []).map(norm).join("|")}|${norm(item.correct)}`;
+  if (item.type === "free") return `free|${norm(item.q)}`;
+  if (item.type === "note") return `note|${norm(item.title)}|${norm(item.body)}`;
+  if (item.type === "audio") return `audio|${norm(item.title)}|${norm(item.transcript || item.body)}`;
+  if (item.type === "cloze") {
+    const lines = (item.lines || []).map((line) => JSON.stringify(line)).join("|");
+    const blanks = (item.blanks || []).map((blank) => (blank.answers || []).map(norm).join("&")).join("|");
+    return `cloze|${norm(item.title || item.q)}|${lines}|${blanks}`;
+  }
+  return JSON.stringify(item);
+}
+
+function uniqueExerciseItems(items) {
+  const seen = new Set();
+  return (items || []).filter((item) => {
+    const key = itemSignature(item);
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+const makeExercise = (title, items) => ({ title, items: uniqueExerciseItems(items) });
 const PRIVATE_COURSE_BASE = `${process.env.PUBLIC_URL || ""}/private-course`;
 
 const privateCourseLessons = [
@@ -107,27 +133,14 @@ function speakPolish(text, rate = 0.95) {
 }
 
 function cap50(items) {
-  if (!items || items.length === 0) return [];
-  const shuffled = shuffle(items);
-  if (shuffled.length >= 50) return shuffled.slice(0, 50);
-  const result = [];
-  for (let i = 0; i < 50; i++) result.push(shuffled[i % shuffled.length]);
-  return result;
+  const unique = uniqueExerciseItems(items);
+  if (unique.length === 0) return [];
+  const shuffled = shuffle(unique);
+  return shuffled.slice(0, 50);
 }
 
 function repeatTo50(items) {
-  if (!items || items.length === 0) return [];
-  if (items.length >= 50) return cap50(items);
-  const result = [];
-  for (let i = 0; i < 50; i++) {
-    const item = items[i % items.length];
-    if (item.type === "free" && i >= items.length) {
-      result.push({ ...item, q: `${item.q} Wariant ${Math.floor(i / items.length) + 1}.` });
-    } else {
-      result.push(item);
-    }
-  }
-  return result;
+  return cap50(items);
 }
 
 const dict = {
@@ -304,8 +317,24 @@ function genAccusativeForms() { const items = []; dict.biernik.animate.forEach((
 function genAccusativeAdjectives() { const items = []; dict.adjectives.forEach(([base, , , mascAcc, femAcc]) => { dict.biernik.animate.slice(0, 8).forEach(([sg, acc]) => items.push(input(`widzę (${base} ${sg})`, `${mascAcc} ${acc}`))); dict.biernik.feminine.slice(0, 8).forEach(([sg, acc]) => items.push(input(`kupuję (${base} ${sg})`, `${femAcc} ${acc}`))); dict.biernik.inanimate.slice(0, 8).forEach(([sg, acc]) => items.push(input(`mam (${base} ${sg})`, `${base} ${acc}`))); }); return cap50(items); }
 function genGenitive() { const verbs = ["nie mam", "nie ma", "szukam", "potrzebuję", "używam"]; const items = []; dict.genitive.forEach(([sg, gen]) => verbs.forEach((v) => items.push(input(`${v} (${sg})`, gen)))); return cap50(items); }
 function genDative() { const verbs = ["daję", "pomagam", "mówię", "pokazuję drogę"]; const items = []; dict.dative.forEach(([sg, dat]) => verbs.forEach((v) => items.push(input(`${v} (${sg})`, dat)))); return cap50(items); }
-function genInstrumental() { const items = []; dict.instrumental.forEach(([sg, ins]) => { items.push(input(`z (${sg})`, ins)); items.push(input(`jestem (${sg})`, ins)); items.push(input(`rozmawiam z (${sg})`, ins)); }); return cap50(items); }
-function genLocative() { const preps = ["w", "na", "o"]; const items = []; dict.locative.forEach(([sg, loc]) => preps.forEach((p) => items.push(input(`${p} (${sg})`, loc)))); return cap50(items); }
+function genInstrumental() {
+  const items = [];
+  dict.instrumental.forEach(([sg, ins]) => {
+    items.push(input(`Idę z (${sg})`, ins));
+    items.push(input(`Jestem (${sg})`, ins));
+    items.push(input(`Rozmawiam z (${sg})`, ins));
+  });
+  return cap50(items);
+}
+function genLocative() {
+  const items = [];
+  dict.locative.forEach(([sg, loc]) => {
+    items.push(input(`Jestem w (${sg})`, loc));
+    items.push(input(`Myślę o (${sg})`, loc));
+    items.push(input(`Rozmawiam o (${sg})`, loc));
+  });
+  return cap50(items);
+}
 function genPresent() { const persons = ["ja", "ty", "on", "my", "wy", "oni"]; const items = []; dict.present.forEach(([verb, forms]) => forms.forEach((form, i) => items.push(input(`${persons[i]} (${verb})`, form)))); return cap50(items); }
 function genIrregularVerbs() {
   const verbs = [
@@ -658,6 +687,168 @@ function genThematicPhrases(key) {
   return cap50((dict.thematicPhrases[key] || []).map(([ru, pl]) => input(ru, pl)));
 }
 
+function genThematicSkillBuilder(key) {
+  const blocks = {
+    work: [
+      note("Jak mówić o pracy konkretnie", "В теме `praca` сильный B1 начинается не со словаря, а с умения описать ситуацию по шагам: stanowisko -> obowiązki -> problem albo cel -> rozwiązanie.\n\nНапример: `Pracuję jako specjalista ds. obsługi klienta. Mam dużo kontaktu z ludźmi. Ostatnio dostałem nowe obowiązki, dlatego muszę lepiej organizować czas.`"),
+      choice("Które zdanie brzmi bardziej konkretnie?", ["Mam nowe obowiązki i przygotowuję raport dla kierownika.", "Praca jest jakaś i coś robię.", "Firma jest."], "Mam nowe obowiązki i przygotowuję raport dla kierownika."),
+      input("Uzupełnij: szukam ___ w nowej firmie", "pracy"),
+      input("Uzupełnij: rozmawiam z ___ o terminie spotkania", "kierownikiem"),
+      free("Napisz 3–4 zdania o swojej pracy albo pracy, której szukasz. Użyj: stanowisko, obowiązki, termin, zespół.", "Сделай ответ конкретным: кем работаешь / что делаешь / какой есть вопрос или план.")
+    ],
+    housing: [
+      note("Jak opisać problem w mieszkaniu", "В теме `mieszkanie` важно уметь не просто назвать предмет, а спокойно и конкретно сообщить о проблеме: co nie działa -> od kiedy -> jaki jest skutek -> czego oczekujesz.\n\nНапример: `Od wczoraj nie działa ogrzewanie. W mieszkaniu jest zimno. Proszę o kontakt i naprawę jak najszybciej.`"),
+      choice("Co jest najważniejsze w wiadomości o awarii?", ["problem i prośba o działanie", "opis wakacji", "lista zakupów"], "problem i prośba o działanie"),
+      input("Uzupełnij: nie działa ___ w łazience", "ogrzewanie"),
+      input("Uzupełnij: napisałem do ___ z prośbą o naprawę", "właściciela"),
+      free("Napisz 3–4 zdania do właściciela mieszkania o awarii. Użyj: od wczoraj, problem, proszę o kontakt.", "Опиши проблему, её последствия и просьбу.")
+    ],
+    health: [
+      note("Jak opisać objawy po polsku", "В теме `zdrowie` лучше всего работает модель: co mi jest -> od kiedy -> czego potrzebuję.\n\nНапример: `Od dwóch dni mam gorączkę i kaszel. Boli mnie gardło. Chciałbym umówić wizytę u lekarza rodzinnego.`"),
+      choice("Który opis brzmi naturalniej u lekarza?", ["Od dwóch dni mam gorączkę i kaszel.", "Jestem choroba gardło.", "Mam lekarz."], "Od dwóch dni mam gorączkę i kaszel."),
+      input("Uzupełnij: potrzebuję ___ na badanie", "skierowania"),
+      input("Uzupełnij: chcę umówić ___ u lekarza", "wizytę"),
+      free("Napisz 3–4 zdania do przychodni albo lekarza. Użyj: od kiedy, objawy, wizyta.", "Скажи, что болит, как долго и что тебе нужно.")
+    ],
+    documents: [
+      note("Jak przejść sprawę w urzędzie", "Тема `urząd` становится сильной, когда ты видишь не отдельные слова, а последовательность действий: formularz -> wniosek -> załącznik -> opłata -> odbiór.\n\nНапример: `Najpierw wypełniam formularz, potem składam wniosek i dołączam załącznik. Na końcu czekam na odbiór dokumentu.`"),
+      choice("Co zwykle jest pierwszym krokiem w urzędzie?", ["wypełnić formularz", "odebrać bagaż", "zamówić obiad"], "wypełnić formularz"),
+      input("Uzupełnij: muszę złożyć ___ o wydanie dokumentu", "wniosek"),
+      input("Uzupełnij: proszę o informację, kiedy mogę odebrać ___", "dokument"),
+      free("Napisz 3–4 zdania do urzędu. Użyj: formularz, wniosek, załącznik, proszę o informację.", "Покажи цель, нужные документы и вопрос о сроке.")
+    ],
+    shopping: [
+      note("Jak opisać problem z zakupem", "В теме `zakupy` нужен не просто словарь, а ясная структура жалобы: co kupiłeś -> jaki jest problem -> czego oczekujesz.\n\nНапример: `Kupiłem kurtkę przez internet, ale rozmiar jest za mały i zamek nie działa. Mam paragon i chcę zrobić zwrot albo wymianę.`"),
+      choice("Co brzmi najbardziej rzeczowo w reklamacji?", ["Produkt jest uszkodzony i proszę o wymianę.", "To wszystko jest bez sensu.", "Nie wiem, coś się stało."], "Produkt jest uszkodzony i proszę o wymianę."),
+      input("Uzupełnij: chcę zrobić ___ towaru", "zwrot"),
+      input("Uzupełnij: mam ___ i numer zamówienia", "paragon"),
+      free("Napisz 3–4 zdania do sklepu o problemie z zamówieniem. Użyj: produkt, problem, zwrot albo wymiana.", "Опиши, что ты купил, что не так и чего ожидаешь.")
+    ],
+    city: [
+      note("Jak mówić o dojeździe i drodze", "В теме `miasto i transport` полезно говорить по схеме: skąd dokąd -> czym jedziesz -> jaki jest problem -> co trzeba zrobić.\n\nНапример: `Jadę do centrum tramwajem, ale dziś mam przesiadkę, bo jest remont. Muszę sprawdzić rozkład jazdy i zapytać o drogę.`"),
+      choice("Co jest najważniejsze, gdy tłumaczysz drogę?", ["kierunek i środek transportu", "opis obiadu", "numer PESEL"], "kierunek i środek transportu"),
+      input("Uzupełnij: muszę zrobić ___ na inny tramwaj", "przesiadkę"),
+      input("Uzupełnij: sprawdzam ___ jazdy w aplikacji", "rozkład"),
+      free("Napisz 3–4 zdania o problemie z dojazdem. Użyj: przystanek, spóźnienie, przesiadka, bilet.", "Объясни, куда едешь, что случилось и что собираешься делать.")
+    ],
+    education: [
+      note("Jak mówić o nauce skutecznie", "В теме `edukacja` сильный ответ строится так: cel -> plan -> trudność -> postęp. Тогда речь звучит не общо, а по-настоящему учебно.\n\nНапример: `Przygotowuję się do egzaminu B1. Codziennie powtarzam słownictwo i robię ćwiczenia z gramatyki. Najtrudniejsze jest dla mnie pisanie, ale widzę postęp.`"),
+      choice("Który opis nauki brzmi dojrzalej?", ["Codziennie robię powtórkę i analizuję błędy.", "Uczę się jakoś tam.", "Egzamin jest egzaminem."], "Codziennie robię powtórkę i analizuję błędy."),
+      input("Uzupełnij: robię codzienną ___ przed egzaminem", "powtórkę"),
+      input("Uzupełnij: nauczyciel pokazuje moje typowe ___", "błędy"),
+      free("Napisz 3–4 zdania o swojej nauce polskiego. Użyj: poziom, powtórka, błąd, postęp.", "Покажи цель, рутину и то, что хочешь улучшить.")
+    ],
+    relationships: [
+      note("Jak mówić o relacjach spokojnie", "В теме `relacje` важно уметь не только назвать эмоцию, но и мягко объяснить ситуацию: co się stało -> jak się czułeś -> czego potrzebujesz teraz.\n\nНапример: `Źle się poczułem po tej rozmowie, bo zabrakło zaufania. Chciałbym spokojnie wyjaśnić sytuację i przeprosić.`"),
+      choice("Co pomaga w trudnej rozmowie?", ["spokojne wyjaśnienie i przeprosiny", "krzyk i chaos", "milczenie bez końca"], "spokojne wyjaśnienie i przeprosiny"),
+      input("Uzupełnij: dziękuję za twoje ___ i pomoc", "wsparcie"),
+      input("Uzupełnij: chcę cię ___ za swoje słowa", "przeprosić"),
+      free("Napisz 3–4 zdania do bliskiej osoby po trudnej rozmowie. Użyj: zaufanie, przeprosiny, wsparcie.", "Объясни ситуацию спокойно и по-человечески.")
+    ]
+  };
+  return blocks[key] || [];
+}
+
+function genThematicComprehension(key) {
+  const blocks = {
+    work: cap50([
+      choice("Tekst o pracy: Co było największym wyzwaniem na początku?", ["obowiązki, terminy i komunikacja", "pogoda w biurze", "zakupy po pracy"], "obowiązki, terminy i komunikacja"),
+      choice("Co osoba przygotowuje przed rozmową z pracodawcą?", ["raport", "receptę", "mapę miasta"], "raport"),
+      input("Jak po polsku w tekście jest 'сверхурочные'?", "nadgodziny")
+    ]),
+    housing: cap50([
+      choice("Co trzeba sprawdzić oprócz czynszu?", ["kaucję i rachunki", "tylko kolor ścian", "menu restauracji"], "kaucję i rachunki"),
+      choice("Jaki problem pojawił się w mieszkaniu?", ["zepsuło się ogrzewanie", "zniknął paszport", "odwołano egzamin"], "zepsuło się ogrzewanie"),
+      input("Jak po polsku w tekście jest 'авария'?", "awaria")
+    ]),
+    health: cap50([
+      choice("Na co skarży się osoba?", ["na gorączkę, kaszel i ból gardła", "na hałas w mieszkaniu", "na opóźniony tramwaj"], "na gorączkę, kaszel i ból gardła"),
+      choice("O co zapytano w rejestracji?", ["o ubezpieczenie i numer PESEL", "o numer konta", "o kaucję"], "o ubezpieczenie i numer PESEL"),
+      input("Jak po polsku w tekście jest 'больничный'?", "zwolnienie lekarskie")
+    ]),
+    documents: cap50([
+      choice("Co często wymaga jedna sprawa w urzędzie?", ["kilku dokumentów", "jednej piosenki", "jednego telefonu"], "kilku dokumentów"),
+      choice("Co dostaje się po złożeniu dokumentów?", ["numer sprawy", "bilet miesięczny", "kartę bankową"], "numer sprawy"),
+      input("Jak po polsku w tekście jest 'подтверждение оплаты'?", "potwierdzenie")
+    ]),
+    shopping: cap50([
+      choice("Jaki problem był z kurtką?", ["rozmiar był za mały, a zamek nie działał", "nie było przystanku", "odwołano wizytę"], "rozmiar był za mały, a zamek nie działał"),
+      choice("Co trzeba było podać w formularzu reklamacji?", ["numer zamówienia i opis problemu", "numer PESEL i adres szkoły", "wynik badania i receptę"], "numer zamówienia i opis problemu"),
+      input("Jak po polsku w tekście jest 'обмен'?", "wymiana")
+    ]),
+    city: cap50([
+      choice("Co osoba sprawdza rano w aplikacji?", ["o której odjeżdża tramwaj", "cenę mieszkania", "wyniki badań"], "o której odjeżdża tramwaj"),
+      choice("Kiedy trzeba zrobić przesiadkę?", ["gdy jest korek albo remont", "gdy boli gardło", "gdy sklep jest zamknięty"], "gdy jest korek albo remont"),
+      input("Jak po polsku w tekście jest 'пересадка'?", "przesiadka")
+    ]),
+    education: cap50([
+      choice("Od czego trzeba zacząć przygotowanie do B1?", ["od sprawdzenia swojego poziomu", "od kupienia biletu", "od wizyty u lekarza"], "od sprawdzenia swojego poziomu"),
+      choice("Co pokazuje, że metoda nauki działa?", ["powolny, ale stały postęp", "wysoki czynsz", "spóźniony autobus"], "powolny, ale stały postęp"),
+      input("Jak po polsku w tekście jest 'прогресс'?", "postęp")
+    ]),
+    relationships: cap50([
+      choice("Na czym opierają się dobre relacje?", ["na zaufaniu, rozmowie i wsparciu", "na formularzach i rachunkach", "na rozkładzie jazdy"], "na zaufaniu, rozmowie i wsparciu"),
+      choice("Co pomaga odbudować kontakt po kłótni?", ["przeprosiny i szczera rozmowa", "nowy bilet miesięczny", "zwrot towaru"], "przeprosiny i szczera rozmowa"),
+      input("Jak po polsku w tekście jest 'благодарность'?", "wdzięczność")
+    ])
+  };
+  return blocks[key] || [];
+}
+
+function genThematicContextGrammar(key) {
+  const blocks = {
+    work: cap50([
+      input("Uzupełnij: pracuję w nowej ___", "firmie"),
+      input("Uzupełnij: przygotowuję ___ dla kierownika", "raport"),
+      choice("Szukam ___ z lepszym wynagrodzeniem.", ["pracy", "pracę", "pracą"], "pracy"),
+      choice("Rozmawiam z kierownikiem ___ nowych zadaniach.", ["o", "do", "na"], "o")
+    ]),
+    housing: cap50([
+      input("Uzupełnij: mieszkam w spokojnej ___", "dzielnicy"),
+      input("Uzupełnij: proszę o szybką ___ awarii", "naprawę"),
+      choice("Od wczoraj nie działa ___.", ["ogrzewanie", "ogrzewania", "ogrzewaniem"], "ogrzewanie"),
+      choice("Napisałem do właściciela ___ prośbą o kontakt.", ["z", "w", "do"], "z")
+    ]),
+    health: cap50([
+      input("Uzupełnij: mam silny ból ___", "gardła"),
+      input("Uzupełnij: po wizycie pójdę do ___", "apteki"),
+      choice("Chcę umówić ___ u lekarza rodzinnego.", ["wizytę", "wizyta", "wizytą"], "wizytę"),
+      choice("Potrzebuję ___ na badanie.", ["skierowania", "skierowanie", "skierowaniem"], "skierowania")
+    ]),
+    documents: cap50([
+      input("Uzupełnij: trzeba wypełnić ___", "formularz"),
+      input("Uzupełnij: na końcu trzeba odebrać ___", "dokument"),
+      choice("Muszę dołączyć brakujący ___.", ["załącznik", "załącznika", "załącznikiem"], "załącznik"),
+      choice("Proszę ___ informację o terminie odbioru.", ["o", "na", "z"], "o")
+    ]),
+    shopping: cap50([
+      input("Uzupełnij: chcę złożyć ___ na produkt", "reklamację"),
+      input("Uzupełnij: mam numer ___ i paragon", "zamówienia"),
+      choice("Proszę o ___ pieniędzy.", ["zwrot", "zwrotem", "zwrotu"], "zwrot"),
+      choice("Zapłaciłem ___ i wybrałem dostawę do punktu.", ["kartą", "kartę", "karty"], "kartą")
+    ]),
+    city: cap50([
+      input("Uzupełnij: jadę do centrum ___", "tramwajem"),
+      input("Uzupełnij: pytam o drogę do najbliższego ___", "dworca"),
+      choice("Muszę kupić ___ w biletomacie.", ["bilet", "biletu", "biletem"], "bilet"),
+      choice("Czekam ___ przystanku na autobus.", ["na", "w", "do"], "na")
+    ]),
+    education: cap50([
+      input("Uzupełnij: przygotowuję się do ___ B1", "egzaminu"),
+      input("Uzupełnij: analizuję swoje typowe ___", "błędy"),
+      choice("Codziennie robię krótką ___.", ["powtórkę", "powtórka", "powtórce"], "powtórkę"),
+      choice("Po egzaminie mogę dostać ___.", ["certyfikat", "certyfikatu", "certyfikatem"], "certyfikat")
+    ]),
+    relationships: cap50([
+      input("Uzupełnij: ta rozmowa wymaga wzajemnego ___", "zaufania"),
+      input("Uzupełnij: chcę okazać ci ___ za pomoc", "wdzięczność"),
+      choice("Po kłótni warto spokojnie ___ sytuację.", ["wyjaśnić", "wyjaśnię", "wyjaśniać się"], "wyjaśnić"),
+      choice("Poprosiłem przyjaciela ___ wsparcie.", ["o", "na", "z"], "o")
+    ])
+  };
+  return blocks[key] || [];
+}
+
 function genThematicChoices(key) {
   const words = dict.thematicVocab[key] || [];
   return cap50(words.map(([pl, ru], index) => {
@@ -703,6 +894,112 @@ function genWritingAssembly() {
     input("Ułóż zdanie: czy mogliby Państwo / potwierdzić / zmianę terminu", "czy mogliby Państwo potwierdzić zmianę terminu"),
     input("Ułóż zdanie: z góry / dziękuję / za odpowiedź", "z góry dziękuję za odpowiedź")
   ]);
+}
+
+function genReadingSignalsB1() {
+  return [
+    note("Jak czytać krótkie teksty użytkowe", "Во многих B1-заданиях попадаются не длинные статьи, а короткие сообщения: ogłoszenie, e-mail, informacja z urzędu, wiadomość od szkoły, reklama usługi.\n\nТут важно быстро понять 4 вещи:\n1. kto pisze\n2. do kogo\n3. w jakim celu\n4. co trzeba zrobić\n\nЭто уже не просто экзамен, а полезный навык для жизни: читать объявления, письма, сообщения из urzędu и szkoły."),
+    choice("Komunikat: Prosimy pasażerów o skasowanie biletu zaraz po wejściu do autobusu. To jest:", ["instrukcja / zasada", "zaproszenie", "reklamacja"], "instrukcja / zasada"),
+    choice("Wiadomość: Informujemy, że w piątek urząd będzie nieczynny. Główny cel tekstu to:", ["przekazać ważną informację organizacyjną", "sprzedać usługę", "opisać problem zdrowotny"], "przekazać ważną informację organizacyjną"),
+    choice("E-mail: Proszę przesłać brakujący załącznik do końca dnia. Co trzeba zrobić?", ["wysłać załącznik", "odebrać dokument", "zrobić zakupy"], "wysłać załącznik"),
+    choice("Ogłoszenie: Wynajmę pokój blisko centrum, tylko dla osoby pracującej. Czego dotyczy tekst?", ["wynajmu pokoju", "wizyty lekarskiej", "kursu językowego"], "wynajmu pokoju"),
+    choice("SMS: Będę spóźniony około 20 minut, spotkajmy się przy wejściu głównym. Najważniejsza informacja to:", ["zmiana czasu spotkania", "opis pogody", "prośba o dokument"], "zmiana czasu spotkania"),
+    choice("Informacja: Aby odebrać kartę pobytu, proszę przynieść paszport i potwierdzenie opłaty. Co trzeba mieć?", ["paszport i potwierdzenie opłaty", "receptę i bilet", "umowę i zdjęcie"], "paszport i potwierdzenie opłaty"),
+    choice("Reklama: Kurs online obejmuje 30 lekcji, materiały PDF i konsultacje z nauczycielem. Co oferuje kurs?", ["lekcje, materiały i konsultacje", "nocleg i transport", "badania i receptę"], "lekcje, materiały i konsultacje"),
+    input("Uzupełnij po polsku: główna informacja w krótkim tekście = ___ informacja", "kluczowa", "najważniejsza dla odpowiedzi"),
+    input("Uzupełnij: kto pisze, do kogo, w jakim ___ i co trzeba zrobić", "celu", "to podstawa czytania B1")
+  ];
+}
+
+function genListeningSignalsB1() {
+  return [
+    note("Jak słuchać krótkie komunikaty", "В B1-аудировании часто звучат короткие бытовые записи: telefon, komunikat, rejestracja, sklep, transport.\n\nНе надо слышать всё. Нужно быстро поймать:\n- miejsce\n- problem lub cel\n- termin / godzinę\n- działanie\n\nЭто учебный навык: так ты потом лучше понимаешь и реальные звонки, и официальные сообщения."),
+    choice("Nagranie: Dzwonię, żeby potwierdzić wizytę na jutro. Najważniejsze jest to, że osoba:", ["potwierdza termin", "odwołuje egzamin", "szuka mieszkania"], "potwierdza termin"),
+    choice("Nagranie: Proszę podejść do okienka numer trzy z dowodem osobistym. Co trzeba zrobić?", ["podejść do właściwego okienka", "zapłacić rachunek", "napisać reklamację"], "podejść do właściwego okienka"),
+    choice("Nagranie: Spotkanie zostało przeniesione na czwartek o dziesiątej. Co jest kluczową informacją?", ["zmiana terminu", "opis osoby", "pogoda"], "zmiana terminu"),
+    choice("Nagranie: Proszę przygotować numer rezerwacji i podejść do recepcji po osiemnastej. Co jest ważne?", ["trzeba mieć numer rezerwacji i przyjść po 18:00", "trzeba wysłać CV", "trzeba kupić bilet miesięczny"], "trzeba mieć numer rezerwacji i przyjść po 18:00"),
+    choice("Nagranie: Z powodu remontu zajęcia odbędą się dziś online. Czego dotyczy komunikat?", ["zmiany organizacyjnej", "wizyty w banku", "zakupów spożywczych"], "zmiany organizacyjnej"),
+    choice("Nagranie: Proszę przyjść na badanie na czczo jutro rano. Co trzeba zrobić?", ["przyjść rano bez jedzenia", "przyjść wieczorem po kolacji", "odesłać formularz pocztą"], "przyjść rano bez jedzenia"),
+    choice("Nagranie: Jeśli paczka nie dotrze do piątku, prosimy o kontakt z infolinią. Co trzeba zrobić w razie problemu?", ["skontaktować się z infolinią", "złożyć podanie w urzędzie", "zapłacić mandat"], "skontaktować się z infolinią"),
+    input("Uzupełnij: w słuchaniu najpierw łapiemy ogólną ___ sytuacji", "logikę", "nie każde pojedyncze słowo"),
+    input("Uzupełnij: potem sprawdzamy miejsce, cel, godzinę i ___", "działanie", "co trzeba zrobić")
+  ];
+}
+
+function genExamGrammarGuide() {
+  return [
+    note("Jak działa poprawność gramatyczna B1", "В заданиях на poprawność gramatyczną редко спрашивают правило в вакууме. Обычно нужно выбрать форму по контексту.\n\nРабочий порядок:\n1. найди глагол или связку\n2. задай вопрос: kogo? komu? gdzie? kiedy? po co?\n3. реши, нужен ли падеж, время, аспект или связка\n4. только потом выбирай форму\n\nЭто учебный навык, который полезен не только для теста, но и для письма, речи и чтения."),
+    choice("Что лучше делать первым в грамматическом задании?", ["понять, что именно требует контекст", "смотреть только на окончание", "искать самое длинное слово"], "понять, что именно требует контекст"),
+    choice("Фраза `pomagam ...` чаще всего требует:", ["celownik", "biernik", "miejscownik"], "celownik"),
+    choice("Фраза `jutro ... raport do końca` чаще тянет к:", ["rezultatowi / aspektowi dokonanemu", "miejscownikowi", "liczbie mnogiej"], "rezultatowi / aspektowi dokonanemu"),
+    choice("Фраза `mieszkam w ...` чаще всего требует:", ["miejscownik", "biernik", "celownik"], "miejscownik"),
+    choice("Фраза `szukam ...` чаще всего требует:", ["dopełniacz", "narzędnik", "mianownik"], "dopełniacz"),
+    choice("Фраза `jestem nauczycielem` показывает, что после `jestem` тут нужен:", ["narzędnik", "biernik", "celownik"], "narzędnik"),
+    input("Uzupełnij po rosyjskiej podpowiedzi: najpierw rozumiem ___, potem wybieram formę", "kontekst", "to podstawa B1"),
+    input("Uzupełnij: po czasowniku zadaję pytanie i dopiero potem wybieram ___", "formę", "nie odwrotnie")
+  ];
+}
+
+function genExamGrammarSkills() {
+  return cap50([
+    choice("Nie mam ___ na spotkanie.", ["czasu", "czas", "czasem"], "czasu"),
+    choice("Jutro ___ ten formularz do końca.", ["wypełnię", "wypełniać", "wypełniałem"], "wypełnię"),
+    choice("Rozmawiam z ___ o nowej umowie.", ["kierownikiem", "kierownik", "kierownika"], "kierownikiem"),
+    choice("Mieszkam ___ centrum miasta.", ["w", "do", "z"], "w"),
+    choice("To są bardzo ___ studenci.", ["dobrzy", "dobre", "dobrego"], "dobrzy"),
+    choice("Podoba ___ ten kurs.", ["mi się", "się mi", "mnie się"], "mi się"),
+    choice("Nie mogłem przyjść, ___ miałem wizytę u lekarza.", ["ponieważ", "jednak", "oprócz tego"], "ponieważ"),
+    choice("Jeśli będę mieć czas, ___ do ciebie wieczorem.", ["zadzwonię", "dzwonię", "dzwoniłem"], "zadzwonię"),
+    choice("Szukam ___ w centrum.", ["mieszkania", "mieszkanie", "mieszkaniem"], "mieszkania"),
+    choice("Wczoraj ___ bardzo zmęczona.", ["byłam", "jestem", "będę"], "byłam"),
+    choice("Jutro ___ do urzędu rano.", ["pójdę", "idę wczoraj", "chodziłem"], "pójdę"),
+    choice("Uczę się polskiego, ___ chcę zdać egzamin B1.", ["ponieważ", "natomiast", "mimo to"], "ponieważ"),
+    choice("To są bardzo ___ dokumenty.", ["ważne", "ważni", "ważnego"], "ważne"),
+    choice("Muszę porozmawiać z ___ o terminie kursu.", ["nauczycielem", "nauczyciela", "nauczycielowi"], "nauczycielem"),
+    choice("Idę ___ spacer po pracy.", ["na", "w", "z"], "na"),
+    choice("Podoba ___ nowy plan zajęć.", ["mi się", "mnie z", "jej się do"], "mi się"),
+    choice("W weekend będę ___ teksty i robić notatki.", ["czytać", "przeczytam", "czytałem"], "czytać"),
+    choice("Potrzebuję ___ z banku.", ["potwierdzenia", "potwierdzenie", "potwierdzeniem"], "potwierdzenia"),
+    choice("Kiedy wróciłem do domu, ___ kolację.", ["zjadłem", "jem", "zjem"], "zjadłem"),
+    choice("Moja siostra jest ___ ode mnie.", ["młodsza", "młoda niż", "najmłoda"], "młodsza"),
+    input("Uzupełnij: potrzebuję (pomoc)", "pomocy"),
+    input("Uzupełnij: jutro (napisać raport do końca)", "jutro napiszę raport do końca"),
+    input("Uzupełnij: mieszkam w (duże miasto)", "dużym mieście"),
+    input("Uzupełnij: pomagam (mój kolega)", "mojemu koledze"),
+    input("Uzupełnij: rozmawiam z (miła nauczycielka)", "miłą nauczycielką"),
+    input("Uzupełnij: nie mam (wolny czas)", "wolnego czasu")
+  ]);
+}
+
+function genExamGrammarContext() {
+  return [
+    note("Gramatyka w kontekście", "Здесь мы тренируем тот же материал, но уже внутри жизненных ситуаций: urząd, mieszkanie, praca, szkoła językowa. Так правило перестаёт быть сухим и начинает работать как часть реальной речи."),
+    input("Urząd: Chciałbym złożyć ___ o wydanie dokumentu.", "wniosek"),
+    input("Mieszkanie: Wczoraj rozmawiałem z ___ o awarii ogrzewania.", "właścicielem"),
+    input("Praca: Nie mam dziś ___ na długie spotkanie.", "czasu"),
+    input("Szkoła: Czy mogę zapisać się ___ egzamin B1 w czerwcu?", "na"),
+    choice("Sklep: Chcę ___ ten produkt, bo nie działa.", ["zwrócić", "zwracać", "zwracałem"], "zwrócić"),
+    choice("Lekarz: Potrzebuję ___ na badanie.", ["skierowania", "skierowanie", "skierowaniem"], "skierowania"),
+    choice("Transport: Tramwaj jest opóźniony, ___ pojadę autobusem.", ["dlatego", "jednak", "ponieważ"], "dlatego"),
+    choice("Mail: W załączniku przesyłam dokumenty i proszę ___ odpowiedź.", ["o", "na", "z"], "o"),
+    input("Przychodnia: Chciałabym przełożyć ___ na czwartek.", "wizytę"),
+    input("Bank: Nie mogę zrobić ___ przez aplikację.", "przelewu"),
+    input("Mieszkanie: W kuchni kapie ___ pod zlewem.", "woda"),
+    input("Szkoła: Codziennie robię krótkie ___ ze słuchania.", "dyktanda"),
+    choice("Urząd: Proszę podpisać formularz i dołączyć ___ paszportu.", ["kopię", "kopia", "kopią"], "kopię"),
+    choice("Praca: Jutro ___ raport do końca dnia.", ["przygotuję", "przygotowywać", "przygotowałem"], "przygotuję"),
+    choice("Transport: Muszę się ___ na tramwaj przy dworcu.", ["przesiąść", "przesiadka", "przesiadłem"], "przesiąść"),
+    choice("Sklep internetowy: Numer zamówienia jest potrzebny, ___ złożyć reklamację.", ["żeby", "jednak", "natomiast"], "żeby")
+  ];
+}
+
+function genWritingTaskAnalysis() {
+  return [
+    note("Jak rozłożyć polecenie pisemne", "Перед письмом полезно не писать сразу, а разложить zadanie на пункты.\n\nНапример:\n- wyjaśnij problem\n- podaj 2 szczegóły\n- poproś o rozwiązanie\n- zakończ grzecznie\n\nТакой разбор делает письмо намного легче и учит думать по-польски структурно."),
+    choice("Polecenie: napisz do właściciela o awarii i poproś o naprawę. Co musi być w tekście?", ["problem i prośba o rozwiązanie", "opis pogody", "plan wakacji"], "problem i prośba o rozwiązanie"),
+    choice("Polecenie: napisz do szkoły i zapytaj o nowy termin. Co jeszcze warto dodać?", ["krótki powód zmiany", "przepis na obiad", "opis rodziny"], "krótki powód zmiany"),
+    input("Uzupełnij po polsku: najpierw analizuję ___, potem piszę", "polecenie")
+  ];
 }
 
 function genTopicSpeaking(key) {
@@ -1473,43 +1770,249 @@ function makeLexiconTopic(key, title, description, theory) {
       makeExercise("RU → PL: напиши", genThematicWords(key)),
       makeExercise("RU → PL: без подсказки+", genThematicActiveRecall(key)),
       makeExercise("Gotowe frazy", genThematicPhrases(key)),
+      makeExercise("Jak mówić o tej sytuacji", genThematicSkillBuilder(key)),
+      makeExercise("Rozumienie tekstu", genThematicComprehension(key)),
+      makeExercise("Gramatyka w kontekście", genThematicContextGrammar(key)),
       makeExercise("Ситуация", genTopicSpeaking(key))
     ]
   };
 }
 
+function genGrammarNuance(topic) {
+  const blocks = {
+    pluralNominative: [
+      note("Как думать о liczba mnoga", "Сначала реши, кто перед тобой: `oni` или `one`.\n\n1. Если это мужчины или смешанная группа, обычно будет `oni`: nowi studenci, dobrzy lekarze.\n2. Если это женщины, дети, вещи или животные, обычно будет `one`: piękne kobiety, małe dzieci, nowe auta.\n3. Прилагательное тоже меняется вместе с группой: dobry -> dobrzy, ale piękny -> piękne.\n\nСмотри не на одно слово, а на связку целиком: `to są dobrzy studenci`, `to są piękne kobiety`."),
+      choice("Что правильно в mianownik liczby mnogiej?", ["to są piękne kobiety", "to są piękni kobiety", "to jest piękne kobiety"], "to są piękne kobiety"),
+      choice("Что правильно для смешанной группы?", ["to są nowi pracownicy", "to są nowe pracownicy", "to jest nowi pracownicy"], "to są nowi pracownicy")
+    ],
+    accusative: [
+      note("Почему `widzę piękne kobiety`", "Шаг 1: `widzę` требует `biernik`.\nШаг 2: базовая форма — `piękne kobiety` в liczba mnoga niemęskoosobowa.\nШаг 3: в этой группе `biernik` часто равен `mianownik`, поэтому форма существительного остаётся `kobiety`.\nШаг 4: прилагательное согласуется с существительным: `piękne` + `kobiety`.\n\nПоэтому: `widzę piękne kobiety`, но `widzę dobrych studentów`, потому что męskoosobowy plural ведёт себя иначе."),
+      choice("Почему здесь `kobiety`, а не `kobiet`?", ["bo to biernik liczby mnogiej niemęskoosobowej", "bo po widzę zawsze jest dopełniacz", "bo kobiety to rodzaj męski"], "bo to biernik liczby mnogiej niemęskoosobowej"),
+      input("Uzupełnij z wyjaśnieniem: widzę (piękna kobieta)", "piękne kobiety", "biernik liczby mnogiej niemęskoosobowej")
+    ],
+    genitive: [
+      note("Почему `nie mam czasu`", "Шаг 1: `mam czas` — обычная базовая фраза.\nШаг 2: отрицание `nie mam` очень часто требует `dopełniacz`.\nШаг 3: `czas` -> `czasu`.\n\nПо той же логике: `mam kawę` -> `nie mam kawy`, `mam pracę` -> `szukam pracy`, `mam telefon` -> `używam telefonu`."),
+      choice("Что здесь запускает dopełniacz?", ["отрицание и глагольная конструкция", "множественное число", "будущее время"], "отрицание и глагольная конструкция"),
+      input("Uzupełnij: nie mam (czas)", "czasu", "negacja + dopełniacz")
+    ],
+    dative: [
+      note("Почему `pomagam miłej kobiecie`", "Шаг 1: `pomagam` спрашивает `komu?`.\nШаг 2: это значит, что нужен `celownik`.\nШаг 3: `kobieta` -> `kobiecie`.\nШаг 4: прилагательное тоже меняется: `miła` -> `miłej`.\n\nПоэтому: `pomagam miłej kobiecie`, `daję prezent małemu dziecku`, `mówię prawdę koledze`."),
+      choice("Что главное в фразе `daję prezent bratu`?", ["глагол требует celownik для адресата", "brat стоит в biernik", "prezent меняет brat"], "глагол требует celownik для адресата"),
+      input("Uzupełnij: pomagam (miła kobieta)", "miłej kobiecie", "celownik + согласование прилагательного")
+    ],
+    instrumental: [
+      note("Почему `jestem dobrym lekarzem`", "Шаг 1: после `jestem` при названии профессии обычно нужен `narzędnik`.\nШаг 2: `lekarz` -> `lekarzem`.\nШаг 3: прилагательное тоже уходит в narzędnik: `dobry` -> `dobrym`.\n\nТак же работают: `jestem nowym pracownikiem`, `jadę szybkim autobusem`, `rozmawiam z miłą nauczycielką`."),
+      choice("Что меняется после `jestem`?", ["существительное и прилагательное идут в narzędnik", "только глагол", "ничего"], "существительное и прилагательное идут в narzędnik"),
+      input("Uzupełnij: jestem (dobry lekarz)", "dobrym lekarzem", "narzędnik po jestem")
+    ],
+    locative: [
+      note("Почему `mieszkam w dużym mieście`", "Шаг 1: `w` в значении `где?` обычно ведёт к `miejscownik`.\nШаг 2: `miasto` -> `mieście`.\nШаг 3: прилагательное тоже меняется: `duże miasto` -> `w dużym mieście`.\n\nСравни: `jadę do dużego miasta` — это уже `dopełniacz`, потому что вопрос `dokąd?`."),
+      choice("Почему здесь `mieście`, а не `miasto`?", ["bo `w` tutaj znaczy `gdzie?` i daje miejscownik", "bo to biernik", "bo это прошедшее время"], "bo `w` tutaj znaczy `gdzie?` i daje miejscownik"),
+      input("Uzupełnij: mieszkam w (duże miasto)", "dużym mieście", "w + miejscownik")
+    ],
+    verbsPresent: [
+      note("Как разбирать `pracuję`, `robisz`, `mówią`", "Сначала найди лицо: `ja`, `ty`, `oni`.\nПотом вспомни модель:\n- `pracować` -> pracuję, pracujesz...\n- `robić` -> robię, robisz...\n- `mówić` -> mówię, mówisz...\n\nТо есть мы не угадываем форму, а идём по шагам: `кто?` -> `какой это глагол?` -> `какая у него модель?`."),
+      choice("Что нужно определить первым?", ["лицо: ja / ty / on / my / wy / oni", "падеж существительного", "род прилагательного"], "лицо: ja / ty / on / my / wy / oni"),
+      input("Uzupełnij: oni (mówić)", "mówią", "najpierw ustal osobę: oni")
+    ],
+    verbsPast: [
+      note("Почему `robiłem` и `robiłam` разные", "В прошедшем времени польский показывает род.\n- мужчина: `robiłem`, `byłem`, `poszedłem`\n- женщина: `robiłam`, `byłam`, `poszłam`\n\nПоэтому в B1 всегда полезно думать не только о лице, но и о том, кто говорит."),
+      choice("Что отличает `robiłem` от `robiłam`?", ["род говорящего", "падеж дополнения", "число существительного"], "род говорящего"),
+      input("Uzupełnij: ja, kobieta (być)", "byłam", "forma żeńska czasu przeszłego")
+    ],
+    verbsFuture: [
+      note("Как выбирать будущее", "Сначала задай себе вопрос: нужен процесс или результат?\n- процесс / длительность: `będę pisać raport`\n- готовый результат: `napiszę raport`\n\nЕсли слышишь `jutro cały wieczór`, часто это процесс. Если слышишь `do końca`, `na jutro`, `w końcu`, часто нужен результат."),
+      choice("Что лучше для результата?", ["napiszę raport", "będę pisać raport"], "napiszę raport"),
+      choice("Что лучше для процесса вечером?", ["wieczorem będę czytać", "wieczorem przeczytam"], "wieczorem będę czytać")
+    ],
+    aspect: [
+      note("Как думать об aspekcie", "Не начинай с термина, начинай с смысла.\n- `robić` = делать как процесс, привычку, длительность\n- `zrobić` = сделать и получить итог\n\nСравни:\n`codziennie robię ćwiczenia` — привычка\n`jutro zrobię ćwiczenia` — будет готовый результат"),
+      choice("Что говорит о процессе?", ["teraz czytam książkę", "zaraz przeczytam książkę"], "teraz czytam książkę"),
+      choice("Что говорит о результате?", ["w końcu napisałem mail", "długo pisałem mail"], "w końcu napisałem mail")
+    ],
+    prepositions: [
+      note("Как разбирать предлог", "Сначала не смотри на форму слова. Сначала спроси о смысле:\n- `dokąd?` -> часто `do` / `na` + biernik lub dopełniacz\n- `gdzie?` -> `w` / `na` + miejscownik\n- `skąd?` -> часто `z` + dopełniacz\n- `z kim?` -> `z` + narzędnik\n\nСравни: `idę do sklepu` -> `jestem w sklepie` -> `wracam ze sklepu`."),
+      choice("Что правильно для `gdzie?`?", ["w pracy", "do pracy", "z pracą"], "w pracy"),
+      choice("Что правильно для `z kim?`?", ["z kolegą", "z kolegi", "do kolegi"], "z kolegą")
+    ],
+    pronouns: [
+      note("Почему `mi`, `mnie`, `mu`, `go` не одно и то же", "Местоимение тоже подчиняется падежу.\n- `daj mi` / `pomóż mi` -> celownik\n- `widzę go` / `znam ją` -> biernik\n- `nie ma mnie` -> dopełniacz/accusative-like form in use\n\nСначала решай вопрос: `komu?`, `kogo?`, `czego?`, и только потом выбирай местоимение."),
+      choice("Что правильно после `pomagam`?", ["mu", "go", "jego"], "mu"),
+      choice("Что правильно после `widzę`?", ["ją", "jej", "nią"], "ją")
+    ],
+    reflexiveSie: [
+      note("Как понимать `się`", "`się` не переводится одинаково каждый раз. Иногда это часть глагола: `uczyć się`, `bać się`, `interesować się`.\nИногда это конструкция: `podoba mi się ten kurs`.\n\nПоэтому полезно учить не `się` отдельно, а целую фразу: `uczę się polskiego`, `boję się egzaminu`, `podoba mi się ten film`."),
+      choice("Что важнее всего с `się`?", ["учить глагол и konstrukcję целиком", "всегда ставить его в конец", "переводить как `себя`"], "учить глагол и konstrukcję целиком"),
+      input("Uzupełnij: boję (__) egzaminu", "się", "to stała konstrukcja")
+    ],
+    comparisons: [
+      note("Как строить сравнение", "Сначала есть обычная форма: `tani`.\nПотом сравнительная: `tańszy`.\nПотом превосходная: `najtańszy`.\n\nВ речи чаще всего нужны готовые куски:\n`ten kurs jest tańszy niż tamten`\n`to jest najlepsza opcja`"),
+      choice("Что значит `niż`?", ["сравнение: `чем`", "причина: `потому что`", "цель: `чтобы`"], "сравнение: `чем`"),
+      input("Uzupełnij: ten telefon jest (drogi) niż tamten", "droższy", "stopień wyższy")
+    ],
+    wordOrder: [
+      note("Как думать о порядке слов", "В польском можно двигать части фразы, но нейтральный порядок всё равно важен.\nСначала обычно идёт тема или время: `jutro`, `wczoraj`, `po pracy`.\nПотом глагол и его части: `jutro spotykam się z kolegą`.\n`nie` обычно стоит перед глаголом: `nie mam czasu`.\n`się` часто идёт сразу после глагола или очень близко к нему."),
+      choice("Что звучит нейтральнее?", ["jutro spotykam się z kolegą", "spotykam jutro z kolegą się"], "jutro spotykam się z kolegą"),
+      choice("Где обычно стоит `nie`?", ["перед глаголом", "после существительного", "в конце фразы"], "перед глаголом")
+    ],
+    complexSentences: [
+      note("Как удлинять фразу без хаоса", "Лучший путь к B1 — не длинные слова, а понятные связки.\n- `bo` = причина\n- `dlatego` = результат\n- `że` = что\n- `żeby` = чтобы\n- `jeśli` = если\n\nСобирай ответ как конструктор: opinia -> bo -> przykład -> dlatego -> wniosek."),
+      choice("Что лучше для причины?", ["bo jestem zmęczony", "dlatego jestem zmęczony", "żeby jestem zmęczony"], "bo jestem zmęczony"),
+      choice("Что лучше для результата?", ["pracuję dużo, dlatego jestem zmęczony", "pracuję dużo, bo dlatego", "pracuję dużo, żeby zmęczony"], "pracuję dużo, dlatego jestem zmęczony")
+    ]
+  };
+  return blocks[topic] || [];
+}
+
+function genGrammarStepByStep(topic) {
+  const blocks = {
+    pluralNominative: [
+      note("Разбор по шагам: `to są piękne kobiety`", "1. Базовая форма: `piękna kobieta`.\n2. Нужно множественное число, потому что говорим не об одной, а о группе.\n3. Это grupa niemęskoosobowa, потому что речь о женщинах.\n4. Существительное: `kobieta -> kobiety`.\n5. Прилагательное: `piękna -> piękne`.\n\nИтог: `to są piękne kobiety`."),
+      input("Uzupełnij: to są (piękna kobieta)", "piękne kobiety", "liczba mnoga niemęskoosobowa"),
+      choice("Почему `dobrzy studenci`, но `dobre książki`?", ["bo najpierw rozróżniamy męskoosobowy i niemęskoosobowy", "bo książki są w bierniku", "bo studenci są w czasie przeszłym"], "bo najpierw rozróżniamy męskoosobowy i niemęskoosobowy")
+    ],
+    accusative: [
+      note("Разбор по шагам: `widzę dobrego lekarza`", "1. Глагол `widzę` требует `biernik`.\n2. Базовая форма: `dobry lekarz`.\n3. `lekarz` — męski żywotny, поэтому в biernik он часто похож на dopełniacz.\n4. Существительное: `lekarz -> lekarza`.\n5. Прилагательное: `dobry -> dobrego`.\n\nИтог: `widzę dobrego lekarza`."),
+      input("Uzupełnij: kupuję (czarna kawa)", "czarną kawę", "biernik rodzaju żeńskiego"),
+      choice("Почему `mam nowy telefon`, а не `nowego telefonu`?", ["bo telefon jest męski nieżywotny i często nie zmienia się w bierniku", "bo po `mam` jest miejscownik", "bo telefon jest w liczbie mnogiej"], "bo telefon jest męski nieżywotny i często nie zmienia się w bierniku")
+    ],
+    genitive: [
+      note("Разбор по шагам: `potrzebuję wolnego czasu`", "1. Глагол `potrzebuję` требует `dopełniacz`.\n2. Базовая форма: `wolny czas`.\n3. Существительное: `czas -> czasu`.\n4. Прилагательное: `wolny -> wolnego`.\n\nИтог: `potrzebuję wolnego czasu`."),
+      input("Uzupełnij: szukam (nowa praca)", "nowej pracy", "dopełniacz po `szukam`"),
+      choice("Что важнее всего в `dużo ludzi`?", ["słowo ilości wymaga dopełniacza", "ludzie są w miejscowniku", "to forma przyszła"], "słowo ilości wymaga dopełniacza")
+    ],
+    dative: [
+      note("Разбор по шагам: `daję małemu dziecku prezent`", "1. `daję` отвечает на вопрос `komu?`.\n2. Значит, нужен `celownik` для адресата.\n3. Базовая форма: `małe dziecko`.\n4. Существительное: `dziecko -> dziecku`.\n5. Прилагательное: `małe -> małemu`.\n\nИтог: `daję małemu dziecku prezent`."),
+      input("Uzupełnij: mówię prawdę (mój kolega)", "mojemu koledze", "celownik"),
+      choice("Почему `pomagam jej`, а не `ją`?", ["bo `pomagam` wymaga odpowiedzi na `komu?`", "bo `jej` to biernik", "bo po `pomagam` zawsze jest `z`"], "bo `pomagam` wymaga odpowiedzi na `komu?`")
+    ],
+    instrumental: [
+      note("Разбор по шагам: `rozmawiam z miłą nauczycielką`", "1. Предлог `z` в значении `с кем?` требует `narzędnik`.\n2. Базовая форма: `miła nauczycielka`.\n3. Существительное: `nauczycielka -> nauczycielką`.\n4. Прилагательное: `miła -> miłą`.\n\nИтог: `rozmawiam z miłą nauczycielką`."),
+      input("Uzupełnij: jestem (nowy pracownik)", "nowym pracownikiem", "narzędnik po `jestem`"),
+      choice("Почему `z Polski`, но `z kolegą`?", ["bo `z` może znaczyć albo `skąd?`, albo `z kim?`", "bo Polska jest w bierniku", "bo kolega jest w miejscowniku"], "bo `z` może znaczyć albo `skąd?`, albo `z kim?`")
+    ],
+    locative: [
+      note("Разбор по шагам: `myślę o polskim egzaminie`", "1. Предлог `o` часто требует `miejscownik`.\n2. Базовая форма: `polski egzamin`.\n3. Существительное: `egzamin -> egzaminie`.\n4. Прилагательное: `polski -> polskim`.\n\nИтог: `myślę o polskim egzaminie`."),
+      input("Uzupełnij: jestem na (ważne spotkanie)", "ważnym spotkaniu", "na + miejscownik = gdzie?"),
+      choice("Что отличает `na kurs` от `na kursie`?", ["pierwsze odpowiada na `dokąd?`, drugie na `gdzie?`", "оба это biernik", "оба это dopełniacz"], "pierwsze odpowiada na `dokąd?`, drugie na `gdzie?`")
+    ],
+    verbsPresent: [
+      note("Разбор по шагам: `oni pracują`", "1. Найди лицо: `oni`.\n2. Базовый глагол: `pracować`.\n3. В настоящем времени выбираем форму для `oni`.\n4. Получаем: `pracują`.\n\nТот же путь работает и дальше: `ja robię`, `ty mówisz`, `my jedziemy`."),
+      input("Uzupełnij: my (robić)", "robimy", "najpierw ustal osobę: my"),
+      choice("Что важнее в настоящем времени?", ["najpierw rozpoznać osobę", "najpierw rozpoznać падеж", "najpierw rozpoznać rodzaj rzeczownika"], "najpierw rozpoznać osobę")
+    ],
+    verbsPast: [
+      note("Разбор по шагам: `ja, kobieta -> byłam`", "1. Определи лицо: `ja`.\n2. Определи род говорящего: женщина.\n3. Базовый глагол: `być`.\n4. Для `ja, kobieta` в прошедшем времени нужна форма `byłam`.\n\nПоэтому в прошлом времени мы почти всегда смотрим и на лицо, и на род."),
+      input("Uzupełnij: ja, mężczyzna (wrócić)", "wróciłem", "czas przeszły, rodzaj męski"),
+      choice("Почему `robiłem` и `robiłam` отличаются?", ["bo czas przeszły pokazuje rodzaj mówiącego", "bo to dwa różne падежи", "bo одно из них przyszłość"], "bo czas przeszły pokazuje rodzaj mówiącego")
+    ],
+    verbsFuture: [
+      note("Разбор по шагам: `jutro napiszę raport`", "1. Маркер времени: `jutro`.\n2. Решаем: нужен процесс или готовый результат?\n3. Здесь важен готовый результат — raport będzie gotowy.\n4. Поэтому выбираем совершенный вид: `napiszę`.\n\nЕсли бы речь была о процессе вечером, было бы: `jutro będę pisać raport`."),
+      input("Uzupełnij: wieczorem (ja czytać) książkę", "będę czytać", "proces w przyszłości"),
+      choice("Почему `napiszę`, а не `będę pisać`?", ["bo chodzi o gotowy rezultat", "bo raport jest w miejscowniku", "bo `jutro` zawsze wymaga niedokonanego"], "bo chodzi o gotowy rezultat")
+    ],
+    aspect: [
+      note("Разбор по шагам: `codziennie czytam`, ale `jutro przeczytam`", "1. Смотри на смысл, не на термин.\n2. `codziennie` = привычка, повторяемость -> niedokonany: `czytam`.\n3. `jutro` + идея закончить текст = rezultat -> dokonany: `przeczytam`.\n\nАспект — это не украшение, а способ показать процесс или итог."),
+      input("Uzupełnij: długo (pisać) ten mail", "pisałem", "proces, długo"),
+      choice("Что подсказывает dokonany aspekt?", ["do końca / w końcu / gotowy rezultat", "zawsze / często", "w pracy / w domu"], "do końca / w końcu / gotowy rezultat")
+    ],
+    prepositions: [
+      note("Разбор по шагам: `idę do nowej pracy`", "1. Задай смысловой вопрос: `dokąd?`.\n2. Для движения `куда?` часто нужен предлог `do`.\n3. `do` требует `dopełniacz`.\n4. Базовая форма: `nowa praca`.\n5. Получаем: `nowej pracy`.\n\nИтог: `idę do nowej pracy`."),
+      input("Uzupełnij: jestem w (nowy sklep)", "nowym sklepie", "gdzie? = miejscownik"),
+      choice("Почему `z kolegą`, но `do kolegi`?", ["bo pierwszy zwrot odpowiada na `z kim?`, a drugi na `dokąd? / do kogo?`", "bo оба это miejscownik", "bo `z` zawsze łączy się z celownikiem"], "bo pierwszy zwrot odpowiada na `z kim?`, a drugi na `dokąd? / do kogo?`")
+    ],
+    pronouns: [
+      note("Разбор по шагам: `daj mi znać`", "1. Глагол/конструкция подразумевает адресата: `komu?`.\n2. Для `ja` в celownik нужна короткая форма `mi`.\n3. Поэтому говорим: `daj mi znać`, `powiedz mi`, `pomóż mi`.\n\nНо `widzisz mnie` — это уже другой вопрос: `kogo?`."),
+      input("Uzupełnij: widzę (ona)", "ją", "biernik: kogo?"),
+      choice("Почему `mu`, а не `go` после `pomagam`?", ["bo `pomagam` wymaga celownika", "bo `mu` to miejscownik", "bo `go` używa się po `z`"], "bo `pomagam` wymaga celownika")
+    ],
+    reflexiveSie: [
+      note("Разбор по шагам: `podoba mi się ten kurs`", "1. Здесь нельзя думать только о слове `się`.\n2. Вся конструкция такая: `podobać się komu?`.\n3. Значит, `mi` — это celownik, адресат впечатления.\n4. `się` — часть конструкции.\n\nПоэтому: `podoba mi się kurs`, `podobają mi się zajęcia`."),
+      input("Uzupełnij: boję ___ egzaminu", "się", "stała konstrukcja"),
+      choice("Что лучше учить с `się`?", ["całą konstrukcję, a nie samo słowo", "только перевод `себя`", "всегда ставить его в конец"], "całą konstrukcję, a nie samo słowo")
+    ],
+    comparisons: [
+      note("Разбор по шагам: `ten kurs jest lepszy niż tamten`", "1. Базовая форма: `dobry`.\n2. Нерегулярная сравнительная форма: `lepszy`.\n3. Для сравнения двух вещей часто добавляем `niż`.\n\nИтог: `ten kurs jest lepszy niż tamten`."),
+      input("Uzupełnij: to było (dobre rozwiązanie)", "lepsze rozwiązanie", "stopień wyższy"),
+      choice("Почему `najlepszy` сильнее, чем `lepszy`?", ["bo to stopień najwyższy, a nie tylko porównanie dwóch rzeczy", "bo это dopełniacz", "bo это forma żeńska"], "bo to stopień najwyższy, a nie tylko porównanie dwóch rzeczy")
+    ],
+    wordOrder: [
+      note("Разбор по шагам: `jutro spotykam się z kolegą`", "1. Сначала можно поставить время: `jutro`.\n2. Потом глагол: `spotykam`.\n3. `się` держим близко к глаголу.\n4. Потом остальная информация: `z kolegą`.\n\nТак фраза звучит нейтрально и по-польски естественно."),
+      input("Uzupełnij naturalnie: dziś / nie mam / czasu", "dziś nie mam czasu", "nie przed czasownikiem"),
+      choice("Что чаще всего делает фразу странной?", ["dalekie ustawienie `się` i chaos w kolejności", "слишком ясный порядок слов", "использование czasu teraźniejszego"], "dalekie ustawienie `się` i chaos w kolejności")
+    ],
+    complexSentences: [
+      note("Разбор по шагам: `uczę się, żeby lepiej mówić`", "1. Сначала формулируем действие: `uczę się`.\n2. Потом решаем, что хотим добавить: причину, результат или цель.\n3. Здесь это цель: `чтобы говорить лучше`.\n4. Значит, нужна связка `żeby`.\n\nИтог: `uczę się, żeby lepiej mówić`."),
+      input("Uzupełnij: nie przyszedłem, ___ byłem chory", "bo", "przyczyna"),
+      choice("Что делает `dlatego`?", ["pokazuje skutek", "pokazuje cel", "tworzy miejscownik"], "pokazuje skutek")
+    ]
+  };
+  return blocks[topic] || [];
+}
+
+function genB1Strategy(topic) {
+  const blocks = {
+    b1Connectors: [
+      note("Как связки делают ответ уровнем B1", "На B1 мало просто сказать одно короткое предложение. Нужна связность.\n\nСамая удобная схема:\n1. opinia: `moim zdaniem...`\n2. powód: `ponieważ / bo...`\n3. kontrast albo dodatek: `jednak / natomiast / oprócz tego...`\n4. wniosek: `dlatego / podsumowując...`\n\nДаже простой ответ звучит сильнее: `Moim zdaniem kurs online jest wygodny, ponieważ oszczędza czas. Jednak trzeba mieć dobrą organizację. Podsumowując, to dobre rozwiązanie dla wielu osób.`"),
+      choice("Что лучше звучит как B1-аргумент?", ["Moim zdaniem to dobry kurs, ponieważ jest praktyczny.", "To dobry kurs. Dobry. Kurs.", "Dobry kurs i tyle."], "Moim zdaniem to dobry kurs, ponieważ jest praktyczny."),
+      input("Uzupełnij связкой результата: Mam mało czasu, ___ uczę się codziennie po pracy.", "dlatego", "wynik / skutek")
+    ],
+    writingTemplates: [
+      note("Как писать письмо без паники", "У письма B1 почти всегда есть опорный каркас:\n1. cel: зачем ты пишешь\n2. kontekst: что произошло\n3. szczegóły: 2-3 конкретные детали\n4. prośba lub oczekiwanie\n5. zakończenie\n\nЕсли держать этот порядок, письмо становится намного легче, даже когда лексика ещё не идеальна."),
+      choice("Что должно появиться в письме B1 почти всегда?", ["цель письма и конкретная просьба", "сложные книжные слова", "длинные абзацы без структуры"], "цель письма и конкретная просьба"),
+      input("Uzupełnij grzecznie: Zwracam się z prośbą o ___", "informację", "najczęstsza formuła pisemna")
+    ],
+    examB1Reading: [
+      note("Как читать на экзамене B1", "В официальных заданиях B1 почти никогда не нужно переводить весь текст.\n\nРабочий порядок:\n1. прочитай вопрос\n2. найди ключевое место в тексте\n3. ищи факт: kto? gdzie? kiedy? dlaczego? co trzeba zrobić?\n4. убери ответы, которые звучат похоже, но не совпадают по смыслу\n\nТо есть мы читаем ради решения задачи, а не ради полного перевода."),
+      choice("Что лучше делать первым?", ["посмотреть вопрос и ключевой запрос", "переводить каждое слово подряд", "сразу выбирать самый длинный ответ"], "посмотреть вопрос и ключевой запрос"),
+      choice("Что часто проверяет czytanie B1?", ["ключевую информацию и намерение текста", "литературный анализ", "знание редких пословиц"], "ключевую информацию и намерение текста")
+    ],
+    examB1Listening: [
+      note("Как слушать B1 без текста", "На B1 в аудировании чаще всего проверяют ситуацию и деталь: кто говорит, по какому поводу, что нужно сделать, когда и где.\n\nПервое прослушивание: поймай общий смысл.\nВторое: лови детали.\nПосле этого полезно вернуться к словам-маркерам: `jutro`, `przełożyć`, `formularz`, `odbiór`, `opóźniony`.\n\nИменно так строятся сильные привычки, а не через угадывание."),
+      choice("Что важнее на первом прослушивании?", ["понять ситуацию целиком", "записать каждое слово", "сразу открыть текст"], "понять ситуацию целиком"),
+      choice("Что чаще всего спрашивают после nagrania B1?", ["цель, проблема, время или действие", "автора стихотворения", "точный перевод всей записи"], "цель, проблема, время или действие")
+    ],
+    examB1Writing: [
+      note("Что проверяют в письме B1", "Экзамен смотрит не на красоту стиля, а на то, можешь ли ты выполнить задачу.\n\nОбычно нужно:\n- ответить на все пункты polecenia\n- держать ясную структуру\n- использовать вежливый и понятный тон\n- дать конкретные детали, а не только общие слова\n\nЛучше простой, но полный текст, чем красивый, но недоделанный."),
+      choice("Что опаснее всего в письме B1?", ["не ответить на один из пунктов задания", "использовать простую лексику", "написать короткое вежливое вступление"], "не ответить на один из пунктов задания"),
+      input("Uzupełnij zakończenie: Z góry dziękuję za ___", "odpowiedź", "częsta formuła końcowa")
+    ]
+  };
+  return blocks[topic] || [];
+}
+
 const topics = {
   diagnosticB1: { title: "Диагностика B1", description: "Карта сильных и слабых мест", theory: ["Начни здесь, если хочешь понять текущий уровень.", "20 вопросов смешивают падежи, времена, аспект, лексику и экзаменационные реакции.", "После прохождения смотри проценты по темам и тренируй слабые блоки."], exercises: [makeExercise("Диагностика: 20 вопросов", genDiagnostic())] },
   mixed20: { title: "Смешанный тест 20", description: "Активное вспоминание из всего курса", theory: ["Это режим для памяти: вопросы идут вперемешку, как в реальной речи.", "Запускай после 2–3 тем или в конце дня.", "Цель — 80% правильных без подсказок."], exercises: [makeExercise("Mixed practice 20", genMixed20())] },
-  pluralNominative: { title: "Mianownik liczby mnogiej", description: "Множественное число: oni / one", theory: ["Mianownik liczby mnogiej отвечает на pytanie kto? co? и нужен, когда мы просто называем группу: To są studenci. To są książki.", "Самое важное деление: `oni` = męskoosobowy, `one` = niemęskoosobowy. Если в группе есть мужчины или группа смешанная, очень часто будет `oni`.", "Męskoosobowy: studenci, lekarze, koledzy, rodzice. Niemęskoosobowy: kobiety, dzieci, psy, auta, książki.", "Смотри сразу на прилагательное: dobrzy studenci, mili koledzy, ale dobre książki, nowe mieszkania, małe dzieci.", "Практическое правило: сначала реши `oni czy one`, а уже потом выбирай форму прилагательного и существительного."], exercises: [makeExercise("Męskoosobowy — rzeczowniki", genMascPlural()), makeExercise("Niemęskoosobowy — rzeczowniki", genNonMascPlural()), makeExercise("Przymiotnik + rzeczownik", genPluralAdjectives()), makeExercise("Oni czy one?", genOniOne()), makeExercise("Исправь ошибку", genPluralMistakes()), makeExercise("Разговор", speakingPrompts)] },
-  accusative: { title: "Biernik — kogo? co?", description: "Винительный падеж", theory: ["Biernik нужен, когда действие направлено на объект: `widzę`, `mam`, `kupuję`, `znam`, `spotykam`, `lubię`.", "Удобная логика такая: сначала найди глагол, потом спроси `kogo? co?`, и только потом меняй форму слова.", "Мужской одушевлённый обычно похож на dopełniacz: widzę lekarza, znam kolegę, mam psa. Мужской неодушевлённый часто не меняется: mam telefon, kupuję chleb.", "Женский род часто даёт окончания `-ę / -ą`: kawę, herbatę, dobrą książkę. Средний род обычно совпадает с mianownik: widzę dziecko.", "Очень полезно учить готовыми кусками: `widzę nowego lekarza`, `kupuję czarną kawę`, `mam ważny dokument`."], exercises: [makeExercise("Формы biernik", genAccusativeForms()), makeExercise("Прилагательные в biernik", genAccusativeAdjectives()), makeExercise("Типичные ошибки", cap50([input("Widzę dobry lekarz", "widzę dobrego lekarza"), input("Mam nowego samochodu", "mam nowy samochód"), input("Kupuję czarna kawa", "kupuję czarną kawę"), input("Znam polscy studentów", "znam polskich studentów"), input("Spotykam nowy kolegę", "spotykam nowego kolegę")])), makeExercise("Разговор", speakingPrompts)] },
-  genitive: { title: "Dopełniacz — kogo? czego?", description: "Родительный падеж", theory: ["Dopełniacz очень частый в живой речи. Он появляется после отрицания `nie ma / nie mam`, после количества `dużo / mało / trochę` и после глаголов `szukam`, `potrzebuję`, `używam`.", "Хороший способ запомнить: dopełniacz часто отвечает за идею `нет чего-то`, `нужно что-то`, `ищу что-то`.", "Типичные пары: mam czas -> nie mam czasu, jest kawa -> nie ma kawy, mam pracę -> szukam pracy.", "После чисел и слов количества dopełniacz особенно важен: dużo ludzi, mało pieniędzy, trochę wody.", "На B1 полезно не просто знать форму, а держать готовые конструкции: `potrzebuję pomocy`, `używam telefonu`, `nie mam czasu`."], exercises: [makeExercise("Dopełniacz — формы", genGenitive()), makeExercise("Исправь ошибку", cap50([input("Nie mam czas", "nie mam czasu"), input("Nie ma kawa", "nie ma kawy"), input("Szukam pracę", "szukam pracy"), input("Potrzebuję pomoc", "potrzebuję pomocy"), input("Dużo ludzie", "dużo ludzi"), input("Używam telefon", "używam telefonu"), input("Mało pieniądze", "mało pieniędzy"), input("Trochę wodę", "trochę wody")])), makeExercise("Разговор", speakingPrompts)] },
-  dative: { title: "Celownik — komu? czemu?", description: "Дательный падеж", theory: ["Celownik показывает адресата действия: кому я даю, кому помогаю, кому говорю, кому объясняю.", "Самые полезные формы для жизни: `mi`, `ci`, `mu`, `jej`, `nam`, `wam`, `im`. Они встречаются постоянно: podoba mi się, pomagam ci, mówię mu.", "У существительных часто видим формы: studentowi, koledze, kobiecie, dziecku, mamie, bratu.", "Запоминай с глаголом целиком: `pomagam koledze`, `daję dziecku prezent`, `mówię mamie prawdę`.", "Частая ошибка B1: ставить biernik вместо celownik. После `pomagać` и `dawać komuś` почти всегда нужен именно celownik."], exercises: [makeExercise("Celownik — формы", genDative()), makeExercise("Исправь ошибку", cap50([input("Praca daje mnie satysfakcję", "praca daje mi satysfakcję"), input("Pomagam mój kolega", "pomagam mojemu koledze"), input("Daję książkę brat", "daję książkę bratu"), input("Pokazuję droga student", "pokazuję drogę studentowi"), input("Pomagam ona", "pomagam jej"), input("Daję jemu prezent", "daję mu prezent"), input("Mówię do ci", "mówię ci"), input("Pomagam ludzie", "pomagam ludziom")])), makeExercise("Разговор", speakingPrompts)] },
-  instrumental: { title: "Narzędnik — z kim? z czym?", description: "Творительный падеж", theory: ["Narzędnik часто нужен в двух базовых ситуациях: после `z` и после `być`, когда мы называем профессию, роль или состояние.", "С `z` это обычно ответ на `с кем? с чем?`: z kolegą, z rodziną, z dokumentem. После `jestem` это `кем? чем?`: jestem programistą, jestem studentem.", "Типичные окончания хорошо слышны в готовых фразах: kolegą, kobietą, rodziną, dzieckiem, nauczycielem, lekarzem.", "На уровне B1 старайся учить narzędnik не списком, а в живых конструкциях: `pracuję z ludźmi`, `jadę samochodem`, `jestem zainteresowany kursem`.", "Если видишь `z` в значении `вместе с`, очень вероятно нужен narzędnik. Но `z pracy` и `z Polski` — это уже dopełniacz, потому что там значение `откуда`."], exercises: [makeExercise("Narzędnik — формы", genInstrumental()), makeExercise("Исправь ошибку", cap50([input("Jestem programista", "jestem programistą"), input("Idę z kolega", "idę z kolegą"), input("Bawię się z córka", "bawię się z córką"), input("Rozmawiam z nauczyciel", "rozmawiam z nauczycielem"), input("Jadę samochód", "jadę samochodem"), input("On jest lekarz", "on jest lekarzem"), input("Spotykam się z rodzina", "spotykam się z rodziną"), input("Pracuję z ludzie", "pracuję z ludźmi")])), makeExercise("Разговор", speakingPrompts)] },
-  locative: { title: "Miejscownik — o kim? o czym?", description: "Местный / предложный падеж", theory: ["Miejscownik почти всегда приходит с предлогом. Самые частые друзья этого падежа: `w`, `na`, `o`, `po`, `przy`.", "Он нужен, когда мы говорим где что-то находится или о чём говорим: w Polsce, w pracy, na kursie, o rodzinie, o problemie.", "Для памяти хорошо держать связки готовыми блоками: `w domu`, `w sklepie`, `na spotkaniu`, `o języku polskim`, `po pracy`.", "Частая ловушка: после `w` и `na` нужно понять смысл. `na kurs` = куда? biernik. `na kursie` = где? miejscownik.", "Чтобы miejscownik стал удобным, полезно учить не одно слово, а мини-фразу: `mieszkam w Polsce`, `myślę o egzaminie`, `rozmawiam o pracy`."], exercises: [makeExercise("Miejscownik — формы", genLocative()), makeExercise("Исправь ошибку", cap50([input("Mieszkam w Polska", "mieszkam w Polsce"), input("Jestem w praca", "jestem w pracy"), input("Mówię o rodzina", "mówię o rodzinie"), input("Byłem w sklep", "byłem w sklepie"), input("Myślę o kurs", "myślę o kursie"), input("Czytam o język polski", "czytam o języku polskim"), input("Jestem na spotkanie", "jestem na spotkaniu"), input("Spaceruję po park", "spaceruję po parku")])), makeExercise("Разговор", speakingPrompts)] },
-  verbsPresent: { title: "Czas teraźniejszy", description: "Настоящее время", theory: ["Czas teraźniejszy нужен для привычек, распорядка, фактов и того, что происходит сейчас: pracuję, uczę się, mieszkam, wiem.", "Самый удобный старт — видеть модели. `-ować`: pracuję, pracujesz. `-ać`: mieszkam, mieszkasz. `-ić / -yć`: robię, robisz; mówię, mówisz.", "Некоторые глаголы надо просто запомнить как частотные: być, mieć, iść, jeść, móc. Они дают опору почти во всей речи.", "Учись не отдельной форме, а короткой репликой: `pracuję w firmie`, `mieszkam w Warszawie`, `nie mam czasu`, `idziemy do sklepu`.", "Частая ошибка на старте B1 — путать окончания по лицам. Если не уверен, сначала определи `ja / ty / on / my / wy / oni`, и только потом выбирай форму."], exercises: [makeExercise("Спряжение", genPresent()), makeExercise("Исправь ошибку", cap50([input("ja pracuje", "ja pracuję"), input("ty piję kawę", "ty pijesz kawę"), input("oni mówi po polsku", "oni mówią po polsku"), input("my mieszka w Polsce", "my mieszkamy w Polsce"), input("wy robią zadanie", "wy robicie zadanie"), input("on pijesz kawę", "on pije kawę"), input("ja masz czas", "ja mam czas")])), makeExercise("Разговор", speakingPrompts)] },
+  pluralNominative: { title: "Mianownik liczby mnogiej", description: "Множественное число: oni / one", theory: ["Mianownik liczby mnogiej отвечает на pytanie kto? co? и нужен, когда мы просто называем группу: To są studenci. To są książki.", "Самое важное деление: `oni` = męskoosobowy, `one` = niemęskoosobowy. Если в группе есть мужчины или группа смешанная, очень часто будет `oni`.", "Męskoosobowy: studenci, lekarze, koledzy, rodzice. Niemęskoosobowy: kobiety, dzieci, psy, auta, książki.", "Смотри сразу на прилагательное: dobrzy studenci, mili koledzy, ale dobre książki, nowe mieszkania, małe dzieci.", "Практическое правило: сначала реши `oni czy one`, а уже потом выбирай форму прилагательного и существительного."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("pluralNominative")), makeExercise("Разбор по шагам", genGrammarStepByStep("pluralNominative")), makeExercise("Męskoosobowy — rzeczowniki", genMascPlural()), makeExercise("Niemęskoosobowy — rzeczowniki", genNonMascPlural()), makeExercise("Przymiotnik + rzeczownik", genPluralAdjectives()), makeExercise("Oni czy one?", genOniOne()), makeExercise("Исправь ошибку", genPluralMistakes()), makeExercise("Разговор", speakingPrompts)] },
+  accusative: { title: "Biernik — kogo? co?", description: "Винительный падеж", theory: ["Biernik нужен, когда действие направлено на объект: `widzę`, `mam`, `kupuję`, `znam`, `spotykam`, `lubię`.", "Удобная логика такая: сначала найди глагол, потом спроси `kogo? co?`, и только потом меняй форму слова.", "Мужской одушевлённый обычно похож на dopełniacz: widzę lekarza, znam kolegę, mam psa. Мужской неодушевлённый часто не меняется: mam telefon, kupuję chleb.", "Женский род часто даёт окончания `-ę / -ą`: kawę, herbatę, dobrą książkę. Средний род обычно совпадает с mianownik: widzę dziecko.", "Очень полезно учить готовыми кусками: `widzę nowego lekarza`, `kupuję czarną kawę`, `mam ważny dokument`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("accusative")), makeExercise("Разбор по шагам", genGrammarStepByStep("accusative")), makeExercise("Формы biernik", genAccusativeForms()), makeExercise("Прилагательные в biernik", genAccusativeAdjectives()), makeExercise("Типичные ошибки", cap50([input("Widzę dobry lekarz", "widzę dobrego lekarza"), input("Mam nowego samochodu", "mam nowy samochód"), input("Kupuję czarna kawa", "kupuję czarną kawę"), input("Znam polscy studentów", "znam polskich studentów"), input("Spotykam nowy kolegę", "spotykam nowego kolegę")])), makeExercise("Разговор", speakingPrompts)] },
+  genitive: { title: "Dopełniacz — kogo? czego?", description: "Родительный падеж", theory: ["Dopełniacz очень частый в живой речи. Он появляется после отрицания `nie ma / nie mam`, после количества `dużo / mało / trochę` и после глаголов `szukam`, `potrzebuję`, `używam`.", "Хороший способ запомнить: dopełniacz часто отвечает за идею `нет чего-то`, `нужно что-то`, `ищу что-то`.", "Типичные пары: mam czas -> nie mam czasu, jest kawa -> nie ma kawy, mam pracę -> szukam pracy.", "После чисел и слов количества dopełniacz особенно важен: dużo ludzi, mało pieniędzy, trochę wody.", "На B1 полезно не просто знать форму, а держать готовые конструкции: `potrzebuję pomocy`, `używam telefonu`, `nie mam czasu`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("genitive")), makeExercise("Разбор по шагам", genGrammarStepByStep("genitive")), makeExercise("Dopełniacz — формы", genGenitive()), makeExercise("Исправь ошибку", cap50([input("Nie mam czas", "nie mam czasu"), input("Nie ma kawa", "nie ma kawy"), input("Szukam pracę", "szukam pracy"), input("Potrzebuję pomoc", "potrzebuję pomocy"), input("Dużo ludzie", "dużo ludzi"), input("Używam telefon", "używam telefonu"), input("Mało pieniądze", "mało pieniędzy"), input("Trochę wodę", "trochę wody")])), makeExercise("Разговор", speakingPrompts)] },
+  dative: { title: "Celownik — komu? czemu?", description: "Дательный падеж", theory: ["Celownik показывает адресата действия: кому я даю, кому помогаю, кому говорю, кому объясняю.", "Самые полезные формы для жизни: `mi`, `ci`, `mu`, `jej`, `nam`, `wam`, `im`. Они встречаются постоянно: podoba mi się, pomagam ci, mówię mu.", "У существительных часто видим формы: studentowi, koledze, kobiecie, dziecku, mamie, bratu.", "Запоминай с глаголом целиком: `pomagam koledze`, `daję dziecku prezent`, `mówię mamie prawdę`.", "Частая ошибка B1: ставить biernik вместо celownik. После `pomagać` и `dawać komuś` почти всегда нужен именно celownik."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("dative")), makeExercise("Разбор по шагам", genGrammarStepByStep("dative")), makeExercise("Celownik — формы", genDative()), makeExercise("Исправь ошибку", cap50([input("Praca daje mnie satysfakcję", "praca daje mi satysfakcję"), input("Pomagam mój kolega", "pomagam mojemu koledze"), input("Daję książkę brat", "daję książkę bratu"), input("Pokazuję droga student", "pokazuję drogę studentowi"), input("Pomagam ona", "pomagam jej"), input("Daję jemu prezent", "daję mu prezent"), input("Mówię do ci", "mówię ci"), input("Pomagam ludzie", "pomagam ludziom")])), makeExercise("Разговор", speakingPrompts)] },
+  instrumental: { title: "Narzędnik — z kim? z czym?", description: "Творительный падеж", theory: ["Narzędnik часто нужен в двух базовых ситуациях: после `z` и после `być`, когда мы называем профессию, роль или состояние.", "С `z` это обычно ответ на `с кем? с чем?`: z kolegą, z rodziną, z dokumentem. После `jestem` это `кем? чем?`: jestem programistą, jestem studentem.", "Типичные окончания хорошо слышны в готовых фразах: kolegą, kobietą, rodziną, dzieckiem, nauczycielem, lekarzem.", "На уровне B1 старайся учить narzędnik не списком, а в живых конструкциях: `pracuję z ludźmi`, `jadę samochodem`, `jestem zainteresowany kursem`.", "Если видишь `z` в значении `вместе с`, очень вероятно нужен narzędnik. Но `z pracy` и `z Polski` — это уже dopełniacz, потому что там значение `откуда`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("instrumental")), makeExercise("Разбор по шагам", genGrammarStepByStep("instrumental")), makeExercise("Narzędnik — формы", genInstrumental()), makeExercise("Исправь ошибку", cap50([input("Jestem programista", "jestem programistą"), input("Idę z kolega", "idę z kolegą"), input("Bawię się z córka", "bawię się z córką"), input("Rozmawiam z nauczyciel", "rozmawiam z nauczycielem"), input("Jadę samochód", "jadę samochodem"), input("On jest lekarz", "on jest lekarzem"), input("Spotykam się z rodzina", "spotykam się z rodziną"), input("Pracuję z ludzie", "pracuję z ludźmi")])), makeExercise("Разговор", speakingPrompts)] },
+  locative: { title: "Miejscownik — o kim? o czym?", description: "Местный / предложный падеж", theory: ["Miejscownik почти всегда приходит с предлогом. Самые частые друзья этого падежа: `w`, `na`, `o`, `po`, `przy`.", "Он нужен, когда мы говорим gdzie что-то находится или о чём говорим: w Polsce, w pracy, na kursie, o rodzinie, o problemie.", "Для памяти хорошо держать связки готовыми блоками: `w domu`, `w sklepie`, `na spotkaniu`, `o języku polskim`, `po pracy`.", "Частая ловушка: после `w` и `na` нужно понять смысл. `na kurs` = куда? biernik. `na kursie` = где? miejscownik.", "Чтобы miejscownik стал удобным, полезно учить не одно слово, а мини-фразу: `mieszkam w Polsce`, `myślę o egzaminie`, `rozmawiam o pracy`."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("locative")), makeExercise("Разбор по шагам", genGrammarStepByStep("locative")), makeExercise("Miejscownik — формы", genLocative()), makeExercise("Исправь ошибку", cap50([input("Mieszkam w Polska", "mieszkam w Polsce"), input("Jestem w praca", "jestem w pracy"), input("Mówię o rodzina", "mówię o rodzinie"), input("Byłem w sklep", "byłem w sklepie"), input("Myślę o kurs", "myślę o kursie"), input("Czytam o język polski", "czytam o języku polskim"), input("Jestem na spotkanie", "jestem na spotkaniu"), input("Spaceruję po park", "spaceruję po parku")])), makeExercise("Разговор", speakingPrompts)] },
+  verbsPresent: { title: "Czas teraźniejszy", description: "Настоящее время", theory: ["Czas teraźniejszy нужен для привычек, распорядка, фактов и того, что происходит сейчас: pracuję, uczę się, mieszkam, wiem.", "Самый удобный старт — видеть модели. `-ować`: pracuję, pracujesz. `-ać`: mieszkam, mieszkasz. `-ić / -yć`: robię, robisz; mówię, mówisz.", "Некоторые глаголы надо просто запомнить как частотные: być, mieć, iść, jeść, móc. Они дают опору почти во всей речи.", "Учись не отдельной форме, а короткой репликой: `pracuję w firmie`, `mieszkam w Warszawie`, `nie mam czasu`, `idziemy do sklepu`.", "Частая ошибка на старте B1 — путать окончания по лицам. Если не уверен, сначала определи `ja / ty / on / my / wy / oni`, и только потом выбирай форму."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("verbsPresent")), makeExercise("Спряжение", genPresent()), makeExercise("Исправь ошибку", cap50([input("ja pracuje", "ja pracuję"), input("ty piję kawę", "ty pijesz kawę"), input("oni mówi po polsku", "oni mówią po polsku"), input("my mieszka w Polsce", "my mieszkamy w Polsce"), input("wy robią zadanie", "wy robicie zadanie"), input("on pijesz kawę", "on pije kawę"), input("ja masz czas", "ja mam czas")])), makeExercise("Разговор", speakingPrompts)] },
   irregularVerbs: { title: "Czasowniki nieregularne", description: "Неправильные глаголы и спряжение", theory: ["Это глаголы, которые лучше не выводить по правилу, а запомнить как готовые формы. Они очень частые и дают основу для живой речи.", "Самые важные для повседневного B1: być, mieć, iść, jechać, jeść, móc, chcieć, wiedzieć, brać, dać.", "Лучше учить их в коротких фразах: `jestem w domu`, `mam czas`, `idę do pracy`, `mogę pomóc`, `chcę się uczyć`.", "Обрати внимание на формы, которые часто ломают автоматизм: `idę`, `jadę`, `jem`, `mogę`, `biorę`, `wiem`.", "Задача этого блока не просто узнать таблицу, а начать быстро узнавать и использовать эти формы без остановки."], exercises: [makeExercise("Спряжение nieregularne", genIrregularVerbs()), makeExercise("Исправь ошибку", cap50([input("Ja jest w domu", "ja jestem w domu"), input("Ty moża mi pomóc", "ty możesz mi pomóc"), input("My wiedzą o problemie", "my wiemy o problemie"), input("Oni jecha do pracy", "oni jadą do pracy"), input("Ja bierzesz dokument", "ja biorę dokument"), input("Wy dają odpowiedź", "wy dajecie odpowiedź"), input("On chcie iść", "on chce iść"), input("Ona jem obiad", "ona je obiad")])), makeExercise("Разговор", speakingPrompts)] },
-  verbsPast: { title: "Czas przeszły", description: "Прошедшее время", theory: ["Прошедшее время зависит от рода: robiłem / robiłam.", "On robił, ona robiła, oni robili, one robiły.", "pójść: poszedłem / poszłam."], exercises: [makeExercise("Czas przeszły — формы", genPast()), makeExercise("Разговор", speakingPrompts)] },
-  verbsFuture: { title: "Czas przyszły", description: "Будущее время", theory: ["В польском будущем важно сначала понять: ты говоришь о процессе или о результате. Это сразу влияет на форму.", "Если речь о процессе или плане без акцента на завершение, часто будет `będę + bezokolicznik` или `będę + forma przeszła`: będę pracować, będę czytać, będę pracował.", "Если нужен результат, обычно берём совершенный вид: zrobię, kupię, napiszę, przeczytam, pojadę.", "Сравнение: `jutro będę pisać raport` = процесс; `jutro napiszę raport` = закончу и будет готово.", "Будущее почти всегда дружит с маркерами времени: jutro, pojutrze, za godzinę, za tydzień, w przyszłym miesiącu, o ósmej."], exercises: [makeExercise("Czas przyszły — формы", genFuture()), makeExercise("Будущее + время", genFutureWithTime()), makeExercise("Разговор", speakingPrompts)] },
-  aspect: { title: "Aspekt — robić vs zrobić", description: "Несовершенный и совершенный вид", theory: ["Aspekt в польском — это взгляд на действие: как на процесс или как на результат. Это одна из самых важных тем для сильного B1.", "Niedokonany показывает процесс, привычку, повторяемость, длительность: robić, czytać, pisać, uczyć się.", "Dokonany показывает завершение или конкретный итог: zrobić, przeczytać, napisać, nauczyć się.", "Подсказки в предложении очень помогают. `zawsze`, `często`, `teraz`, `długo` тянут к niedokonany. `już`, `do końca`, `w końcu`, `na jutro` часто тянут к dokonany.", "Хорошая привычка: учить глаголы парами и сразу в контексте, например `czytać książkę` и `przeczytać książkę do końca`."], exercises: [makeExercise("Выбери аспект", genAspectChoice()), makeExercise("Пары aspektowe", genAspectPairs()), makeExercise("Разговор", speakingPrompts)] },
-  prepositions: { title: "Przyimki + przypadki", description: "Предлоги и падежи", theory: ["В польском предлог почти никогда не живёт один: он тянет за собой конкретный падеж. Поэтому учить надо не `do`, а `do + dopełniacz`, не `z`, а разные значения `z`.", "База для жизни: `do sklepu`, `do pracy`, `z pracy`, `w Polsce`, `na kursie`, `na kurs`, `o problemie`, `z rodziną`.", "Самая частая путаница: `na` и `w`, а также разные значения `z`. `z rodziną` = вместе с кем? narzędnik. `z Polski` = откуда? dopełniacz.", "Полезный способ учить: не список предлогов, а мини-маршрут. `Idę do sklepu. Jestem w sklepie. Wracam ze sklepu.`", "Если ты сначала спрашиваешь себя `куда? где? откуда? с кем? о чём?`, падеж выбирается намного легче."], exercises: [makeExercise("Przyimki", genPrepositions()), makeExercise("Разговор", speakingPrompts)] },
+  verbsPast: { title: "Czas przeszły", description: "Прошедшее время", theory: ["Прошедшее время зависит от рода: robiłem / robiłam.", "On robił, ona robiła, oni robili, one robiły.", "В 1-м и 2-м лице полезно сразу держать пары: byłem / byłam, miałem / miałam, chciałem / chciałam.", "Если рассказываешь о вчерашнем дне, лучше строить не отдельные формы, а маленький рассказ: `wczoraj wróciłem do domu, zjadłem obiad i odpoczywałem`.", "pójść: poszedłem / poszłam."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("verbsPast")), makeExercise("Czas przeszły — формы", genPast()), makeExercise("Разговор", speakingPrompts)] },
+  verbsFuture: { title: "Czas przyszły", description: "Будущее время", theory: ["В польском будущем важно сначала понять: ты говоришь о процессе или о результате. Это сразу влияет на форму.", "Если речь о процессе или плане без акцента на завершение, часто будет `będę + bezokolicznik` или `będę + forma przeszła`: będę pracować, będę czytać, będę pracował.", "Если нужен результат, обычно берём совершенный вид: zrobię, kupię, napiszę, przeczytam, pojadę.", "Сравнение: `jutro będę pisać raport` = процесс; `jutro napiszę raport` = закончу и будет готово.", "Будущее почти всегда дружит с маркерами времени: jutro, pojutrze, za godzinę, za tydzień, w przyszłym miesiącu, o ósmej."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("verbsFuture")), makeExercise("Czas przyszły — формы", genFuture()), makeExercise("Будущее + время", genFutureWithTime()), makeExercise("Разговор", speakingPrompts)] },
+  aspect: { title: "Aspekt — robić vs zrobić", description: "Несовершенный и совершенный вид", theory: ["Aspekt в польском — это взгляд на действие: как на процесс или как на результат. Это одна из самых важных тем для сильного B1.", "Niedokonany показывает процесс, привычку, повторяемость, длительность: robić, czytać, pisać, uczyć się.", "Dokonany показывает завершение или конкретный итог: zrobić, przeczytać, napisać, nauczyć się.", "Подсказки в предложении очень помогают. `zawsze`, `często`, `teraz`, `długo` тянут к niedokonany. `już`, `do końca`, `w końcu`, `na jutro` часто тянут к dokonany.", "Хорошая привычка: учить глаголы парами и сразу в контексте, например `czytać książkę` и `przeczytać książkę do końca`."], exercises: [makeExercise("Почему так? Разбор смысла", genGrammarNuance("aspect")), makeExercise("Выбери аспект", genAspectChoice()), makeExercise("Пары aspektowe", genAspectPairs()), makeExercise("Разговор", speakingPrompts)] },
+  prepositions: { title: "Przyimki + przypadki", description: "Предлоги и падежи", theory: ["В польском предлог почти никогда не живёт один: он тянет за собой конкретный падеж. Поэтому учить надо не `do`, а `do + dopełniacz`, не `z`, а разные значения `z`.", "База для жизни: `do sklepu`, `do pracy`, `z pracy`, `w Polsce`, `na kursie`, `na kurs`, `o problemie`, `z rodziną`.", "Самая частая путаница: `na` и `w`, а также разные значения `z`. `z rodziną` = вместе с кем? narzędnik. `z Polski` = откуда? dopełniacz.", "Полезный способ учить: не список предлогов, а мини-маршрут. `Idę do sklepu. Jestem w sklepie. Wracam ze sklepu.`", "Если ты сначала спрашиваешь себя `куда? где? откуда? с кем? о чём?`, падеж выбирается намного легче."], exercises: [makeExercise("Почему так? Смысл и падеж", genGrammarNuance("prepositions")), makeExercise("Przyimki", genPrepositions()), makeExercise("Разговор", speakingPrompts)] },
   numbersTime: { title: "Liczby i czas", description: "Числа, часы, деньги и выражения времени", theory: ["Числа нужны для времени, дат, цен, адресов и количества.", "После 1 обычно форма единственного числа: jeden złoty, jeden grosz.", "После 2, 3, 4 — форма множественного: dwa złote, trzy grosze, cztery pieniądze.", "После 5+ обычно dopełniacz liczby mnogiej: pięć złotych, pięć groszy, pięć pieniędzy.", "Важно: 22/23/24 → złote/grosze/pieniądze, но 12/13/14 → złotych/groszy/pieniędzy.", "Время: która godzina? ósma; o której? o ósmej. Для будущих планов: Jutro o ósmej będę pracować."], exercises: [makeExercise("Liczby 0–100", genNumbers()), makeExercise("Pieniądze: złoty / złote / złotych", genMoney()), makeExercise("Правила 1–4 / 5+", genNumberRules()), makeExercise("Która godzina?", genClock()), makeExercise("Wyrażenia czasu", genTimePhrases()), makeExercise("Czas + przyszłość", genFutureWithTime()), makeExercise("Разговор", speakingPrompts)] },
-  complexSentences: { title: "Zdania złożone", description: "Сложные предложения", theory: ["że = что", "kiedy/gdy = когда", "jeśli/jeżeli = если", "bo = потому что; dlatego = поэтому; żeby = чтобы."], exercises: [makeExercise("Spójniki", genComplexSentences()), makeExercise("Разговор", speakingPrompts)] },
+  complexSentences: { title: "Zdania złożone", description: "Сложные предложения", theory: ["На B1 сложное предложение нужно не ради сложности, а чтобы нормально объяснять причины, цели, условия и мнение.", "`że` помогает передавать мысль: `myślę, że...`, `uważam, że...`.", "`bo / ponieważ` дают причину, `dlatego` показывает результат, `żeby` — цель, `jeśli` — условие.", "Удобный шаблон ответа: `Myślę, że...`, `bo...`, `dlatego...`, `na przykład...`.", "Чем чаще ты собираешь длинную мысль из простых связок, тем живее и сильнее звучит речь."], exercises: [makeExercise("Почему так? Связность B1", genGrammarNuance("complexSentences")), makeExercise("Spójniki", genComplexSentences()), makeExercise("Разговор", speakingPrompts)] },
   politeConditional: { title: "Tryb warunkowy", description: "Вежливые просьбы и условное", theory: ["Tryb warunkowy нужен для вежливого B1-письма и просьб.", "Главные формы: chciałbym/chciałabym, mógłbym/mogłabym, mogliby Państwo.", "В условии: gdybym miał czas, zadzwoniłbym."], exercises: [makeExercise("Вежливые формы", genPoliteConditional()), makeExercise("Разговор", speakingPrompts)] },
   imperatives: { title: "Tryb rozkazujący", description: "Инструкции и просьбы", theory: ["Повелительное нужно для инструкций, просьб и запретов.", "Для pan/pani часто используем: proszę + bezokolicznik.", "Для запрета: nie zapomnij, nie rób, proszę nie palić."], exercises: [makeExercise("Rozkazujący", genImperatives()), makeExercise("Разговор", speakingPrompts)] },
-  pronouns: { title: "Zaimki w przypadkach", description: "Местоимения: mi, mnie, go, mu", theory: ["На B1 важно не путать короткие формы местоимений.", "Celownik: mi, ci, mu, jej, nam, wam, im.", "Biernik/dopełniacz: mnie, cię/ciebie, go/jego, ją, nas, was, ich."], exercises: [makeExercise("Местоимения", genPronouns()), makeExercise("Разговор", speakingPrompts)] },
-  reflexiveSie: { title: "Czasowniki z się", description: "uczę się, podoba mi się", theory: ["się часто стоит после глагола: uczę się, spotykam się.", "podobać się требует celownik: podoba mi się.", "Некоторые глаголы с się меняют смысл: bawić się, bać się, czuć się."], exercises: [makeExercise("się в речи", genReflexiveSie()), makeExercise("Разговор", speakingPrompts)] },
-  comparisons: { title: "Stopniowanie", description: "Сравнения: lepszy, droższy, niż", theory: ["Сравнение нужно для мнения и аргументации.", "Часто: -szy/-ejszy, naj-, niż.", "Нерегулярные: dobry → lepszy → najlepszy, zły → gorszy → najgorszy."], exercises: [makeExercise("Сравнения", genComparisons()), makeExercise("Разговор", speakingPrompts)] },
+  pronouns: { title: "Zaimki w przypadkach", description: "Местоимения: mi, mnie, go, mu", theory: ["На B1 важно не путать короткие формы местоимений.", "Celownik: mi, ci, mu, jej, nam, wam, im.", "Biernik/dopełniacz: mnie, cię/ciebie, go/jego, ją, nas, was, ich.", "Самый рабочий подход: не зубрить таблицу отдельно, а держать пары с глаголом: `pomóż mi`, `widzę go`, `nie ma mnie`, `daj jej znać`.", "Если сначала задаёшь вопрос `komu? kogo? czego?`, форма местоимения вспоминается намного легче."], exercises: [makeExercise("Почему так? Местоимение и падеж", genGrammarNuance("pronouns")), makeExercise("Местоимения", genPronouns()), makeExercise("Разговор", speakingPrompts)] },
+  reflexiveSie: { title: "Czasowniki z się", description: "uczę się, podoba mi się", theory: ["`się` часто стоит после глагола: uczę się, spotykam się.", "`podobać się` требует celownik: podoba mi się.", "Некоторые глаголы с `się` меняют смысл: bawić się, bać się, czuć się.", "Самое полезное правило здесь: учить не одно `się`, а целую конструкцию. Не `bać`, а `bać się czegoś`; не `podobać`, а `podoba mi się coś`.", "Тогда эта тема перестаёт быть абстрактной и сразу начинает работать в живой речи."], exercises: [makeExercise("Почему так? Konstrukcja z się", genGrammarNuance("reflexiveSie")), makeExercise("się в речи", genReflexiveSie()), makeExercise("Разговор", speakingPrompts)] },
+  comparisons: { title: "Stopniowanie", description: "Сравнения: lepszy, droższy, niż", theory: ["Сравнение нужно для мнения и аргументации.", "Часто: -szy/-ejszy, naj-, niż.", "Нерегулярные: dobry → lepszy → najlepszy, zły → gorszy → najgorszy.", "На B1 сравнение редко живёт одно. Обычно оно входит в мнение: `ten вариант jest wygodniejszy niż tamten`, `to było najlepsze rozwiązanie`.", "Хорошо тренировать не только форму, но и целую мысль: zaleta + porównanie + wniosek."], exercises: [makeExercise("Почему так? Stopniowanie", genGrammarNuance("comparisons")), makeExercise("Сравнения", genComparisons()), makeExercise("Разговор", speakingPrompts)] },
   modalVerbs: { title: "Czasowniki modalne", description: "muszę, mogę, powinienem", theory: ["Модальные конструкции делают речь практичной.", "muszę = должен, mogę = могу, powinienem/powinnam = следует.", "wolno/nie wolno часто используются в правилах."], exercises: [makeExercise("Modalne", genModalVerbs()), makeExercise("Разговор", speakingPrompts)] },
   impersonal: { title: "Formy bezosobowe", description: "można, trzeba, należy, warto", theory: ["Безличные формы очень частые в объявлениях, правилах и инструкциях.", "można = можно, trzeba = нужно, należy = следует, warto = стоит.", "После них часто идёт bezokolicznik: trzeba podpisać."], exercises: [makeExercise("Безличные формы", genImpersonal()), makeExercise("Разговор", speakingPrompts)] },
-  wordOrder: { title: "Szyk zdania", description: "Порядок слов B1", theory: ["Польский порядок слов гибкий, но нейтральная фраза должна звучать естественно.", "Не ставь местоимения и się хаотично: podoba mi się, uczę się.", "Вопросы часто начинаются с kiedy/gdzie/czy."], exercises: [makeExercise("Порядок слов", genWordOrder()), makeExercise("Разговор", speakingPrompts)] },
-  b1Connectors: { title: "Łączniki B1+", description: "jednak, natomiast, oprócz tego", theory: ["Связки превращают короткие фразы в B1-речь.", "jednak/natomiast помогают противопоставлять.", "oprócz tego, z tego powodu, podsumowując помогают строить письмо и мнение."], exercises: [makeExercise("Связки B1", genB1Connectors()), makeExercise("Выбери связку", genConnectorChoiceAdvanced()), makeExercise("Собери фразу", genSentenceAssemblyB1()), makeExercise("Короткий ответ 2–4 zdania", genShortWritingB1()), makeExercise("Разговор", speakingPrompts)] },
-  workLexicon: { title: "Praca i firma", description: "Работа, компания, собеседование", theory: ["Эта тема нужна для разговоров о работе, обязанностях, сроках и отпуске.", "Сильная B1-речь: не только znam słowo, а умею объяснить ситуацию: mam termin, szukam pracy, chcę wziąć urlop.", "Тренируй слова сразу с падежами: szukam pracy, rozmawiam z kierownikiem, mam spotkanie."], exercises: [makeExercise("Сначала прочитай", genThematicIntro("work")), makeExercise("PL → RU", genThematicReverseChoices("work")), makeExercise("RU → PL: выбери", genThematicChoices("work")), makeExercise("RU → PL: напиши", genThematicWords("work")), makeExercise("RU → PL: без подсказки+", genThematicActiveRecall("work")), makeExercise("Gotowe frazy", genThematicPhrases("work")), makeExercise("Ситуация", genTopicSpeaking("work"))] },
-  housingLexicon: { title: "Mieszkanie", description: "Жильё, аренда, бытовые проблемы", theory: ["Тема закрывает аренду квартиры, счета, ремонт и контакт с владельцем.", "Важно уметь говорить проблему спокойно и конкретно: mamy awarię, nie działa ogrzewanie, kiedy można obejrzeć mieszkanie?", "Полезные связки: w mieszkaniu, z właścicielem, do innej dzielnicy."], exercises: [makeExercise("Сначала прочитай", genThematicIntro("housing")), makeExercise("PL → RU", genThematicReverseChoices("housing")), makeExercise("RU → PL: выбери", genThematicChoices("housing")), makeExercise("RU → PL: напиши", genThematicWords("housing")), makeExercise("RU → PL: без подсказки+", genThematicActiveRecall("housing")), makeExercise("Gotowe frazy", genThematicPhrases("housing")), makeExercise("Ситуация", genTopicSpeaking("housing"))] },
-  healthLexicon: { title: "Zdrowie i lekarz", description: "Врач, аптека, симптомы", theory: ["B1 требует уметь объяснить симптомы, записаться к врачу и понять базовые инструкции.", "Главные конструкции: boli mnie..., mam gorączkę, potrzebuję recepty, chcę umówić wizytę.", "Эта тема хорошо тренирует biernik и dopełniacz: mam receptę, potrzebuję skierowania."], exercises: [makeExercise("Сначала прочитай", genThematicIntro("health")), makeExercise("PL → RU", genThematicReverseChoices("health")), makeExercise("RU → PL: выбери", genThematicChoices("health")), makeExercise("RU → PL: напиши", genThematicWords("health")), makeExercise("RU → PL: без подсказки+", genThematicActiveRecall("health")), makeExercise("Gotowe frazy", genThematicPhrases("health")), makeExercise("Ситуация", genTopicSpeaking("health"))] },
-  documentsLexicon: { title: "Urząd i dokumenty", description: "Документы, заявления, учреждение", theory: ["Это практическая тема для жизни в Польше: urząd, wniosek, formularz, opłata, odbiór dokumentu.", "Цель — уметь спросить, что заполнить, где подписать и когда забрать документ.", "Типичные фразы: złożyć wniosek, podpisać formularz, odebrać dokument."], exercises: [makeExercise("Сначала прочитай", genThematicIntro("documents")), makeExercise("PL → RU", genThematicReverseChoices("documents")), makeExercise("RU → PL: выбери", genThematicChoices("documents")), makeExercise("RU → PL: напиши", genThematicWords("documents")), makeExercise("RU → PL: без подсказки+", genThematicActiveRecall("documents")), makeExercise("Gotowe frazy", genThematicPhrases("documents")), makeExercise("Ситуация", genTopicSpeaking("documents"))] },
-  shoppingLexicon: { title: "Zakupy i usługi", description: "Покупки, услуги, возврат", theory: ["Тема помогает решать бытовые ситуации: покупка, доставка, возврат, гарантия.", "Для B1 важно уметь не только купить, но и объяснить проблему: chcę zwrócić towar, mam paragon, potrzebuję innego rozmiaru.", "Здесь хорошо повторяются biernik и narzędnik: mam paragon, płacę kartą."], exercises: [makeExercise("Сначала прочитай", genThematicIntro("shopping")), makeExercise("PL → RU", genThematicReverseChoices("shopping")), makeExercise("RU → PL: выбери", genThematicChoices("shopping")), makeExercise("RU → PL: напиши", genThematicWords("shopping")), makeExercise("RU → PL: без подсказки+", genThematicActiveRecall("shopping")), makeExercise("Gotowe frazy", genThematicPhrases("shopping")), makeExercise("Ситуация", genTopicSpeaking("shopping"))] },
-  cityLexicon: { title: "Miasto i transport", description: "Город, транспорт, как добраться", theory: ["Тема нужна для дороги, опозданий, пересадок и объяснения маршрута.", "Главные действия: dojechać, przesiąść się, kupić bilet, sprawdzić rozkład jazdy.", "Тренируй направления: do centrum, na przystanku, z przesiadką."], exercises: [makeExercise("Сначала прочитай", genThematicIntro("city")), makeExercise("PL → RU", genThematicReverseChoices("city")), makeExercise("RU → PL: выбери", genThematicChoices("city")), makeExercise("RU → PL: напиши", genThematicWords("city")), makeExercise("RU → PL: без подсказки+", genThematicActiveRecall("city")), makeExercise("Gotowe frazy", genThematicPhrases("city")), makeExercise("Ситуация", genTopicSpeaking("city"))] },
+  wordOrder: { title: "Szyk zdania", description: "Порядок слов B1", theory: ["Польский порядок слов гибкий, но нейтральная фраза должна звучать естественно.", "Не ставь местоимения и się хаотично: podoba mi się, uczę się.", "Вопросы часто начинаются с kiedy/gdzie/czy.", "Хороший ориентир для нейтральной фразы: время / тема -> глагол -> остальная информация.", "Если порядок слов звучит странно, почти всегда помогает вернуться к простой прямой конструкции и переставить `się` ближе к глаголу."], exercises: [makeExercise("Почему так? Естественный szyk", genGrammarNuance("wordOrder")), makeExercise("Порядок слов", genWordOrder()), makeExercise("Разговор", speakingPrompts)] },
+  b1Connectors: { title: "Łączniki B1+", description: "jednak, natomiast, oprócz tego", theory: ["Связки превращают короткие фразы в B1-речь.", "`jednak` и `natomiast` помогают противопоставлять мысли более спокойно и точно.", "`oprócz tego`, `z tego powodu`, `podsumowując` помогают строить письмо, мнение и вывод.", "Если связки подобраны правильно, даже простая лексика начинает звучать более зрелой.", "Лучше 2-3 точные связки в одном ответе, чем длинный хаотичный текст без логики."], exercises: [makeExercise("Как строить связный ответ", genB1Strategy("b1Connectors")), makeExercise("Связки B1", genB1Connectors()), makeExercise("Выбери связку", genConnectorChoiceAdvanced()), makeExercise("Собери фразу", genSentenceAssemblyB1()), makeExercise("Короткий ответ 2–4 zdania", genShortWritingB1()), makeExercise("Разговор", speakingPrompts)] },
+  workLexicon: { title: "Praca i firma", description: "Работа, компания, собеседование", theory: ["Эта тема нужна для разговоров о работе, обязанностях, сроках и отпуске.", "Сильная B1-речь: не только znam słowo, а умею объяснить ситуацию: mam termin, szukam pracy, chcę wziąć urlop.", "Тренируй слова сразу с падежами: szukam pracy, rozmawiam z kierownikiem, mam spotkanie."], exercises: [makeExercise("Сначала прочитай", genThematicIntro("work")), makeExercise("PL → RU", genThematicReverseChoices("work")), makeExercise("RU → PL: выбери", genThematicChoices("work")), makeExercise("RU → PL: напиши", genThematicWords("work")), makeExercise("RU → PL: без подсказки+", genThematicActiveRecall("work")), makeExercise("Gotowe frazy", genThematicPhrases("work")), makeExercise("Jak mówić o tej sytuacji", genThematicSkillBuilder("work")), makeExercise("Rozumienie tekstu", genThematicComprehension("work")), makeExercise("Gramatyka w kontekście", genThematicContextGrammar("work")), makeExercise("Ситуация", genTopicSpeaking("work"))] },
+  housingLexicon: { title: "Mieszkanie", description: "Жильё, аренда, бытовые проблемы", theory: ["Тема закрывает аренду квартиры, счета, ремонт и контакт с владельцем.", "Важно уметь говорить проблему спокойно и конкретно: mamy awarię, nie działa ogrzewanie, kiedy można obejrzeć mieszkanie?", "Полезные связки: w mieszkaniu, z właścicielem, do innej dzielnicy."], exercises: [makeExercise("Сначала прочитай", genThematicIntro("housing")), makeExercise("PL → RU", genThematicReverseChoices("housing")), makeExercise("RU → PL: выбери", genThematicChoices("housing")), makeExercise("RU → PL: напиши", genThematicWords("housing")), makeExercise("RU → PL: без подсказки+", genThematicActiveRecall("housing")), makeExercise("Gotowe frazy", genThematicPhrases("housing")), makeExercise("Jak mówić o tej sytuacji", genThematicSkillBuilder("housing")), makeExercise("Rozumienie tekstu", genThematicComprehension("housing")), makeExercise("Gramatyka w kontekście", genThematicContextGrammar("housing")), makeExercise("Ситуация", genTopicSpeaking("housing"))] },
+  healthLexicon: { title: "Zdrowie i lekarz", description: "Врач, аптека, симптомы", theory: ["B1 требует уметь объяснить симптомы, записаться к врачу и понять базовые инструкции.", "Главные конструкции: boli mnie..., mam gorączkę, potrzebuję recepty, chcę umówić wizytę.", "Эта тема хорошо тренирует biernik и dopełniacz: mam receptę, potrzebuję skierowania."], exercises: [makeExercise("Сначала прочитай", genThematicIntro("health")), makeExercise("PL → RU", genThematicReverseChoices("health")), makeExercise("RU → PL: выбери", genThematicChoices("health")), makeExercise("RU → PL: напиши", genThematicWords("health")), makeExercise("RU → PL: без подсказки+", genThematicActiveRecall("health")), makeExercise("Gotowe frazy", genThematicPhrases("health")), makeExercise("Jak mówić o tej sytuacji", genThematicSkillBuilder("health")), makeExercise("Rozumienie tekstu", genThematicComprehension("health")), makeExercise("Gramatyka w kontekście", genThematicContextGrammar("health")), makeExercise("Ситуация", genTopicSpeaking("health"))] },
+  documentsLexicon: { title: "Urząd i dokumenty", description: "Документы, заявления, учреждение", theory: ["Это практическая тема для жизни в Польше: urząd, wniosek, formularz, opłata, odbiór dokumentu.", "Цель — уметь спросить, что заполнить, где подписать и когда забрать документ.", "Типичные фразы: złożyć wniosek, podpisać formularz, odebrać dokument."], exercises: [makeExercise("Сначала прочитай", genThematicIntro("documents")), makeExercise("PL → RU", genThematicReverseChoices("documents")), makeExercise("RU → PL: выбери", genThematicChoices("documents")), makeExercise("RU → PL: напиши", genThematicWords("documents")), makeExercise("RU → PL: без подсказки+", genThematicActiveRecall("documents")), makeExercise("Gotowe frazy", genThematicPhrases("documents")), makeExercise("Jak mówić o tej sytuacji", genThematicSkillBuilder("documents")), makeExercise("Rozumienie tekstu", genThematicComprehension("documents")), makeExercise("Gramatyka w kontekście", genThematicContextGrammar("documents")), makeExercise("Ситуация", genTopicSpeaking("documents"))] },
+  shoppingLexicon: { title: "Zakupy i usługi", description: "Покупки, услуги, возврат", theory: ["Тема помогает решать бытовые ситуации: покупка, доставка, возврат, гарантия.", "Для B1 важно уметь не только купить, но и объяснить проблему: chcę zwrócić towar, mam paragon, potrzebuję innego rozmiaru.", "Здесь хорошо повторяются biernik и narzędnik: mam paragon, płacę kartą."], exercises: [makeExercise("Сначала прочитай", genThematicIntro("shopping")), makeExercise("PL → RU", genThematicReverseChoices("shopping")), makeExercise("RU → PL: выбери", genThematicChoices("shopping")), makeExercise("RU → PL: напиши", genThematicWords("shopping")), makeExercise("RU → PL: без подсказки+", genThematicActiveRecall("shopping")), makeExercise("Gotowe frazy", genThematicPhrases("shopping")), makeExercise("Jak mówić o tej sytuacji", genThematicSkillBuilder("shopping")), makeExercise("Rozumienie tekstu", genThematicComprehension("shopping")), makeExercise("Gramatyka w kontekście", genThematicContextGrammar("shopping")), makeExercise("Ситуация", genTopicSpeaking("shopping"))] },
+  cityLexicon: { title: "Miasto i transport", description: "Город, транспорт, как добраться", theory: ["Тема нужна для дороги, опозданий, пересадок и объяснения маршрута.", "Главные действия: dojechać, przesiąść się, kupić bilet, sprawdzić rozkład jazdy.", "Тренируй направления: do centrum, na przystanku, z przesiadką."], exercises: [makeExercise("Сначала прочитай", genThematicIntro("city")), makeExercise("PL → RU", genThematicReverseChoices("city")), makeExercise("RU → PL: выбери", genThematicChoices("city")), makeExercise("RU → PL: напиши", genThematicWords("city")), makeExercise("RU → PL: без подсказки+", genThematicActiveRecall("city")), makeExercise("Gotowe frazy", genThematicPhrases("city")), makeExercise("Jak mówić o tej sytuacji", genThematicSkillBuilder("city")), makeExercise("Rozumienie tekstu", genThematicComprehension("city")), makeExercise("Gramatyka w kontekście", genThematicContextGrammar("city")), makeExercise("Ситуация", genTopicSpeaking("city"))] },
   educationLexicon: makeLexiconTopic("education", "Edukacja i egzamin", "Учёба, экзамен, прогресс", ["Тема нужна для подготовки к B1, общения с преподавателем и описания своего прогресса.", "Фокус: egzamin, poziom, postęp, błąd, certyfikat.", "Используй лексику, чтобы говорить не только что учишь, но и как именно учишься."]),
   relationshipsLexicon: makeLexiconTopic("relationships", "Relacje i emocje", "Отношения, эмоции, поддержка", ["B1 требует уметь описывать чувства, конфликты, просьбы и отношения.", "Фокус: wsparcie, zaufanie, przeprosiny, decyzja, wdzięczność.", "Эта тема помогает делать речь менее сухой и более человеческой."]),
   travelLexicon: makeLexiconTopic("travel", "Podróże i hotel", "Путешествия, отель, задержки", ["Тема закрывает поездки, бронирование, отель, багаж и проблемы в дороге.", "Фокус: rezerwacja, nocleg, opóźnienie, recepcja, zwiedzanie.", "Полезно для диалогов и писем в сервисные службы."]),
@@ -1526,13 +2029,14 @@ const topics = {
   societyLexicon: makeLexiconTopic("society", "Społeczeństwo", "Общество, город, интеграция", ["Тема даёт лексику для более зрелых B1-ответов.", "Фокус: społeczeństwo, integracja, wolontariat, problem społeczny, jakość życia.", "С ней легче писать мнение и говорить о городе."]),
   personalityLexicon: makeLexiconTopic("personality", "Charakter i cechy", "Характер, качества человека", ["Тема нужна для описания себя, друзей, коллег и персонажей.", "Фокус: odpowiedzialny, punktualny, uczciwy, pomocny, pewny siebie.", "Она делает речь точнее и богаче."]),
   environmentLexicon: makeLexiconTopic("environment", "Środowisko", "Экология, город, выбор", ["Тема выводит курс ближе к сильному B1, потому что даёт общественную лексику.", "Фокус: recykling, smog, zanieczyszczenie, transport publiczny, ochrona środowiska.", "Подходит для письма-мнения и устной аргументации."]),
-  writingTemplates: { title: "Pisanie: шаблоны B1", description: "Готовые структуры письма", theory: ["B1-письмо легче, когда есть готовый скелет.", "Сначала прочитай шаблон, потом напиши свой текст по ситуации.", "Цель — не красивый стиль, а ясная структура: кто пишет, зачем, детали, просьба, завершение."], exercises: [makeExercise("Шаблоны", genWritingTemplates()), makeExercise("Собери формулу письма", genWritingAssembly()), makeExercise("Практика по шаблонам", genWritingTemplatePractice()), makeExercise("Короткие ответы 2–4 zdania", genShortWritingB1())] },
-  examB1Reading: { title: "Egzamin B1: Czytanie", description: "Экзаменационное чтение", theory: ["Тренировка чтения B1: короткий текст, ключевая информация, выбор ответа.", "На экзамене не нужно переводить каждое слово. Ищи: kto? gdzie? kiedy? co trzeba zrobić?", "В длинных текстах сначала пойми общий смысл, потом ищи конкретную деталь и ключевое слово."], exercises: [makeExercise("Szybkie pytania egzaminacyjne", genExamReading()), makeExercise("Dłuższe teksty B1", genLongReading())] },
-  examB1Listening: { title: "Egzamin B1: Słuchanie", description: "Аудирование с озвучкой", theory: ["Сначала слушай запись без текста: цель — понять ситуацию, время, место, просьбу или проблему.", "После ответа открой скрипт и проверь, какие слова ты не услышал. Медленный режим нужен для повторного прохода.", "Диктанты тренируют точность: они заставляют слышать польские звуки и писать слова без подсказки."], exercises: [makeExercise("Audio: słuchaj i odpowiedz", genAudioListening()), makeExercise("Słuchanie z tekstem", genExamListening())] },
-  examB1Writing: { title: "Egzamin B1: Pisanie", description: "Письмо: email, жалоба, заявление", theory: ["Письмо B1 требует структуры: приветствие, цель, детали, просьба, завершение.", "Цель — писать 80–120 слов простыми, правильными фразами.", "Проверяй себя по чеклисту: czy jest cel? czy są szczegóły? czy ton jest grzeczny?"], exercises: [makeExercise("Pisanie B1", genExamWriting()), makeExercise("Krótka odpowiedź 2–4 zdania", genShortWritingB1()), makeExercise("Собери полезную фразу", genWritingAssembly())] },
+  writingTemplates: { title: "Pisanie: шаблоны B1", description: "Готовые структуры письма", theory: ["B1-письмо легче, когда есть готовый скелет.", "Сначала прочитай шаблон, потом напиши свой текст по ситуации.", "Цель — не красивый стиль, а ясная структура: кто пишет, зачем, детали, просьба, завершение.", "Хорошее письмо B1 обычно выигрывает не за счёт сложных слов, а за счёт ясности и полноты.", "Если ты ответил на все пункты задания и дал конкретные детали, это уже сильная база."], exercises: [makeExercise("Как устроено письмо B1", genB1Strategy("writingTemplates")), makeExercise("Шаблоны", genWritingTemplates()), makeExercise("Собери формулу письма", genWritingAssembly()), makeExercise("Практика по шаблонам", genWritingTemplatePractice()), makeExercise("Короткие ответы 2–4 zdania", genShortWritingB1())] },
+  examB1Reading: { title: "Egzamin B1: Czytanie", description: "Экзаменационное чтение", theory: ["Тренировка чтения B1: короткий текст, ключевая информация, выбор ответа.", "На экзамене не нужно переводить каждое слово. Ищи: kto? gdzie? kiedy? co trzeba zrobić?", "В длинных текстах сначала пойми общий смысл, потом ищи конкретную деталь и ключевое слово.", "В официальных тестах часто проверяется не весь текст, а одно точное решение: что нужно сделать, в чём проблема, какая цель сообщения.", "Поэтому лучше читать задачей, а не словарём: вопрос -> ключ -> ответ."], exercises: [makeExercise("Jak czytać na B1", genB1Strategy("examB1Reading")), makeExercise("Czytanie: krótkie komunikaty", genReadingSignalsB1()), makeExercise("Szybkie pytania egzaminacyjne", genExamReading()), makeExercise("Dłuższe teksty B1", genLongReading())] },
+  examB1Listening: { title: "Egzamin B1: Słuchanie", description: "Аудирование с озвучкой", theory: ["Сначала слушай запись без текста: цель — понять ситуацию, время, место, просьбу или проблему.", "После ответа открой скрипт и проверь, какие слова ты не услышал. Медленный режим нужен для повторного прохода.", "Диктанты тренируют точность: они заставляют слышать польские звуки и писать слова без подсказки.", "В заданиях B1 особенно важно ловить слова-маркеры: terminy, godziny, zmiana planu, prośba, reklamacja, urząd.", "Даже если ты не понял всё, часто достаточно услышать правильный тип ситуации и одну ключевую деталь."], exercises: [makeExercise("Jak słuchać na B1", genB1Strategy("examB1Listening")), makeExercise("Słuchanie: cel i sytuacja", genListeningSignalsB1()), makeExercise("Audio: słuchaj i odpowiedz", genAudioListening()), makeExercise("Słuchanie z tekstem", genExamListening())] },
+  examB1Grammar: { title: "Egzamin B1: Poprawność gramatyczna", description: "Грамматика в контексте B1", theory: ["Этот блок учит видеть грамматику не как таблицу, а как выбор формы по ситуации.", "На B1 важно не только знать правило, но и быстро понимать, что требует контекст: падеж, аспект, время, местоимение или связка.", "Именно такой формат особенно полезен и для экзамена, и для обычной речи, потому что он тренирует автоматизм выбора."], exercises: [makeExercise("Jak działa poprawność gramatyczna", genExamGrammarGuide()), makeExercise("Mikrotest gramatyczny B1", genExamGrammarSkills()), makeExercise("Gramatyka w sytuacji", genExamGrammarContext())] },
+  examB1Writing: { title: "Egzamin B1: Pisanie", description: "Письмо: email, жалоба, заявление", theory: ["Письмо B1 требует структуры: приветствие, цель, детали, просьба, завершение.", "Цель — писать 80–120 слов простыми, правильными фразами.", "Проверяй себя по чеклисту: czy jest cel? czy są szczegóły? czy ton jest grzeczny?", "В хорошей работе видно, что автор выполнил задачу, а не просто написал что-то похожее на письмо.", "Если задание просит объяснить проблему, попросить о помощи и предложить решение, все три пункта должны быть в тексте."], exercises: [makeExercise("Na co patrzy egzamin", genB1Strategy("examB1Writing")), makeExercise("Jak rozłożyć polecenie", genWritingTaskAnalysis()), makeExercise("Pisanie B1", genExamWriting()), makeExercise("Krótka odpowiedź 2–4 zdania", genShortWritingB1()), makeExercise("Собери полезную фразу", genWritingAssembly())] },
   examB1Speaking: { title: "Egzamin B1: Mówienie", description: "Говорение: карточки и ситуации", theory: ["Говорение B1 — это не идеальная грамматика, а понятная речь с примерами и связками.", "Тренируй схему: opisuję sytuację → dodaję szczegóły → mówię opinię → kończę wnioskiem.", "Хорошие связки: moim zdaniem, wydaje mi się, ponieważ, dlatego, na przykład."], exercises: [makeExercise("Mówienie B1", genExamSpeaking())] },
   examB1Mock: { title: "Egzamin B1: Mini test", description: "Смешанный пробный тест", theory: ["Мини-тест смешивает грамматику, лексику и экзаменационные реакции.", "Используй его как контроль после прохождения модулей.", "Если тема даёт много ошибок, возвращайся в соответствующий блок курса."], exercises: [makeExercise("Mini test B1", genExamMixed()), makeExercise("Wypowiedź kontrolna", repeatTo50([free("Napisz autoprezentację B1: kim jesteś, czym się zajmujesz, dlaczego uczysz się polskiego i jakie masz plany. 100–140 słów.", "Checklist: teraźniejszość, przeszłość, przyszłość, минимум 5 связок.")]))] },
-  b1Mistakes: { title: "Najczęstsze błędy B1", description: "Самые частые ошибки B1", theory: ["Здесь собраны ошибки по падежам, się, порядку слов, аспекту, предлогам и временам.", "Цель — видеть ошибку автоматически.", "Если ошибка повторяется 3 раза — это тема для повторения."], exercises: [makeExercise("Исправь ошибки B1", genB1Mistakes()), makeExercise("Собери правильную фразу", genSentenceAssemblyB1()), makeExercise("Короткий ответ 2–4 zdania", genShortWritingB1()), makeExercise("Разговор-диагностика", speakingPrompts)] },
+  b1Mistakes: { title: "Najczęstsze błędy B1", description: "Самые частые ошибки B1", theory: ["Здесь собраны ошибки по падежам, się, порядку слов, аспекту, предлогам и временам.", "Цель — видеть ошибку автоматически.", "Если ошибка повторяется 3 раза — это тема для повторения.", "Лучший способ работать с этим блоком: не просто исправлять форму, а объяснять себе, почему здесь нужен именно этот падеж, аспект или порядок слов."], exercises: [makeExercise("Исправь ошибки B1", genB1Mistakes()), makeExercise("Mikrotest gramatyczny B1", genExamGrammarSkills()), makeExercise("Собери правильную фразу", genSentenceAssemblyB1()), makeExercise("Короткий ответ 2–4 zdania", genShortWritingB1()), makeExercise("Разговор-диагностика", speakingPrompts)] },
   audioUczmySiePolskiego: { title: "Audio: Uczmy się polskiego", description: "Сериал по сериям с YouTube", theory: ["Это отдельный финальный раздел для живого аудирования через учебный сериал. Он хорош тем, что даёт повторяемые бытовые темы и медленную, понятную польскую речь.", "Лучший режим работы такой: сначала смотри без паузы, потом пересматривай с выписыванием 5-10 новых слов, потом добавляй их в словарь и через пару дней возвращайся к серии.", "Начинай с odcinki 1-15, потому что они ближе к базе A2/B1. Когда они станут понятнее, переходи дальше и используй сериал как мост к настоящему аудированию."], exercises: [makeExercise("Serial audio", genUczmySiePolskiego())] }
 };
 
@@ -1543,7 +2047,7 @@ const courseModules = [
   { title: "Глаголы и время", keys: ["verbsPresent", "irregularVerbs", "verbsPast", "verbsFuture", "aspect"] },
   { title: "Конструкции B1", keys: ["prepositions", "complexSentences", "b1Connectors", "politeConditional", "imperatives", "pronouns", "reflexiveSie", "comparisons", "modalVerbs", "impersonal", "wordOrder", "b1Mistakes"] },
   { title: "Лексика по темам", keys: ["workLexicon", "housingLexicon", "healthLexicon", "documentsLexicon", "shoppingLexicon", "cityLexicon", "educationLexicon", "relationshipsLexicon", "travelLexicon", "foodLexicon", "technologyLexicon", "argumentationLexicon", "financeLexicon", "familyLexicon", "dailyLexicon", "natureLexicon", "cultureLexicon", "leisureLexicon", "safetyLexicon", "societyLexicon", "personalityLexicon", "environmentLexicon"] },
-  { title: "Egzamin B1", keys: ["writingTemplates", "examB1Reading", "examB1Listening", "examB1Writing", "examB1Speaking", "examB1Mock"] },
+  { title: "Egzamin B1", keys: ["writingTemplates", "examB1Reading", "examB1Listening", "examB1Grammar", "examB1Writing", "examB1Speaking", "examB1Mock"] },
   { title: "Audio i serial", keys: ["audioUczmySiePolskiego"] }
 ];
 
@@ -1598,6 +2102,7 @@ const topicGoals = {
   writingTemplates: ["Использовать готовые структуры", "Писать email, жалобу и просьбу", "Держать формат B1"],
   examB1Reading: ["Понимать короткие и длинные тексты", "Искать ключевую информацию", "Находить лексику в контексте"],
   examB1Listening: ["Слушать без скрипта", "Ловить время, место и действие", "Проверять себя по диктанту"],
+  examB1Grammar: ["Выбирать форму по контексту", "Распознавать падеж, аспект и время", "Тренировать грамматический автоматизм B1"],
   examB1Writing: ["Писать email, жалобу и заявление", "Держать структуру B1", "Проверять текст по чеклисту"],
   examB1Speaking: ["Говорить по карточке", "Описывать ситуацию", "Строить ответ 1–2 минуты"],
   examB1Mock: ["Проверить готовность", "Смешать грамматику и лексику", "Найти слабые темы"],
