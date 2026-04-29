@@ -56,7 +56,11 @@ const styles = {
   metric: { background: "#f8fafb", border: "1px solid #e0e6ea", borderRadius: 8, padding: 10 },
   profileBar: { display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 12 },
   floatingDictionaryButton: { position: "fixed", right: 20, bottom: 20, zIndex: 18, boxShadow: "0 12px 28px rgba(0,0,0,.16)" },
-  floatingDictionaryPanel: { position: "fixed", right: 20, bottom: 76, width: "min(380px, calc(100vw - 24px))", maxHeight: "70vh", overflow: "auto", zIndex: 18, background: "white", border: "1px solid #d8e2e8", borderRadius: 12, padding: 16, boxShadow: "0 24px 60px rgba(0,0,0,.18)" }
+  floatingDictionaryPanel: { position: "fixed", right: 20, bottom: 76, width: "min(380px, calc(100vw - 24px))", maxHeight: "70vh", overflow: "auto", zIndex: 18, background: "white", border: "1px solid #d8e2e8", borderRadius: 12, padding: 16, boxShadow: "0 24px 60px rgba(0,0,0,.18)" },
+  floatingMistakesButton: { position: "fixed", right: 20, bottom: 76, zIndex: 18, boxShadow: "0 12px 28px rgba(0,0,0,.16)" },
+  floatingMistakesPanel: { position: "fixed", right: 20, bottom: 132, width: "min(380px, calc(100vw - 24px))", maxHeight: "60vh", overflow: "auto", zIndex: 18, background: "white", border: "1px solid #f0c7c7", borderRadius: 12, padding: 16, boxShadow: "0 24px 60px rgba(0,0,0,.18)" },
+  floatingReviewButton: { position: "fixed", right: 20, bottom: 132, zIndex: 18, boxShadow: "0 12px 28px rgba(0,0,0,.16)" },
+  floatingReviewPanel: { position: "fixed", right: 20, bottom: 188, width: "min(380px, calc(100vw - 24px))", maxHeight: "60vh", overflow: "auto", zIndex: 18, background: "white", border: "1px solid #d6e6db", borderRadius: 12, padding: 16, boxShadow: "0 24px 60px rgba(0,0,0,.18)" }
 };
 
 const input = (q, a, explanation = "") => ({ type: "input", q, a: Array.isArray(a) ? a : [a], explanation });
@@ -2496,7 +2500,7 @@ function genGrammarStepByStep(topic) {
       choice("Почему `dobrzy studenci`, но `dobre książki`?", ["bo najpierw rozróżniamy męskoosobowy i niemęskoosobowy", "bo książki są w bierniku", "bo studenci są w czasie przeszłym"], "bo najpierw rozróżniamy męskoosobowy i niemęskoosobowy")
     ],
     accusative: [
-      note("Разбор по шагам: `widzę dobrego lekarza`", "1. Глагол `widzę` требует `biernik`.\n2. Базовая форма: `dobry lekarz`.\n3. `lekarz` — męski żywotny, поэтому в biernik он часто похож на dopełniacz.\n4. Существительное: `lekarz -> lekarza`.\n5. Прилагательное: `dobry -> dobrego`.\n\nИтог: `widzę dobrego lekarza`."),
+      note("Разбор по шагам: `widzę dobrego lekarza`", "1. Глагол `widzę` требует `biernik`.\n2. Базовая форма: `dobry lekarz`.\n3. `lekarz` — męski żywotny. Для этой группы в biernik очень часто существительное получает окончание `-a`, а прилагательное форму `-ego`.\n4. Существительное: `lekarz -> lekarza`.\n5. Прилагательное: `dobry -> dobrego`.\n\nИтог: `widzę dobrego lekarza`.\n\nПолезная модель для памяти:\n`widzę dobrego lekarza`\n`znam nowego kolegę`\n`mam małego psa`"),
       input("Uzupełnij: kupuję (czarna kawa)", "czarną kawę", "biernik rodzaju żeńskiego"),
       choice("Почему `mam nowy telefon`, а не `nowego telefonu`?", ["bo telefon jest męski nieżywotny i często nie zmienia się w bierniku", "bo po `mam` jest miejscownik", "bo telefon jest w liczbie mnogiej"], "bo telefon jest męski nieżywotny i często nie zmienia się w bierniku")
     ],
@@ -2571,7 +2575,38 @@ function genGrammarStepByStep(topic) {
       choice("Что делает `dlatego`?", ["pokazuje skutek", "pokazuje cel", "tworzy miejscownik"], "pokazuje skutek")
     ]
   };
-  return blocks[topic] || [];
+  return uniqueExerciseItems([...(blocks[topic] || []), ...genGrammarStepByStepPractice(topic)]).slice(0, 30);
+}
+
+function genGrammarStepByStepPractice(topic) {
+  const pick = (...groups) => uniqueExerciseItems(groups.flat()).slice(0, 28);
+  const map = {
+    pluralNominative: pick(genPluralVariety(), genMascPlural(), genNonMascPlural(), genPluralAdjectives(), genOniOne()),
+    accusative: pick(genAccusativeVariety(), genAccusativeForms(), genAccusativeAdjectives()),
+    genitive: pick(genGenitiveVariety(), genGenitive()),
+    dative: pick(genDativeVariety(), genDative()),
+    instrumental: pick(genInstrumental(), genInstrumental(), genInstrumental()),
+    locative: pick(genLocativeVariety(), genLocative()),
+    verbsPresent: pick(genPresentVariety(), genPresentConjugationDrills(), genPresent()),
+    irregularVerbs: pick(genIrregularVerbsVariety(), genPresentConjugationDrills(), genPresent()),
+    verbsPast: pick(genPast(), genPast(), genPast()),
+    verbsFuture: pick(genFutureVariety(), genFuture(), genFutureWithTime()),
+    aspect: pick(genAspectVariety(), genAspectChoice(), genAspectPairs()),
+    prepositions: pick(genPrepositionVariety(), genPrepositions()),
+    numbersTime: pick(genNumbers(), genMoney(), genNumberRules(), genClock(), genTimePhrases(), genNumberTimeVariety()),
+    complexSentences: pick(genComplexSentences(), genComplexSentenceVariety()),
+    politeConditional: pick(genPoliteConditional(), genPoliteConditional()),
+    imperatives: pick(genImperatives(), genImperatives()),
+    pronouns: pick(genPronouns(), genPronouns()),
+    reflexiveSie: pick(genReflexiveSie(), genReflexiveSie()),
+    comparisons: pick(genComparisons(), genComparisonVariety()),
+    modalVerbs: pick(genModalVerbs(), genModalVariety()),
+    impersonal: pick(genImpersonal(), genImpersonalVariety()),
+    wordOrder: pick(genWordOrder(), genWordOrderVariety()),
+    b1Connectors: pick(genB1Connectors(), genConnectorChoiceAdvanced()),
+    b1Mistakes: pick(genB1Mistakes(), genExamGrammarSkills(), genSentenceAssemblyB1())
+  };
+  return map[topic] || [];
 }
 
 function genB1Strategy(topic) {
@@ -3113,6 +3148,8 @@ export default function App() {
   const [newWordRu, setNewWordRu] = useState("");
   const [dictionaryOpen, setDictionaryOpen] = useState(false);
   const [dictionaryDockOpen, setDictionaryDockOpen] = useState(false);
+  const [mistakesDockOpen, setMistakesDockOpen] = useState(false);
+  const [reviewDockOpen, setReviewDockOpen] = useState(false);
   const initialModuleTitle = courseModules.find((module) => module.keys.includes(saved.topicKey || topicKeys[0]))?.title || courseModules[0].title;
   const [openModules, setOpenModules] = useState({ [initialModuleTitle]: true });
   const [openTopics, setOpenTopics] = useState({ [saved.topicKey || topicKeys[0]]: true });
@@ -3147,6 +3184,8 @@ export default function App() {
     setNewWordRu("");
     setDictionaryOpen(false);
     setDictionaryDockOpen(false);
+    setMistakesDockOpen(false);
+    setReviewDockOpen(false);
     setOpenModules({ [nextModuleTitle]: true });
     setOpenTopics({ [nextTopicKey]: true });
     setRulesOpen(true);
@@ -3267,6 +3306,9 @@ export default function App() {
   }
   function switchProfile(nextProfileId) {
     if (nextProfileId && nextProfileId !== activeProfileId) {
+      setDictionaryDockOpen(false);
+      setMistakesDockOpen(false);
+      setReviewDockOpen(false);
       setActiveProfileId(nextProfileId);
     }
   }
@@ -3307,6 +3349,9 @@ export default function App() {
     setAnswers({});
     setReview({});
     setUserWords([]);
+    setDictionaryDockOpen(false);
+    setMistakesDockOpen(false);
+    setReviewDockOpen(false);
     window.localStorage.removeItem(getProfileStorageKey(activeProfileId));
   }
 
@@ -3376,6 +3421,82 @@ export default function App() {
               </div>
             )}
           </div>
+        )}
+        {mistakesDockOpen && mistakes.length > 0 && (
+          <div style={styles.floatingMistakesPanel}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
+              <div>
+                <strong>Повторить ошибки</strong>
+                <div><small>{mistakes.length} недавних ошибок в активном профиле</small></div>
+              </div>
+              <button style={styles.btn} onClick={() => setMistakesDockOpen(false)}>Свернуть</button>
+            </div>
+            {mistakes.map((m) => (
+              <div key={m.id} style={styles.mistake}>
+                <strong>{topics[m.key].title} · {m.exerciseTitle}</strong>
+                <div>{m.item.q}</div>
+                <small>Твой ответ: {m.answer.value || "пусто"} · правильно: {m.item.correct || m.item.a?.[0] || "развернуть ответ"}</small>
+                <div style={{ marginTop: 8 }}>
+                  <button style={styles.btn} onClick={() => selectExercise(m.key, m.exIndex)}>Открыть упражнение</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {reviewDockOpen && dueReviews.length > 0 && (
+          <div style={styles.floatingReviewPanel}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
+              <div>
+                <strong>Умное повторение</strong>
+                <div><small>{dueReviews.length} карточек пора повторить сейчас</small></div>
+              </div>
+              <button style={styles.btn} onClick={() => setReviewDockOpen(false)}>Свернуть</button>
+            </div>
+            {dueReviews.map((entry) => (
+              <div key={entry.id} style={styles.review}>
+                <strong>{topics[entry.key].title} · {entry.exerciseTitle}</strong>
+                <div>{entry.item.q}</div>
+                <small>Серия: {entry.state.streak} · попыток: {entry.state.attempts} · правильно: {entry.state.corrects}</small>
+                <div style={{ marginTop: 8 }}>
+                  <button style={styles.btn} onClick={() => selectExercise(entry.key, entry.exIndex)}>Повторить</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {dueReviews.length > 0 && (
+          <button
+            style={{ ...styles.primary, ...styles.floatingReviewButton }}
+            onClick={() => {
+              setReviewDockOpen((value) => {
+                const next = !value;
+                if (next) {
+                  setMistakesDockOpen(false);
+                  setDictionaryDockOpen(false);
+                }
+                return next;
+              });
+            }}
+          >
+            {reviewDockOpen ? "Скрыть повторение" : `Умное повторение · ${dueReviews.length}`}
+          </button>
+        )}
+        {mistakes.length > 0 && (
+          <button
+            style={{ ...styles.primary, ...styles.floatingMistakesButton }}
+            onClick={() => {
+              setMistakesDockOpen((value) => {
+                const next = !value;
+                if (next) {
+                  setReviewDockOpen(false);
+                  setDictionaryDockOpen(false);
+                }
+                return next;
+              });
+            }}
+          >
+            {mistakesDockOpen ? "Скрыть ошибки" : `Ошибки · ${mistakes.length}`}
+          </button>
         )}
         <button style={{ ...styles.primary, ...styles.floatingDictionaryButton }} onClick={() => setDictionaryDockOpen((value) => !value)}>
           {dictionaryDockOpen ? "Скрыть словарь" : `Словарь · ${userWords.length}`}
@@ -3452,41 +3573,6 @@ export default function App() {
                 </>
               )}
             </section>
-
-            {mistakes.length > 0 && (
-              <section style={{ ...styles.card, marginBottom: 18 }}>
-                <h2>Повторить ошибки</h2>
-                <p>Последние неправильные ответы остаются здесь, чтобы курс сам подсказывал, куда вернуться.</p>
-                {mistakes.map((m) => (
-                  <div key={m.id} style={styles.mistake}>
-                    <strong>{topics[m.key].title} · {m.exerciseTitle}</strong>
-                    <div>{m.item.q}</div>
-                    <small>Твой ответ: {m.answer.value || "пусто"} · правильно: {m.item.correct || m.item.a?.[0] || "развернуть ответ"}</small>
-                    <div style={{ marginTop: 8 }}>
-                      <button style={styles.btn} onClick={() => selectExercise(m.key, m.exIndex)}>Открыть упражнение</button>
-                    </div>
-                  </div>
-                ))}
-              </section>
-            )}
-
-            {dueReviews.length > 0 && (
-              <section style={{ ...styles.card, marginBottom: 18 }}>
-                <h2>Умное повторение</h2>
-                <p>Эти карточки пора повторить сейчас: ошибки возвращаются сразу, правильные ответы уходят на 1, 3, 7, 14 и 30 дней.</p>
-                {dueReviews.map((entry) => (
-                  <div key={entry.id} style={styles.review}>
-                    <strong>{topics[entry.key].title} · {entry.exerciseTitle}</strong>
-                    <div>{entry.item.q}</div>
-                    <small>Серия: {entry.state.streak} · попыток: {entry.state.attempts} · правильно: {entry.state.corrects}</small>
-                    <div style={{ marginTop: 8 }}>
-                      <button style={styles.btn} onClick={() => selectExercise(entry.key, entry.exIndex)}>Повторить</button>
-                    </div>
-                  </div>
-                ))}
-              </section>
-            )}
-
             <section style={styles.card}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
                 <div>
