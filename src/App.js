@@ -63,7 +63,8 @@ const input = (q, a, explanation = "") => ({ type: "input", q, a: Array.isArray(
 const choice = (q, options, correct, explanation = "") => ({ type: "choice", q, options, correct, explanation });
 const free = (q, hint = "Ответ свободный. Напиши 4–8 предложений, потом можешь прислать мне на проверку.") => ({ type: "free", q, explanation: hint });
 const note = (title, body, words = [], links = []) => ({ type: "note", title, body, words, links });
-const audio = (title, body, src = "", links = []) => ({ type: "audio", title, body, src, links });
+const audio = (title, body, src = "", links = [], transcript = "") => ({ type: "audio", title, body, src, links, transcript });
+const cloze = (q, title, lines, blanks, explanation = "") => ({ type: "cloze", q, title, lines, blanks, explanation });
 const makeExercise = (title, items) => ({ title, items });
 const PRIVATE_COURSE_BASE = `${process.env.PUBLIC_URL || ""}/private-course`;
 
@@ -991,7 +992,7 @@ function genPrivateCourseIntro() {
   ];
 }
 
-function getSelectedLessonExercises(lesson) {
+function getSelectedLessonExercisesLegacy(lesson) {
   const selected = {
     1: [
       note("Lekcja 1 — wybrane ćwiczenia", "Берём лучшее из блока o sobie, krajach, liczbach i godzinach: представление себя, страны и города, mieszkańcy, числа и время."),
@@ -1078,74 +1079,277 @@ function getSelectedLessonExercises(lesson) {
   return selected[lesson] || [];
 }
 
+function getPrivateAudioExerciseItemsLegacy(lesson) {
+  const drills = {
+    1: [
+      note("Lekcja 1 — audio z zadaniami", "Здесь главное не просто послушать, а вытащить смысл: кто говорит, как представляется и о каких basic informacjach mówi."),
+      audio("Lekcja 1: audio aktywne", "Posłuchaj nagrania o przedstawianiu się i podstawowych informacjach. Potem odpowiedz na pytania i napisz mini-podsumowanie.", privateAudio("Podręcznik", "a1.1")),
+      input("Jak po polsku: 'Меня зовут ...'?", "mam na imię"),
+      input("Jak odpowiesz na pytanie 'Jak się nazywasz?'. Napisz pełne 1 zdanie.", ["nazywam się ...", "mam na imię ..."]),
+      free("Po słuchaniu napisz 2-3 zdania: jak ma na imię osoba, skąd pochodzi i gdzie mieszka.", "Даже если не всё понял, собери минимальный понятный ответ.")
+    ],
+    2: [
+      note("Lekcja 2 — audio z zadaniami", "Семья и близкие отлично ложатся в аудирование: имена, роли в семье, wiek i relacje."),
+      audio("Lekcja 2: audio aktywne", "Posłuchaj nagrania o rodzinie. Zwróć uwagę na imiona, relacje rodzinne i wiek.", privateAudio("Podręcznik", "a2.1")),
+      input("Jak po polsku: 'братья и сестры'?", ["rodzeństwo", "rodzenstwo"]),
+      input("Jak nazwiesz po polsku mamę żony albo męża?", "teściowa"),
+      free("Po słuchaniu opisz rodzinę z nagrania w 3-4 zdaniach.", "Użyj: mama, tata, brat, siostra, młodszy / starszy.")
+    ],
+    3: [
+      note("Lekcja 3 — audio z zadaniami", "Здесь слушаем не ради одной фразы, а чтобы потом уметь описать wygląd i ubiór своими словами."),
+      audio("Lekcja 3: audio aktywne", "Posłuchaj opisu wyglądu lub ubioru. Wypisz cechy i potem opisz osobę własnymi słowami.", privateAudio("Podręcznik", "a3.1")),
+      input("Podaj 1 polskie słowo opisujące twarz.", ["owalna", "okrągła", "pociągła"]),
+      input("Podaj 1 polskie słowo opisujące włosy.", ["kręcone", "długie", "krótkie", "blond"]),
+      free("Po słuchaniu opisz osobę z nagrania w 3-5 zdaniach.", "Użyj minimum 4 cech wyglądu.")
+    ],
+    4: [
+      note("Lekcja 4 — audio z zadaniami", "Аудио про работу лучше всего закрепляется через обязанности, miejsce pracy и mocne strony."),
+      audio("Lekcja 4: audio aktywne", "Posłuchaj nagrania o pracy albo zawodzie. Zanotuj zawód, obowiązki i jedną mocną stronę.", privateAudio("Podręcznik", "a4.1")),
+      input("Jak po polsku: 'работодатель'?", "pracodawca"),
+      input("Jak po polsku: 'сотрудник / коллега по работе'?", "współpracownik"),
+      free("Po słuchaniu napisz 3-4 zdania o zawodzie z nagrania.", "Napisz, gdzie ta osoba pracuje i co robi.")
+    ],
+    5: [
+      note("Lekcja 5 — audio z zadaniami", "Это уже очень жизненное слушание: zakupy, jedzenie, ceny i reklamacja."),
+      audio("Lekcja 5: audio aktywne", "Posłuchaj nagrania o jedzeniu, zakupach albo reklamacji w restauracji.", privateAudio("Zeszyt ćwiczeń", "b5.3")),
+      choice("Jakie danie pojawia się w nagraniu?", ["pizza", "zupa", "kanapka"], "pizza"),
+      choice("Jaki był problem według opisu z lekcji?", ["obsługa albo jakość dania", "brak hotelu", "spóźniony pociąg"], "obsługa albo jakość dania"),
+      free("Po słuchaniu napisz 2-4 zdania reklamacji: co było nie tak i czego oczekujesz.", "Użyj: jednak, problem, proszę o...")
+    ],
+    6: [
+      note("Lekcja 6 — audio z zadaniami", "Слушание про mieszkanie лучше сразу соединять с pytaniami o koszty, pokoje i wyposażenie."),
+      audio("Lekcja 6: audio aktywne", "Posłuchaj nagrania o mieszkaniu, domu albo wynajmie. Zapisz typ budynku, pomieszczenia i jedną informację o kosztach.", privateAudio("Podręcznik", "a6.1")),
+      input("Jak po polsku: 'залог при аренде'?", "kaucja"),
+      input("Jak po polsku: 'гостиная'?", "salon"),
+      free("Po słuchaniu napisz 3-4 zdania o mieszkaniu z nagrania.", "Napisz, gdzie jest, jakie ma pomieszczenia i czy chcesz tam mieszkać.")
+    ],
+    7: [
+      note("Lekcja 7 — audio z zadaniami", "Podróże i droga хорошо тренируются через słuchanie маршрута и короткие ответы."),
+      audio("Lekcja 7: audio aktywne", "Posłuchaj nagrania o podróży, kierunku albo pytaniu o drogę. Zwróć uwagę na miejsca i przyimki.", privateAudio("Podręcznik", "a7.1")),
+      input("Jakiego przyimka użyjesz: idę ___ biblioteki?", "do"),
+      input("Jak po polsku: 'северо-восток'?", ["północny wschód", "polnocny wschod"]),
+      free("Po słuchaniu napisz mini-instrukcję drogi w 2-4 zdaniach.", "Na przykład: idź prosto, potem skręć w lewo...")
+    ],
+    8: [
+      note("Lekcja 8 — audio z zadaniami", "Здесь уже можно делать настоящее mini-listening: zdrowie, pogoda, objawy i prognoza."),
+      audio("Lekcja 8: audio aktywne", "Posłuchaj prognozy pogody albo opisu samopoczucia. Wypisz 3 najważniejsze informacje.", privateAudio("Zeszyt ćwiczeń", "b8.3")),
+      choice("Jaka może być temperatura w nagraniu z tej lekcji?", ["poniżej zera", "czterdzieści stopni", "zawsze taka sama"], "poniżej zera"),
+      input("Przysłówek od 'słoneczny' to:", "słonecznie"),
+      free("Po słuchaniu napisz krótką prognozę pogody albo opis samopoczucia w 2-4 zdaniach.", "Użyj: wiatr, śnieg, zimno, czuję się...")
+    ],
+    9: [
+      note("Lekcja 9 — audio z zadaniami", "Планы дня и hobby очень хорошо переходят из nagrania в свою речь."),
+      audio("Lekcja 9: audio aktywne", "Posłuchaj nagrania o planie dnia albo czasie wolnym. Zwróć uwagę na godziny i czynności.", privateAudio("Zeszyt ćwiczeń", "b9.1")),
+      choice("O której mogła wstać bohaterka nagrania według tej lekcji?", ["o siódmej", "o północy", "o trzeciej rano"], "o siódmej"),
+      input("Jak po polsku: 'домашнее задание'?", ["praca domowa", "zadanie domowe"]),
+      free("Po słuchaniu opisz plan dnia osoby z nagrania w 3-5 zdaniach.", "Dodaj 2 wyrażenia czasu: rano, po południu, wieczorem...")
+    ],
+    10: [
+      note("Lekcja 10 — audio z zadaniami", "На этом этапе слушание уже должно помогать и в письме: edukacja, skróty, styl formalny."),
+      audio("Lekcja 10: audio aktywne", "Posłuchaj nagrania związanego ze szkołą, studiami albo oficjalną komunikacją.", privateAudio("Podręcznik", "a10.1")),
+      input("Jak inaczej powiesz po polsku 'egzamin dojrzałości'?", "matura"),
+      choice("Jaki styl będzie odpowiedni po takim materiale?", ["oficjalny", "bardzo potoczny"], "oficjalny"),
+      free("Po słuchaniu napisz 2-4 zdania oficjalnej wiadomości albo krótkiego komunikatu.", "Użyj zwrotu grzecznościowego i jednego celu wiadomości.")
+    ]
+  };
+
+  return drills[lesson] || [];
+}
+
+function getPrivateLessonOverview(lesson) {
+  const overview = {
+    1: {
+      title: "Lekcja 1 — o sobie, kraje, miasta, liczby, godziny",
+      body: "Фокус урока: представиться, сказать, откуда ты, где живёшь, сколько тебе лет, назвать страны и города, понять базовые числа и время.",
+      words: [["mam na imię", "меня зовут"], ["pochodzę z", "я родом из"], ["mieszkam w", "я живу в"], ["nazwisko", "фамилия"], ["mieszkaniec", "житель"]]
+    },
+    2: {
+      title: "Lekcja 2 — rodzina i cechy charakteru",
+      body: "Фокус урока: семья, родственники, семейные отношения, праздники и базовые качества человека. После урока ты должен уметь коротко описать одного близкого человека.",
+      words: [["rodzeństwo", "братья и сёстры"], ["teściowa", "тёща / свекровь"], ["wujek", "дядя"], ["wigilia", "сочельник"], ["pracowity", "трудолюбивый"]]
+    },
+    3: {
+      title: "Lekcja 3 — wygląd, ubrania, porównania",
+      body: "Фокус урока: описывать внешность, волосы, лицо, одежду и делать простые сравнения: kto jest wyższy, co jest ładniejsze, jaki styl lubisz.",
+      words: [["owalna twarz", "овальное лицо"], ["blondynka", "блондинка"], ["kręcone włosy", "кудрявые волосы"], ["szybszy", "быстрее / более быстрый"], ["wysoki", "высокий"]]
+    },
+    4: {
+      title: "Lekcja 4 — praca i zawody",
+      body: "Фокус урока: профессии, место работы, сильные стороны, обязанности и простое описание своей работы. После урока ты должен уметь сказать, где работаешь и что делаешь.",
+      words: [["pracodawca", "работодатель"], ["współpracownik", "коллега"], ["cały etat", "полная ставка"], ["obowiązki", "обязанности"], ["mocne strony", "сильные стороны"]]
+    },
+    5: {
+      title: "Lekcja 5 — zakupy, jedzenie, ceny, reklamacja",
+      body: "Фокус урока: еда, упаковки, количество, вес, покупки и жалоба в магазине или ресторане. Это очень практичный урок для живой жизни.",
+      words: [["słoik", "банка"], ["kilogram", "килограмм"], ["paragon", "чек"], ["reklamacja", "рекламация / претензия"], ["wymiana", "обмен"]]
+    },
+    6: {
+      title: "Lekcja 6 — mieszkanie i wynajem",
+      body: "Фокус урока: типы домов, комнаты, мебель, аренда, район и стоимость жилья. После урока ты должен уметь описать квартиру и задать вопросы об аренде.",
+      words: [["kamienica", "доходный дом / каменица"], ["salon", "гостиная"], ["kaucja", "залог"], ["wynająć", "снять в аренду"], ["spokojna okolica", "спокойный район"]]
+    },
+    7: {
+      title: "Lekcja 7 — podróż, kierunki, droga",
+      body: "Фокус урока: направления, карта, путешествие, транспорт и вопросы о дороге. Это хороший урок для przyimki и orientację w mieście.",
+      words: [["północny wschód", "северо-восток"], ["do biblioteki", "в библиотеку"], ["hotel", "отель"], ["skręcić", "повернуть"], ["prosto", "прямо"]]
+    },
+    8: {
+      title: "Lekcja 8 — zdrowie, ciało, pogoda",
+      body: "Фокус урока: врачи, части тела, самочувствие, погода и прогноз. После урока ты должен уметь сказать, что болит и какая сегодня погода.",
+      words: [["stomatolog", "стоматолог"], ["laryngolog", "лор"], ["słonecznie", "солнечно"], ["śnieg", "снег"], ["czuję się", "я себя чувствую"]]
+    },
+    9: {
+      title: "Lekcja 9 — plany, sport, hobby",
+      body: "Фокус урока: распорядок дня, свободное время, спорт и увлечения. После урока ты должен уметь рассказать о своём hobby и планах на weekend.",
+      words: [["praca domowa", "домашняя работа"], ["rakieta tenisowa", "теннисная ракетка"], ["czas wolny", "свободное время"], ["wstać", "встать"], ["lubię", "мне нравится"]]
+    },
+    10: {
+      title: "Lekcja 10 — edukacja, skróty, list oficjalny",
+      body: "Фокус урока: школа, экзамены, сокращения и официальный стиль. Это уже мост к полезному B1-письму и formalnym komunikatom.",
+      words: [["matura", "выпускной экзамен"], ["między innymi", "между прочим / среди прочего"], ["list oficjalny", "официальное письмо"], ["zwracam się z prośbą", "обращаюсь с просьбой"], ["Szanowni Państwo", "Уважаемые господа"]]
+    }
+  };
+
+  return overview[lesson];
+}
+
+function getPrivateAudioResourceLinks(lessonConfig) {
+  return [
+    ...lessonConfig.textbook.map((track) => ({ label: `Podręcznik ${track}`, url: privateAudio("Podręcznik", track) })),
+    ...lessonConfig.workbook.map((track) => ({ label: `Ćwiczenia ${track}`, url: privateAudio("Zeszyt ćwiczeń", track) })),
+    ...lessonConfig.guide.map((track) => ({ label: `Poradnik ${track}`, url: privateAudio("Poradnik", track) }))
+  ];
+}
+
+// Override the earlier textbook helpers with a leaner Pages-friendly format:
+// one main audio per lesson plus fill-in-the-blank tasks based on the audio.
+function getSelectedLessonExercises() {
+  return [];
+}
+
+function getPrivateAudioExerciseItems(lesson) {
+  const drills = {
+    1: [
+      audio(
+        "Lekcja 1: główne audio",
+        "Posłuchaj nagrania 1-2 razy. Potem uzupełnij cały dialog poniżej i dopiero na końcu odkryj pełny tekst do sprawdzenia.",
+        privateAudio("Podręcznik", "a1.1"),
+        [],
+        "A: Cześć! Mam na imię Ola. A ty jak masz na imię?\nB: Mam na imię Igor.\nA: Skąd pochodzisz?\nB: Pochodzę z Ukrainy, ale teraz mieszkam w Warszawie.\nA: Bardzo mi miło.\nB: Mi też miło."
+      ),
+      cloze(
+        "Uzupełnij cały dialog po wysłuchaniu nagrania.",
+        "Dialog z nagrania",
+        [
+          "A: Cześć! Mam na [1] Ola. A ty jak masz na [2]?",
+          "B: Mam na imię Igor.",
+          "A: Skąd [3]?",
+          "B: Pochodzę [4] Ukrainy, ale teraz [5] w Warszawie.",
+          "A: Bardzo mi [6].",
+          "B: Mi też miło."
+        ],
+        [
+          { answers: ["imię", "imie"] },
+          { answers: ["imię", "imie"] },
+          { answers: ["pochodzisz"] },
+          { answers: ["z"] },
+          { answers: ["mieszkam"] },
+          { answers: ["miło", "milo"] }
+        ],
+        "Смысл этого трека: представиться, сказать, откуда ты и где сейчас живёшь."
+      ),
+      choice("Co wiemy o Igorze?", ["Pochodzi z Ukrainy i mieszka w Warszawie.", "Pochodzi z Polski i mieszka w Krakowie.", "Pracuje w sklepie."], "Pochodzi z Ukrainy i mieszka w Warszawie."),
+      input("Napisz po polsku pełną odpowiedź: 'Я родом из Украины, но сейчас живу в Варшаве.'", ["Pochodzę z Ukrainy, ale teraz mieszkam w Warszawie.", "Pochodzę z Ukrainy ale teraz mieszkam w Warszawie."])
+    ],
+    2: [
+      audio("Lekcja 2: audio aktywne", "Posłuchaj nagrania i uzupełnij brakujące słowa.", privateAudio("Podręcznik", "a2.1")),
+      input("Uzupełnij: To jest moja ___ .", ["mama", "siostra", "rodzina"]),
+      input("Uzupełnij: Mój brat jest ode mnie ___ .", ["młodszy", "starszy"]),
+      input("Uzupełnij: Moje ___ jest ode mnie młodsze.", ["rodzeństwo", "rodzenstwo"]),
+      choice("Nagranie jest o:", ["rodzinie", "mieszkaniu", "sporcie"], "rodzinie")
+    ],
+    3: [
+      audio("Lekcja 3: audio aktywne", "Posłuchaj nagrania i uzupełnij brakujące słowa.", privateAudio("Podręcznik", "a3.1")),
+      input("Uzupełnij: Ona ma ___ włosy.", ["długie", "kręcone", "krótkie", "blond"]),
+      input("Uzupełnij: Jej twarz jest ___ .", ["owalna", "okrągła"]),
+      input("Uzupełnij: On jest wysoki i ___ .", ["szczupły", "wysportowany"]),
+      choice("Nagranie pomaga opisać:", ["wygląd", "pracę", "drogę"], "wygląd")
+    ],
+    4: [
+      audio("Lekcja 4: audio aktywne", "Posłuchaj nagrania i uzupełnij brakujące słowa.", privateAudio("Podręcznik", "a4.1")),
+      input("Uzupełnij: Pracuję jako ___ .", ["lekarz", "nauczyciel", "sprzedawca", "informatyk"]),
+      input("Uzupełnij: Moje ___ to kontakt z klientami.", "obowiązki"),
+      input("Uzupełnij: Moją mocną ___ jest punktualność.", "stroną"),
+      choice("Nagranie jest o:", ["pracy", "rodzinie", "pogodzie"], "pracy")
+    ],
+    5: [
+      audio("Lekcja 5: audio aktywne", "Posłuchaj nagrania i uzupełnij brakujące słowa.", privateAudio("Zeszyt ćwiczeń", "b5.3")),
+      input("Uzupełnij: Zamówiliśmy dużą ___ .", "pizzę"),
+      input("Uzupełnij: Pani, która nas obsługiwała, była ___ .", ["nieuprzejma", "miła"]),
+      input("Uzupełnij: Zgłosiliśmy ___ .", "reklamację"),
+      choice("Nagranie dotyczy:", ["reklamacji", "egzaminu", "szkoły"], "reklamacji")
+    ],
+    6: [
+      audio("Lekcja 6: audio aktywne", "Posłuchaj nagrania i uzupełnij brakujące słowa.", privateAudio("Podręcznik", "a6.1")),
+      input("Uzupełnij: Chciałbym wynająć ___ .", "mieszkanie"),
+      input("Uzupełnij: W mieszkaniu jest duży ___ .", "salon"),
+      input("Uzupełnij: Kaucja wynosi dwa tysiące ___ .", ["złotych", "zlotych"]),
+      choice("Nagranie dotyczy:", ["mieszkania", "sportu", "listu"], "mieszkania")
+    ],
+    7: [
+      audio("Lekcja 7: audio aktywne", "Posłuchaj nagrania i uzupełnij brakujące słowa.", privateAudio("Podręcznik", "a7.1")),
+      input("Uzupełnij: Idę ___ biblioteki.", "do"),
+      input("Uzupełnij: Skręć w ___ .", ["lewo", "prawo"]),
+      input("Uzupełnij: Dworzec jest na północnym ___ .", "wschodzie"),
+      choice("Nagranie dotyczy:", ["drogi i podróży", "ciała", "rodziny"], "drogi i podróży")
+    ],
+    8: [
+      audio("Lekcja 8: audio aktywne", "Posłuchaj nagrania i uzupełnij brakujące słowa.", privateAudio("Zeszyt ćwiczeń", "b8.3")),
+      input("Uzupełnij: Dziś jest bardzo ___ .", ["zimno", "ciepło", "wietrznie"]),
+      input("Uzupełnij: W nocy temperatura będzie poniżej ___ .", "zera"),
+      input("Uzupełnij: Czuję się ___ .", ["źle", "dobrze", "słabo"]),
+      choice("Nagranie jest o:", ["pogodzie lub samopoczuciu", "pracy", "liście"], "pogodzie lub samopoczuciu")
+    ],
+    9: [
+      audio("Lekcja 9: audio aktywne", "Posłuchaj nagrania i uzupełnij brakujące słowa.", privateAudio("Zeszyt ćwiczeń", "b9.1")),
+      input("Uzupełnij: Obudziła się o ___ .", ["siódmej", "siodmej"]),
+      input("Uzupełnij: Po południu pojechała kupić mamie ___ .", "prezent"),
+      input("Uzupełnij: Wieczorem odrabiała pracę ___ .", "domową"),
+      choice("Nagranie dotyczy:", ["planu dnia", "wynajmu mieszkania", "reklamacji"], "planu dnia")
+    ],
+    10: [
+      audio("Lekcja 10: audio aktywne", "Posłuchaj nagrania i uzupełnij brakujące słowa.", privateAudio("Podręcznik", "a10.1")),
+      input("Uzupełnij: Egzamin dojrzałości to ___ .", "matura"),
+      input("Uzupełnij: Zwracam się z ___ o informację.", "prośbą"),
+      input("Uzupełnij: To jest list ___ .", "oficjalny"),
+      choice("Styl nagrania jest raczej:", ["oficjalny", "bardzo potoczny"], "oficjalny")
+    ]
+  };
+
+  return drills[lesson] || [];
+}
+
+function genPrivateLessonsLegacy(startLesson, endLesson) {
+  return privateCourseLessons
+    .filter((lesson) => lesson.lesson >= startLesson && lesson.lesson <= endLesson)
+    .flatMap((lesson) => {
+      const overview = getPrivateLessonOverview(lesson.lesson);
+      return [
+        note(overview.title, overview.body, overview.words),
+        ...getPrivateAudioExerciseItems(lesson.lesson)
+      ];
+    });
+}
+
 function genPrivateLessons(startLesson, endLesson) {
   return privateCourseLessons
     .filter((lesson) => lesson.lesson >= startLesson && lesson.lesson <= endLesson)
     .flatMap((lesson) => {
-      const items = [
-        note(
-          `Lekcja ${lesson.lesson} — plan pracy`,
-          `Работаем так: сначала открой odpowiednią lekcję w podręczniku, потом прослушай треки z podręcznika, затем один блок z zeszytu ćwiczeń, а в конце сделай короткий активный выход: 3-5 zdań albo mini-dialog. В этой версии курса мы не встраиваем весь PDF, а вытаскиваем из lekcji только самые полезные задания.`,
-          [],
-          [
-            { label: "Otwórz podręcznik PDF", url: privatePdf("podrecznik.pdf") },
-            { label: "Otwórz zeszyt ćwiczeń PDF", url: privatePdf("cwiczenia.pdf") },
-            { label: "Otwórz poradnik metodyczny PDF", url: privatePdf("poradnik-metodyczny.pdf") }
-          ]
-        ),
-        note(
-          `Lekcja ${lesson.lesson} — zadania w HTML`,
-          "HTML-версия этого урока строится вокруг 4 шагов: słuchanie -> wybór nowego słownictwa -> krótkie ćwiczenie aktywne -> mini-wypowiedź. Дальше мы сможем наполнять каждый урок уже точными упражнениями из учебника, но в переработанном виде.",
-          [["posłuchaj", "послушай"], ["powtórz", "повтори"], ["zaznacz", "отметь"], ["uzupełnij", "дополни"], ["odpowiedz", "ответь"]]
-        ),
-        ...getSelectedLessonExercises(lesson.lesson)
+      const overview = getPrivateLessonOverview(lesson.lesson);
+      return [
+        note(overview.title, overview.body, overview.words),
+        ...getPrivateAudioExerciseItems(lesson.lesson)
       ];
-
-      lesson.textbook.forEach((track) => {
-        items.push(
-          audio(
-            `Lekcja ${lesson.lesson}: podręcznik ${track}`,
-            `Локальное аудио из учебника. Сначала слушай без остановки, потом второй раз выпиши 3-5 ключевых слов и одну полезную фразу.`,
-            privateAudio("Podręcznik", track),
-            [{ label: "Otwórz podręcznik PDF", url: privatePdf("podrecznik.pdf") }]
-          )
-        );
-      });
-
-      lesson.workbook.forEach((track) => {
-        items.push(
-          audio(
-            `Lekcja ${lesson.lesson}: ćwiczenia ${track}`,
-            `Трек из zeszytu ćwiczeń. Хорошо подходит для повторного слушания, диктанта и коротких ответов по содержанию.`,
-            privateAudio("Zeszyt ćwiczeń", track),
-            [{ label: "Otwórz zeszyt ćwiczeń PDF", url: privatePdf("cwiczenia.pdf") }]
-          )
-        );
-      });
-
-      lesson.guide.forEach((track) => {
-        items.push(
-          audio(
-            `Lekcja ${lesson.lesson}: poradnik ${track}`,
-            `Дополнительный методический трек. Его удобно использовать как расширение после основной части урока.`,
-            privateAudio("Poradnik", track),
-            [{ label: "Otwórz poradnik PDF", url: privatePdf("poradnik-metodyczny.pdf") }]
-          )
-        );
-      });
-
-      items.push(
-        free(
-          `Lekcja ${lesson.lesson}: wypisz 5 nowych słów i napisz 2-4 zdania z tym słownictwem.`,
-          "Лучше брать слова прямо из nagrań. Если слово важное, добавь его в словарь курса."
-        ),
-        free(
-          `Lekcja ${lesson.lesson}: krótki opis nagrania albo mini-dialog na podstawie audio.`,
-          "3-5 zdań. Используй хотя бы одну связку: ponieważ, dlatego, jednak, oprócz tego."
-        )
-      );
-
-      return items;
     });
 }
 
@@ -1480,6 +1684,7 @@ function evaluateAnswer(item, answer) {
   const value = answer?.value || "";
   if (!answer?.checked) return false;
   if (item.type === "free") return getFreeAnswerScore(value).passed;
+  if (item.type === "cloze") return getClozeScore(item, answer).passed;
   if (item.type === "choice") return value === item.correct;
   return (item.a || []).map(norm).includes(norm(value));
 }
@@ -1496,6 +1701,15 @@ function getFreeAnswerScore(value) {
     hasPastOrFuture,
     passed: words.length >= 12 && (hasConnector || words.length >= 25)
   };
+}
+
+function getClozeScore(item, value) {
+  const values = Array.isArray(value?.values) ? value.values : [];
+  const blanks = item.blanks || [];
+  const correct = blanks.filter((blank, index) =>
+    (blank.answers || []).map(norm).includes(norm(values[index]))
+  ).length;
+  return { correct, total: blanks.length, passed: blanks.length > 0 && correct === blanks.length };
 }
 
 function buildItemId(key, exIndex, itemIndex) {
@@ -1643,6 +1857,11 @@ function AnswerBlock({ item, state, setState, addWord }) {
         {item.src ? (
           <div style={{ marginTop: 10 }}>
             <audio controls preload="none" style={{ width: "100%" }} src={encodeURI(item.src)} />
+            <div style={{ marginTop: 10 }}>
+              <button style={styles.btn} onClick={() => setState({ ...state, showScript: !showScript })}>
+                {showScript ? "Скрыть полный текст" : "Показать полный текст"}
+              </button>
+            </div>
             {item.links?.length > 0 && (
               <div style={{ marginTop: 10 }}>
                 {item.links.map((link) => (
@@ -1663,7 +1882,60 @@ function AnswerBlock({ item, state, setState, addWord }) {
             </button>
           </div>
         )}
-        {showScript && <div style={styles.template}>{item.body}</div>}
+        {showScript && <div style={styles.template}>{item.transcript || item.body}</div>}
+      </div>
+    );
+  }
+
+  if (item.type === "cloze") {
+    const values = Array.isArray(state?.values) ? state.values : Array(item.blanks.length).fill("");
+    const checked = state?.checked || false;
+    const score = getClozeScore(item, { values, checked: true });
+    return (
+      <div>
+        {item.title && <div style={{ marginBottom: 10, fontWeight: "bold" }}>{item.title}</div>}
+        <div style={{ ...styles.template, whiteSpace: "normal", lineHeight: 1.7 }}>
+          {item.lines.map((line, lineIndex) => {
+            const parts = line.split(/(\[\d+\])/g);
+            return (
+              <div key={`${item.title || item.q}-${lineIndex}`} style={{ marginBottom: 8 }}>
+                {parts.map((part, partIndex) => {
+                  const match = part.match(/^\[(\d+)\]$/);
+                  if (!match) return <span key={`${lineIndex}-${partIndex}`}>{part}</span>;
+                  const blankIndex = Number(match[1]) - 1;
+                  return (
+                    <input
+                      key={`${lineIndex}-${partIndex}`}
+                      value={values[blankIndex] || ""}
+                      onChange={(e) => {
+                        const nextValues = [...values];
+                        nextValues[blankIndex] = e.target.value;
+                        setState({ values: nextValues, checked: false });
+                      }}
+                      style={{ ...styles.input, width: 110, display: "inline-block", margin: "0 6px" }}
+                      placeholder="..."
+                    />
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8, flexWrap: "wrap" }}>
+          <button onClick={() => setState({ values, checked: true, checkedAt: Date.now() })} style={styles.primary}>Проверить</button>
+          <button onClick={() => setState({ values: Array(item.blanks.length).fill(""), checked: false })} style={styles.btn}>Сбросить</button>
+          {checked && (
+            <span style={{ fontWeight: "bold", color: score.passed ? "green" : "red" }}>
+              {score.passed ? "✓ Весь диалог заполнен правильно" : `✗ Правильно: ${score.correct}/${score.total}`}
+            </span>
+          )}
+        </div>
+        {checked && !score.passed && (
+          <div style={{ marginTop: 8, fontSize: 13, color: "#56616b" }}>
+            Проверь формы и предлоги. Здесь важно услышать цельную фразу, а не отдельное слово.
+          </div>
+        )}
+        {checked && item.explanation && <div style={{ marginTop: 6, color: "#555", fontSize: 14 }}>{item.explanation}</div>}
       </div>
     );
   }
