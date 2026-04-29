@@ -318,9 +318,11 @@ const topicRuleSheets = {
     { title: "Где чаще всего ошибка", body: "Обычно ошибка не в самом слове, а в согласовании: человек ставит `dobre studenci` или `polskie lekarze`. Здесь надо видеть пару целиком: прилагательное + существительное." }
   ],
   accusative: [
-    { title: "Что это за падеж", body: "Biernik показывает объект действия. Если ты что-то видишь, покупаешь, знаешь, любишь, встречаешь — очень часто нужен именно он." },
-    { title: "Как мыслить пошагово", body: "Шаг 1: найди глагол. Шаг 2: задай вопрос `kogo? co?`. Шаг 3: реши род и тип слова. Шаг 4: только потом меняй окончание." },
-    { title: "Главная ловушка", body: "Самая частая путаница — мужской одушевлённый против мужского неодушевлённого: `widzę lekarza`, но `mam telefon`. То есть один меняется, а другой часто нет." }
+    { title: "Что такое biernik", body: "Biernik нужен, когда действие направлено на объект: я кого-то вижу, знаю, встречаю, люблю, покупаю, беру, читаю. Почти всегда это ответ на вопрос `kogo? co?`." },
+    { title: "Как разбирать форму по шагам", body: "Шаг 1: найди глагол. Шаг 2: задай вопрос `kogo? co?`. Шаг 3: определи род и тип слова. Шаг 4: выбери окончание.\n\nНе надо думать `это похоже на другой падеж`. Надо думать: `какой здесь род и как именно он меняется в biernik`." },
+    { title: "Мужской род: две разные модели", body: "Здесь самое важное различие такое:\n\n1. Мужской одушевлённый в единственном числе обычно получает окончание `-a / -ę`, а прилагательное форму `-ego`:\n`lekarz -> lekarza`\n`student -> studenta`\n`kolega -> kolegę`\n`pies -> psa`\n`dobry lekarz -> dobrego lekarza`\n\n2. Мужской неодушевлённый в единственном числе часто не меняется:\n`telefon -> telefon`\n`chleb -> chleb`\n`dokument -> dokument`\n`nowy telefon -> nowy telefon`\n\nПоэтому:\n`widzę lekarza`, `znam kolegę`, `mam psa`,\nно `mam telefon`, `kupuję chleb`, `biorę dokument`." },
+    { title: "Женский, средний и множественное число", body: "Женский род в единственном числе очень часто меняется так:\n`-a -> -ę` у существительного и `-a -> -ą` у прилагательного:\n`kawa -> kawę`\n`książka -> książkę`\n`dobra kawa -> dobrą kawę`\n`czarna torba -> czarną torbę`\n\nСредний род обычно не меняется:\n`dziecko -> dziecko`\n`mieszkanie -> mieszkanie`\n`małe dziecko -> małe dziecko`\n\nВо множественном числе:\n`widzę dobrych studentów` — męskoosobowy\n`widzę dobre książki` — niemęskoosobowy" },
+    { title: "Где здесь чаще всего ошибаются", body: "Самые частые ошибки такие:\n- ставить мужской неодушевлённый как будто он меняется: `mam telefonu` вместо `mam telefon`\n- не менять женский род: `kupuję czarna kawa` вместо `kupuję czarną kawę`\n- путать мужской одушевлённый и неодушевлённый: `widzę lekarz` вместо `widzę lekarza`\n\nПравильный путь всегда один: глагол -> вопрос `kogo? co?` -> род -> окончание." }
   ],
   genitive: [
     { title: "Когда он нужен", body: "Dopełniacz часто появляется после отрицания, количества и глаголов типа `szukam`, `potrzebuję`, `używam`. Это падеж нехватки, отсутствия, количества и потребности." },
@@ -3368,14 +3370,6 @@ export default function App() {
                   </div>
                   {renderRuleSheets(safeTopicKey)}
                   {!hasRuleSheets && topic.theory.map((r, i) => <div key={i} style={styles.rule}>{r}</div>)}
-                  {hasRuleSheets && topic.theory.length > 0 && (
-                    <div style={{ ...styles.note, marginTop: 12 }}>
-                      <strong>Короткая памятка</strong>
-                      <div style={{ marginTop: 8 }}>
-                        {topic.theory.map((r, i) => <div key={i} style={{ marginBottom: i === topic.theory.length - 1 ? 0 : 8 }}>{r}</div>)}
-                      </div>
-                    </div>
-                  )}
                   {renderTables(safeTopicKey)}
                 </>
               )}
