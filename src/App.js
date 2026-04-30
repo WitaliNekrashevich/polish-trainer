@@ -13,6 +13,7 @@ const norm = (s) =>
 const LEGACY_STORAGE_KEY = "polish-trainer-course-v1";
 const PROFILE_META_KEY = "polish-trainer-profiles-v1";
 const PROFILE_STORAGE_PREFIX = "polish-trainer-course-profile-v1";
+const SHUFFLE_SEED_KEY = "polish-trainer-shuffle-seed-v1";
 
 const styles = {
   app: { minHeight: "100vh", background: "#f4f6f8", padding: 20, fontFamily: "Arial, sans-serif", color: "#202428" },
@@ -119,8 +120,25 @@ function privateAudio(folder, file) {
   return `${PRIVATE_COURSE_BASE}/audio/CD audio/${folder}/${file}.mp3`;
 }
 
+function stableHash(value) {
+  const text = typeof value === "string" ? value : JSON.stringify(value);
+  let hash = 0;
+  for (let i = 0; i < text.length; i += 1) {
+    hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+  }
+  return hash;
+}
+
+function getShuffleSeed() {
+  if (typeof window === "undefined") return "default-seed";
+  return window.localStorage.getItem(SHUFFLE_SEED_KEY) || "default-seed";
+}
+
 function shuffle(arr) {
-  return [...arr].sort(() => Math.random() - 0.5);
+  return [...arr]
+    .map((item, index) => ({ item, index, hash: stableHash(`${getShuffleSeed()}|${itemSignature(item) || JSON.stringify(item) || String(index)}`) }))
+    .sort((a, b) => (a.hash - b.hash) || (a.index - b.index))
+    .map((entry) => entry.item);
 }
 
 const EXERCISE_MIN = 50;
@@ -194,23 +212,8 @@ function synthesizeExerciseItems(items) {
           );
         }
         derived.push(input(`Podaj poprawną formę jeszcze raz: ${questionCore}`, correct, item.explanation));
-        derived.push(
-          free(
-            `Napisz własne zdanie z formą \`${correct}\`.`,
-            "Напиши 1–2 коротких предложения так, чтобы форма была не вставлена механически, а жила в нормальном контексте."
-          )
-        );
       }
 
-      if (item?.type === "choice") {
-        derived.push(input(`Napisz poprawną odpowiedź: ${item.q}`, item.correct, item.explanation));
-        derived.push(
-          free(
-            `Ułóż własne zdanie z poprawnym wariantem z pytania: ${item.correct}`,
-            "Сделай свою мини-фразу с тем же словом или конструкцией, чтобы закрепить её в речи."
-          )
-        );
-      }
     });
 
     const next = uniqueExerciseItems([...current, ...derived]);
@@ -702,18 +705,18 @@ function genAccusativeForms() {
   const inanimateVerbs = ["Mam", "Kupuję", "Biorę", "Otwieram", "Czytam", "Wybieram"];
   const feminineVerbs = ["Kupuję", "Piję", "Widzę", "Czytam", "Piszę", "Zamawiam"];
   const pluralVerbs = ["Znam", "Widzę", "Spotykam", "Zapraszam", "Odwiedzam"];
-  dict.biernik.animate.forEach(([sg, acc], index) => items.push(input(`Uzupełnij: ${animateVerbs[index % animateVerbs.length]} (${sg}).`, acc, "biernik: rodzaj męski żywotny")));
-  dict.biernik.inanimate.forEach(([sg, acc], index) => items.push(input(`Uzupełnij: ${inanimateVerbs[index % inanimateVerbs.length]} (${sg}).`, acc, "biernik: rodzaj męski nieżywotny")));
-  dict.biernik.feminine.forEach(([sg, acc], index) => items.push(input(`Uzupełnij: ${feminineVerbs[index % feminineVerbs.length]} (${sg}).`, acc, "biernik: rodzaj żeński")));
-  dict.biernik.mascPlural.forEach(([nom, acc], index) => items.push(input(`Uzupełnij: ${pluralVerbs[index % pluralVerbs.length]} (${nom}).`, acc, "biernik liczby mnogiej męskoosobowej")));
+  dict.biernik.animate.forEach(([sg, acc], index) => items.push(input(`Uzupełnij formę w bierniku: ${animateVerbs[index % animateVerbs.length]} (${sg}).`, acc, "biernik: rodzaj męski żywotny")));
+  dict.biernik.inanimate.forEach(([sg, acc], index) => items.push(input(`Uzupełnij formę w bierniku: ${inanimateVerbs[index % inanimateVerbs.length]} (${sg}).`, acc, "biernik: rodzaj męski nieżywotny")));
+  dict.biernik.feminine.forEach(([sg, acc], index) => items.push(input(`Uzupełnij formę w bierniku: ${feminineVerbs[index % feminineVerbs.length]} (${sg}).`, acc, "biernik: rodzaj żeński")));
+  dict.biernik.mascPlural.forEach(([nom, acc], index) => items.push(input(`Uzupełnij formę w bierniku liczby mnogiej: ${pluralVerbs[index % pluralVerbs.length]} (${nom}).`, acc, "biernik liczby mnogiej męskoosobowej")));
   return cap50(items);
 }
 function genAccusativeAdjectives() {
   const items = [];
   dict.adjectives.forEach(([base, , , mascAcc, femAcc]) => {
-    dict.biernik.animate.slice(0, 8).forEach(([sg, acc], index) => items.push(input(`Uzupełnij: ${["Widzę", "Spotykam", "Odwiedzam", "Zapraszam"][index % 4]} (${base} ${sg}).`, `${mascAcc} ${acc}`)));
-    dict.biernik.feminine.slice(0, 8).forEach(([sg, acc], index) => items.push(input(`Uzupełnij: ${["Kupuję", "Piję", "Czytam", "Biorę"][index % 4]} (${base} ${sg}).`, `${femAcc} ${acc}`)));
-    dict.biernik.inanimate.slice(0, 8).forEach(([sg, acc], index) => items.push(input(`Uzupełnij: ${["Mam", "Kupuję", "Wybieram", "Otwieram"][index % 4]} (${base} ${sg}).`, `${base} ${acc}`)));
+    dict.biernik.animate.slice(0, 8).forEach(([sg, acc], index) => items.push(input(`Uzupełnij formę w bierniku: ${["Widzę", "Spotykam", "Odwiedzam", "Zapraszam"][index % 4]} (${base} ${sg}).`, `${mascAcc} ${acc}`)));
+    dict.biernik.feminine.slice(0, 8).forEach(([sg, acc], index) => items.push(input(`Uzupełnij formę w bierniku: ${["Kupuję", "Piję", "Czytam", "Biorę"][index % 4]} (${base} ${sg}).`, `${femAcc} ${acc}`)));
+    dict.biernik.inanimate.slice(0, 8).forEach(([sg, acc], index) => items.push(input(`Uzupełnij formę w bierniku: ${["Mam", "Kupuję", "Wybieram", "Otwieram"][index % 4]} (${base} ${sg}).`, `${base} ${acc}`)));
   });
   return cap50(items);
 }
@@ -1013,7 +1016,7 @@ function genGenitive() {
     ["Uzupełnij: Uczę się", "czasownik wymaga dopełniacza"]
   ];
   const items = [];
-  dict.genitive.forEach(([sg, gen]) => verbs.forEach(([v, hint]) => items.push(input(`${v} (${sg}).`, gen, hint))));
+  dict.genitive.forEach(([sg, gen]) => verbs.forEach(([v, hint]) => items.push(input(`Uzupełnij formę w dopełniaczu: ${v} (${sg}).`, gen, hint))));
   return cap50(items);
 }
 function genDative() {
@@ -1026,26 +1029,26 @@ function genDative() {
     ["Uzupełnij: Wysyłam wiadomość", "komu? = celownik"]
   ];
   const items = [];
-  dict.dative.forEach(([sg, dat]) => verbs.forEach(([v, hint]) => items.push(input(`${v} (${sg}).`, dat, hint))));
+  dict.dative.forEach(([sg, dat]) => verbs.forEach(([v, hint]) => items.push(input(`Uzupełnij formę w celowniku: ${v} (${sg}).`, dat, hint))));
   return cap50(items);
 }
 function genInstrumental() {
   const items = [];
   const contexts = ["Idę z", "Jestem", "Rozmawiam z", "Interesuję się", "Jadę z"];
   dict.instrumental.forEach(([sg, ins], index) => {
-    items.push(input(`Uzupełnij: ${contexts[index % contexts.length]} (${sg}).`, ins));
-    items.push(input(`Uzupełnij: ${contexts[(index + 1) % contexts.length]} (${sg}).`, ins));
+    items.push(input(`Uzupełnij formę w narzędniku: ${contexts[index % contexts.length]} (${sg}).`, ins));
+    items.push(input(`Uzupełnij formę w narzędniku: ${contexts[(index + 1) % contexts.length]} (${sg}).`, ins));
   });
   return cap50(items);
 }
 function genLocative() {
   const items = [];
   const contexts = [
-    (sg) => `Uzupełnij: Jestem w (${sg}).`,
-    (sg) => `Uzupełnij: Myślę o (${sg}).`,
-    (sg) => `Uzupełnij: Rozmawiam o (${sg}).`,
-    (sg) => `Uzupełnij: Czytam o (${sg}).`,
-    (sg) => `Uzupełnij: Mówię o (${sg}).`
+    (sg) => `Uzupełnij formę w miejscowniku: Jestem w (${sg}).`,
+    (sg) => `Uzupełnij formę w miejscowniku: Myślę o (${sg}).`,
+    (sg) => `Uzupełnij formę w miejscowniku: Rozmawiam o (${sg}).`,
+    (sg) => `Uzupełnij formę w miejscowniku: Czytam o (${sg}).`,
+    (sg) => `Uzupełnij formę w miejscowniku: Mówię o (${sg}).`
   ];
   dict.locative.forEach(([sg, loc], index) => {
     items.push(input(contexts[index % contexts.length](sg), loc));
@@ -1055,7 +1058,7 @@ function genLocative() {
 }
 function genAccusativePlural() {
   return cap50([
-    input("Uzupełnij: Widzę (dobrzy lekarze).", "dobrych lekarzy"),
+    input("Uzupełnij formę w bierniku liczby mnogiej: Widzę (dobrzy lekarze).", "dobrych lekarzy"),
     input("Uzupełnij: Spotykam (nowi pracownicy).", "nowych pracowników"),
     input("Uzupełnij: Znam (mili sąsiedzi).", "miłych sąsiadów"),
     input("Uzupełnij: Zapraszam (polscy studenci).", "polskich studentów"),
@@ -1081,7 +1084,7 @@ function genAccusativePlural() {
 }
 function genGenitivePlural() {
   return cap50([
-    input("Uzupełnij: Nie ma (wolne miejsca).", "wolnych miejsc"),
+    input("Uzupełnij formę w dopełniaczu liczby mnogiej: Nie ma (wolne miejsca).", "wolnych miejsc"),
     input("Uzupełnij: Szukam (dobre książki).", "dobrych książek"),
     input("Uzupełnij: Potrzebuję (nowe dokumenty).", "nowych dokumentów"),
     input("Uzupełnij: Używam (małe noże).", "małych noży"),
@@ -1107,7 +1110,7 @@ function genGenitivePlural() {
 }
 function genDativePlural() {
   return cap50([
-    input("Uzupełnij: Pomagam (moi rodzice).", "moim rodzicom"),
+    input("Uzupełnij formę w celowniku liczby mnogiej: Pomagam (moi rodzice).", "moim rodzicom"),
     input("Uzupełnij: Daję zadanie (nowi studenci).", "nowym studentom"),
     input("Uzupełnij: Tłumaczę temat (młodzi pracownicy).", "młodym pracownikom"),
     input("Uzupełnij: Wysyłam wiadomość (mili klienci).", "miłym klientom"),
@@ -1133,7 +1136,7 @@ function genDativePlural() {
 }
 function genInstrumentalPlural() {
   return cap50([
-    input("Uzupełnij: Pracuję z (mili ludzie).", "miłymi ludźmi"),
+    input("Uzupełnij formę w narzędniku liczby mnogiej: Pracuję z (mili ludzie).", "miłymi ludźmi"),
     input("Uzupełnij: Rozmawiam z (nowi klienci).", "nowymi klientami"),
     input("Uzupełnij: Jadę z (dobrzy znajomi).", "dobrymi znajomymi"),
     input("Uzupełnij: Interesuję się (obce języki).", "obcymi językami"),
@@ -1159,7 +1162,7 @@ function genInstrumentalPlural() {
 }
 function genLocativePlural() {
   return cap50([
-    input("Uzupełnij: Myślę o (ważne egzaminy).", "ważnych egzaminach"),
+    input("Uzupełnij formę w miejscowniku liczby mnogiej: Myślę o (ważne egzaminy).", "ważnych egzaminach"),
     input("Uzupełnij: Rozmawiam o (nowi pracownicy).", "nowych pracownikach"),
     input("Uzupełnij: Czytam o (polskie miasta).", "polskich miastach"),
     input("Uzupełnij: Jestem na (długie wakacje).", "długich wakacjach"),
@@ -2680,9 +2683,9 @@ function genGrammarNuance(topic) {
       choice("Что правильно для niemęskoosobowy?", ["kupuję nowe bilety", "kupuję nowych biletów", "kupuję nowym biletom"], "kupuję nowe bilety")
     ],
     accusative: [
-      note("Почему `widzę piękne kobiety`", "Шаг 1: `widzę` требует `biernik`.\nШаг 2: базовая форма — `piękne kobiety` в liczba mnoga niemęskoosobowa.\nШаг 3: в этой группе `biernik` часто равен `mianownik`, поэтому форма существительного остаётся `kobiety`.\nШаг 4: прилагательное согласуется с существительным: `piękne` + `kobiety`.\n\nПоэтому: `widzę piękne kobiety`, но `widzę dobrych studentów`, потому что męskoosobowy plural ведёт себя иначе."),
-      choice("Почему здесь `kobiety`, а не `kobiet`?", ["bo to biernik liczby mnogiej niemęskoosobowej", "bo po widzę zawsze jest dopełniacz", "bo kobiety to rodzaj męski"], "bo to biernik liczby mnogiej niemęskoosobowej"),
-      input("Uzupełnij z wyjaśnieniem: widzę (piękna kobieta)", "piękne kobiety", "biernik liczby mnogiej niemęskoosobowej")
+      note("Почему `widzę piękną kobietę`", "Шаг 1: `widzę` требует `biernik`.\nШаг 2: базовая форма — `piękna kobieta`.\nШаг 3: это rodzaj żeński w liczbie pojedynczej.\nШаг 4: в biernik существительное часто меняется `-a -> -ę`, а прилагательное `-a -> -ą`.\n\nПоэтому: `widzę piękną kobietę`.\n\nОтдельная plural-логика типа `widzę piękne kobiety` вынесена в тему `Biernik liczby mnogiej`, чтобы не смешивать две разные модели."),
+      choice("Почему здесь `kobietę`, а не `kobieta`?", ["bo to biernik rodzaju żeńskiego w liczbie pojedynczej", "bo po widzę zawsze jest mianownik", "bo kobieta jest rodzaju nijakiego"], "bo to biernik rodzaju żeńskiego w liczbie pojedynczej"),
+      input("Uzupełnij z wyjaśnieniem: widzę (piękna kobieta)", "piękną kobietę", "biernik rodzaju żeńskiego: `-a -> -ę`, `-a -> -ą`")
     ],
     genitive: [
       note("Почему `nie mam czasu`", "Шаг 1: `mam czas` — обычная базовая фраза.\nШаг 2: отрицание `nie mam` очень часто требует `dopełniacz`.\nШаг 3: `czas` -> `czasu`.\n\nПо той же логике: `mam kawę` -> `nie mam kawy`, `mam pracę` -> `szukam pracy`, `mam telefon` -> `używam telefonu`."),
@@ -3707,6 +3710,8 @@ export default function App() {
     setMistakesDockOpen(false);
     setReviewDockOpen(false);
     window.localStorage.removeItem(getProfileStorageKey(activeProfileId));
+    window.localStorage.setItem(SHUFFLE_SEED_KEY, String(Date.now()));
+    window.location.reload();
   }
 
   return (
