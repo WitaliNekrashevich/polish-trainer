@@ -3197,23 +3197,47 @@ function evaluateAnswer(item, answer) {
   if (item.type === "note" || item.type === "audio") return false;
   const value = answer?.value || "";
   if (!answer?.checked) return false;
-  if (item.type === "free") return getFreeAnswerScore(value).passed;
+  if (item.type === "free") return getFreeAnswerScore(item, value).passed;
   if (item.type === "cloze") return getClozeScore(item, answer).passed;
   if (item.type === "choice") return value === item.correct;
   return (item.a || []).map(norm).includes(norm(value));
 }
 
-function getFreeAnswerScore(value) {
+function getFreeAnswerRequirements(item) {
+  const prompt = `${item?.q || ""} ${item?.explanation || ""}`.toLowerCase();
+  const hasWordTarget = prompt.match(/(\d+)\s*[–-]\s*(\d+)\s*sł/);
+  if (hasWordTarget) {
+    const minWords = Number(hasWordTarget[1]);
+    return { minWords, needsConnector: minWords >= 20, needsTime: minWords >= 20, label: `${minWords}+ слов` };
+  }
+  if (/2\s*[–-]\s*4\s*zda/.test(prompt)) return { minWords: 6, needsConnector: true, needsTime: false, label: "2–4 zdania" };
+  if (/3\s*[–-]\s*4\s*zda/.test(prompt)) return { minWords: 8, needsConnector: false, needsTime: false, label: "3–4 zdania" };
+  if (/3\s*[–-]\s*5\s*zda/.test(prompt)) return { minWords: 9, needsConnector: false, needsTime: false, label: "3–5 zdań" };
+  if (/4\s*[–-]\s*5\s*zda/.test(prompt)) return { minWords: 10, needsConnector: false, needsTime: false, label: "4–5 zdań" };
+  if (/4\s*zda/.test(prompt)) return { minWords: 10, needsConnector: true, needsTime: false, label: "4 zdania" };
+  if (/5\s*zda/.test(prompt)) return { minWords: 12, needsConnector: false, needsTime: false, label: "5 zdań" };
+  if (/6\s*zda/.test(prompt)) return { minWords: 14, needsConnector: false, needsTime: false, label: "6 zdań" };
+  if (/8\s*zda/.test(prompt)) return { minWords: 18, needsConnector: false, needsTime: false, label: "8 zdań" };
+  if (/1[–-]2 minuty|1–2 minuty/.test(prompt)) return { minWords: 25, needsConnector: true, needsTime: true, label: "krótka wypowiedź ustna" };
+  return { minWords: 8, needsConnector: false, needsTime: false, label: "krótka odpowiedź" };
+}
+
+function getFreeAnswerScore(item, value) {
   const words = String(value || "").trim().split(/\s+/).filter(Boolean);
   const lower = norm(value);
   const connectors = ["bo", "ponieważ", "dlatego", "żeby", "że", "jeśli", "kiedy", "na przykład", "moim zdaniem"];
   const hasConnector = connectors.some((word) => lower.includes(word));
   const hasPastOrFuture = /(łem|łam|liśmy|łyśmy|będę|będziesz|będzie|będziemy|będą|jutro|wczoraj|za tydzień)/.test(lower);
+  const requirements = getFreeAnswerRequirements(item);
   return {
     words: words.length,
     hasConnector,
     hasPastOrFuture,
-    passed: words.length >= 12 && (hasConnector || words.length >= 25)
+    requirements,
+    passed:
+      words.length >= requirements.minWords &&
+      (!requirements.needsConnector || hasConnector) &&
+      (!requirements.needsTime || hasPastOrFuture)
   };
 }
 
@@ -3460,6 +3484,7 @@ function AnswerBlock({ item, state, setState, addWord }) {
   const isChoice = item.type === "choice";
   const correct = isChoice ? item.correct : item.a?.[0];
   const isCorrect = evaluateAnswer(item, { value, checked: true });
+  const freeScore = isFree ? getFreeAnswerScore(item, value) : null;
 
   return (
     <div>
@@ -3476,11 +3501,11 @@ function AnswerBlock({ item, state, setState, addWord }) {
       <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 8, flexWrap: "wrap" }}>
         <button onClick={() => setState({ value, checked: true, checkedAt: Date.now() })} style={styles.primary}>Проверить</button>
         <button onClick={() => setState({ value: "", checked: false })} style={styles.btn}>Сбросить</button>
-        {checked && <span style={{ fontWeight: "bold", color: isCorrect ? "green" : "red" }}>{isFree ? (isCorrect ? "✓ Достаточно текста" : "✗ Напиши подробнее") : isCorrect ? "✓ Правильно" : `✗ Правильно: ${correct}`}</span>}
+        {checked && <span style={{ fontWeight: "bold", color: isCorrect ? "green" : "red" }}>{isFree ? (isCorrect ? "✓ Ответ подходит" : "✗ Ответ пока слишком слабый для этого задания") : isCorrect ? "✓ Правильно" : `✗ Правильно: ${correct}`}</span>}
       </div>
       {isFree && checked && (
         <div style={{ marginTop: 8, fontSize: 13, color: "#56616b" }}>
-          Слов: {getFreeAnswerScore(value).words} · связка: {getFreeAnswerScore(value).hasConnector ? "есть" : "нет"} · время/план: {getFreeAnswerScore(value).hasPastOrFuture ? "есть" : "нет"}
+          Формат: {freeScore.requirements.label} · слов: {freeScore.words}/{freeScore.requirements.minWords}+ · связка: {freeScore.hasConnector ? "есть" : "нет"}{freeScore.requirements.needsTime ? ` · время/план: ${freeScore.hasPastOrFuture ? "есть" : "нет"}` : ""}
         </div>
       )}
       {checked && item.explanation && <div style={{ marginTop: 6, color: "#555", fontSize: 14 }}>{item.explanation}</div>}
