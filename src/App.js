@@ -211,7 +211,6 @@ function synthesizeExerciseItems(items) {
             )
           );
         }
-        derived.push(input(`Podaj poprawną formę jeszcze raz: ${questionCore}`, correct, item.explanation));
       }
 
     });
