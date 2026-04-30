@@ -3773,9 +3773,24 @@ export default function App() {
               <span style={styles.badge}>Повторить сегодня: {memoryStats.due}</span>
             </div>
             <div style={styles.dashboardGrid}>
-              <div style={styles.metric}><strong>{memoryStats.trained}</strong><br /><small>карточек в памяти</small></div>
-              <div style={styles.metric}><strong>{memoryStats.learned}</strong><br /><small>закреплено</small></div>
-              <div style={styles.metric}><strong>{memoryStats.weak}</strong><br /><small>слабые места</small></div>
+              <div style={styles.metric}>
+                <strong>{memoryStats.trained}</strong><br />
+                <small>карточек в памяти</small><br />
+                <small style={{ color: "#56616b" }}>вопросы, которые ты уже хотя бы 1 раз проверял</small>
+              </div>
+              <div style={styles.metric}>
+                <strong>{memoryStats.learned}</strong><br />
+                <small>закреплено</small><br />
+                <small style={{ color: "#56616b" }}>карточки с серией из 3+ правильных повторов</small>
+              </div>
+              <div style={styles.metric}>
+                <strong>{memoryStats.weak}</strong><br />
+                <small>слабые места</small><br />
+                <small style={{ color: "#56616b" }}>карточки, где была ошибка или ещё нет устойчивой серии</small>
+              </div>
+            </div>
+            <div style={{ ...styles.note, marginTop: 10, marginBottom: 0 }}>
+              <strong>Как это читать:</strong> `карточки в памяти` — всё, что уже попадало в повторение; `закреплено` — то, что ты несколько раз подряд решил правильно; `слабые места` — задания, к которым курсу стоит возвращаться чаще.
             </div>
           </div>
           <div style={styles.stat}>
