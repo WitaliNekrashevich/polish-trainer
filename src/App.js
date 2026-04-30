@@ -14,7 +14,9 @@ const LEGACY_STORAGE_KEY = "polish-trainer-course-v1";
 const PROFILE_META_KEY = "polish-trainer-profiles-v1";
 const PROFILE_STORAGE_PREFIX = "polish-trainer-course-profile-v1";
 const SHUFFLE_SEED_KEY = "polish-trainer-shuffle-seed-v1";
-const BUILD_VERSION = "2026-04-30 23:50";
+const ACTIVE_VARIANT_KEY = "polish-trainer-active-variant-v1";
+const VARIANT_COUNT = 6;
+const BUILD_VERSION = "2026-05-01 00:20";
 
 const styles = {
   app: { minHeight: "100vh", background: "#f4f6f8", padding: 20, fontFamily: "Arial, sans-serif", color: "#202428" },
@@ -90,8 +92,15 @@ function itemSignature(item) {
 function uniqueExerciseItems(items) {
   const seen = new Set();
   return (items || []).filter((item) => {
+    const rawQuestion = String(item?.q || "").trim();
+    if (item?.type === "choice" && /^(Które zdanie jest poprawne\?|Wybierz poprawną formę:|Która odpowiedź najlepiej pasuje do zdania\?|Napisz poprawną odpowiedź:)/i.test(rawQuestion)) {
+      return false;
+    }
+    if (item?.type === "free" && (/^Napisz własne zdanie z formą/i.test(rawQuestion) || /^Napisz poprawną odpowiedź:/i.test(rawQuestion))) {
+      return false;
+    }
     if (item?.type === "input") {
-      const question = String(item.q || "");
+      const question = rawQuestion;
       const expected = String(item.a?.[0] || "").trim();
       const baseMatch = question.match(/\(([^()]*)\)\.?\s*$/);
       if (baseMatch && expected && norm(baseMatch[1]) === norm(expected)) return false;
@@ -141,9 +150,16 @@ function getShuffleSeed() {
   return window.localStorage.getItem(SHUFFLE_SEED_KEY) || "default-seed";
 }
 
+function getVariantIndex() {
+  if (typeof window === "undefined") return 0;
+  const raw = Number(window.localStorage.getItem(ACTIVE_VARIANT_KEY) || 0);
+  if (Number.isNaN(raw)) return 0;
+  return ((raw % VARIANT_COUNT) + VARIANT_COUNT) % VARIANT_COUNT;
+}
+
 function shuffle(arr) {
   return [...arr]
-    .map((item, index) => ({ item, index, hash: stableHash(`${getShuffleSeed()}|${itemSignature(item) || JSON.stringify(item) || String(index)}`) }))
+    .map((item, index) => ({ item, index, hash: stableHash(`${getShuffleSeed()}|variant:${getVariantIndex()}|${itemSignature(item) || JSON.stringify(item) || String(index)}`) }))
     .sort((a, b) => (a.hash - b.hash) || (a.index - b.index))
     .map((entry) => entry.item);
 }
@@ -167,11 +183,23 @@ function synthesizeExerciseItems(items) {
   return uniqueExerciseItems(items);
 }
 
+function stableSortExerciseItems(items) {
+  return [...items]
+    .map((item, index) => ({ item, index, hash: stableHash(itemSignature(item) || JSON.stringify(item) || String(index)) }))
+    .sort((a, b) => (a.hash - b.hash) || (a.index - b.index))
+    .map((entry) => entry.item);
+}
+
 function cap50(items) {
   const unique = synthesizeExerciseItems(items);
   if (unique.length === 0) return [];
-  const shuffled = shuffle(unique);
-  return shuffled.slice(0, Math.min(EXERCISE_MAX, unique.length));
+  const maxItems = Math.min(EXERCISE_MAX, unique.length);
+  if (unique.length <= EXERCISE_MAX) return shuffle(unique).slice(0, maxItems);
+  const ordered = stableSortExerciseItems(unique);
+  const start = (getVariantIndex() * EXERCISE_MAX) % ordered.length;
+  const picked = [];
+  for (let i = 0; i < maxItems; i += 1) picked.push(ordered[(start + i) % ordered.length]);
+  return shuffle(picked);
 }
 
 function repeatTo50(items) {
@@ -3493,6 +3521,7 @@ export default function App() {
   const safeExerciseIndex = topic.exercises[exerciseIndex] ? exerciseIndex : 0;
   const exercise = topic.exercises[safeExerciseIndex];
   const currentItems = exercise.items;
+  const currentVariant = getVariantIndex();
 
   const flat = topicKeys.flatMap((key) => topics[key].exercises.map((_, i) => ({ key, i })));
   const currentFlat = flat.findIndex((x) => x.key === safeTopicKey && x.i === safeExerciseIndex);
@@ -3500,6 +3529,12 @@ export default function App() {
   useEffect(() => {
     saveProfileMeta({ activeProfileId, profiles });
   }, [activeProfileId, profiles]);
+
+  useEffect(() => {
+    if (window.localStorage.getItem(ACTIVE_VARIANT_KEY) === null) {
+      window.localStorage.setItem(ACTIVE_VARIANT_KEY, "0");
+    }
+  }, []);
 
   useEffect(() => {
     if (activeProfileId === loadedProfileId) return;
@@ -3688,6 +3723,24 @@ export default function App() {
     window.localStorage.setItem(SHUFFLE_SEED_KEY, String(Date.now()));
     window.location.reload();
   }
+  function rotateVariantSet() {
+    const nextVariant = (currentVariant + 1) % VARIANT_COUNT;
+    setAnswers({});
+    setReview({});
+    setDictionaryDockOpen(false);
+    setMistakesDockOpen(false);
+    setReviewDockOpen(false);
+    saveProfileCourse(activeProfileId, {
+      topicKey: safeTopicKey,
+      exerciseIndex: safeExerciseIndex,
+      answers: {},
+      review: {},
+      userWords
+    });
+    window.localStorage.setItem(ACTIVE_VARIANT_KEY, String(nextVariant));
+    window.localStorage.setItem(SHUFFLE_SEED_KEY, String(Date.now()));
+    window.location.reload();
+  }
 
   return (
     <div style={styles.app}>
@@ -3698,6 +3751,7 @@ export default function App() {
             <p>Курс-тренажёр: маршрут, цели уроков, повторение ошибок и проверка каждого ответа.</p>
             <div style={{ marginBottom: 8 }}>
               <span style={styles.badge}>build {BUILD_VERSION}</span>
+              <span style={styles.badge}>набор {currentVariant + 1}/{VARIANT_COUNT}</span>
             </div>
             <div style={styles.profileBar}>
               <span style={styles.badge}>Профиль</span>
@@ -3882,7 +3936,8 @@ export default function App() {
                 </div>
               );
             })}
-            <button style={{ ...styles.btn, width: "100%", marginTop: 12 }} onClick={resetCourse}>Сбросить весь прогресс</button>
+            <button style={{ ...styles.btn, width: "100%", marginTop: 12 }} onClick={rotateVariantSet}>Новый набор слов и фраз</button>
+            <button style={{ ...styles.btn, width: "100%", marginTop: 8 }} onClick={resetCourse}>Сбросить весь прогресс</button>
           </aside>
 
           <main>
