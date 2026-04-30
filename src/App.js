@@ -89,6 +89,12 @@ function itemSignature(item) {
 function uniqueExerciseItems(items) {
   const seen = new Set();
   return (items || []).filter((item) => {
+    if (item?.type === "input") {
+      const question = String(item.q || "");
+      const expected = String(item.a?.[0] || "").trim();
+      const baseMatch = question.match(/\(([^()]*)\)\.?\s*$/);
+      if (baseMatch && expected && norm(baseMatch[1]) === norm(expected)) return false;
+    }
     const key = itemSignature(item);
     if (!key || seen.has(key)) return false;
     seen.add(key);
