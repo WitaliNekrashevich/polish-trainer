@@ -3176,6 +3176,10 @@ function evaluateAnswer(item, answer) {
 
 function getFreeAnswerRequirements(item) {
   const prompt = `${item?.q || ""} ${item?.explanation || ""}`.toLowerCase();
+  const isGrammarDrill =
+    /w bierniku|w dopełniaczu|w celowniku|w narzędniku|w miejscowniku/.test(prompt) ||
+    /użyj przynajmniej:/.test(prompt) ||
+    /różnymi czasownikami/.test(prompt);
   const hasWordTarget = prompt.match(/(\d+)\s*[–-]\s*(\d+)\s*sł/);
   if (hasWordTarget) {
     const minWords = Number(hasWordTarget[1]);
@@ -3185,7 +3189,7 @@ function getFreeAnswerRequirements(item) {
   if (/3\s*[–-]\s*4\s*zda/.test(prompt)) return { minWords: 8, needsConnector: false, needsTime: false, label: "3–4 zdania" };
   if (/3\s*[–-]\s*5\s*zda/.test(prompt)) return { minWords: 9, needsConnector: false, needsTime: false, label: "3–5 zdań" };
   if (/4\s*[–-]\s*5\s*zda/.test(prompt)) return { minWords: 10, needsConnector: false, needsTime: false, label: "4–5 zdań" };
-  if (/4\s*zda/.test(prompt)) return { minWords: 10, needsConnector: true, needsTime: false, label: "4 zdania" };
+  if (/4\s*zda/.test(prompt)) return { minWords: 10, needsConnector: !isGrammarDrill, needsTime: false, label: "4 zdania" };
   if (/5\s*zda/.test(prompt)) return { minWords: 12, needsConnector: false, needsTime: false, label: "5 zdań" };
   if (/6\s*zda/.test(prompt)) return { minWords: 14, needsConnector: false, needsTime: false, label: "6 zdań" };
   if (/8\s*zda/.test(prompt)) return { minWords: 18, needsConnector: false, needsTime: false, label: "8 zdań" };
