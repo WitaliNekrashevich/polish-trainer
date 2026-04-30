@@ -16,7 +16,6 @@ const PROFILE_STORAGE_PREFIX = "polish-trainer-course-profile-v1";
 const SHUFFLE_SEED_KEY = "polish-trainer-shuffle-seed-v1";
 const ACTIVE_VARIANT_KEY = "polish-trainer-active-variant-v1";
 const VARIANT_COUNT = 6;
-const BUILD_VERSION = "2026-05-01 00:20";
 
 const styles = {
   app: { minHeight: "100vh", background: "#f4f6f8", padding: 20, fontFamily: "Arial, sans-serif", color: "#202428" },
@@ -3569,14 +3568,12 @@ export default function App() {
   }, [answers, review, userWords, safeTopicKey, safeExerciseIndex, activeProfileId, loadedProfileId]);
 
   const progress = useMemo(() => {
-    const ids = currentItems.map((item, i) => isPracticeItem(item) ? `${safeTopicKey}-${safeExerciseIndex}-${i}` : null).filter(Boolean);
-    const checked = ids.filter((id) => answers[id]?.checked).length;
-    const correct = ids.filter((id) => {
-      const a = answers[id];
-      const item = currentItems[Number(id.split("-").pop())];
-      return evaluateAnswer(item, a);
-    }).length;
-    return { checked, correct, total: ids.length, percent: ids.length ? Math.round((correct / ids.length) * 100) : 0 };
+    const entries = currentItems
+      .map((item, i) => (isPracticeItem(item) ? { item, id: buildItemId(safeTopicKey, safeExerciseIndex, i, item) } : null))
+      .filter(Boolean);
+    const checked = entries.filter(({ id }) => answers[id]?.checked).length;
+    const correct = entries.filter(({ id, item }) => evaluateAnswer(item, answers[id])).length;
+    return { checked, correct, total: entries.length, percent: entries.length ? Math.round((correct / entries.length) * 100) : 0 };
   }, [answers, safeTopicKey, safeExerciseIndex, currentItems]);
 
   const courseStats = useMemo(() => {
@@ -3639,16 +3636,6 @@ export default function App() {
       .sort((a, b) => (a.state.dueAt || 0) - (b.state.dueAt || 0))
       .slice(0, 10);
   }, [review]);
-
-  const memoryStats = useMemo(() => {
-    const states = Object.values(review);
-    return {
-      trained: states.length,
-      due: dueReviews.length,
-      learned: states.filter((state) => state.streak >= 3).length,
-      weak: states.filter((state) => state.lastResult === "wrong" || state.streak === 0).length
-    };
-  }, [review, dueReviews]);
 
   function setAnswer(id, value) {
     setAnswers((prev) => ({ ...prev, [id]: value }));
@@ -3753,10 +3740,6 @@ export default function App() {
           <div>
             <h1>Polish Trainer A2 → B1</h1>
             <p>Курс-тренажёр: маршрут, цели уроков, повторение ошибок и проверка каждого ответа.</p>
-            <div style={{ marginBottom: 8 }}>
-              <span style={styles.badge}>build {BUILD_VERSION}</span>
-              <span style={styles.badge}>набор {currentVariant + 1}/{VARIANT_COUNT}</span>
-            </div>
             <div style={styles.profileBar}>
               <span style={styles.badge}>Профиль</span>
               <select value={activeProfileId} onChange={(e) => switchProfile(e.target.value)} style={{ ...styles.input, width: 220 }}>
@@ -3766,32 +3749,6 @@ export default function App() {
               <button style={styles.btn} onClick={renameProfile}>Переименовать</button>
             </div>
             <ProgressBar value={courseStats.percent} />
-            <div style={{ marginTop: 8 }}>
-              <span style={styles.badge}>Курс: {courseStats.percent}%</span>
-              <span style={styles.badge}>Проверено: {courseStats.checked}/{courseStats.total}</span>
-              <span style={styles.badge}>Ошибок в повторении: {mistakes.length}</span>
-              <span style={styles.badge}>Повторить сегодня: {memoryStats.due}</span>
-            </div>
-            <div style={styles.dashboardGrid}>
-              <div style={styles.metric}>
-                <strong>{memoryStats.trained}</strong><br />
-                <small>карточек в памяти</small><br />
-                <small style={{ color: "#56616b" }}>вопросы, которые ты уже хотя бы 1 раз проверял</small>
-              </div>
-              <div style={styles.metric}>
-                <strong>{memoryStats.learned}</strong><br />
-                <small>закреплено</small><br />
-                <small style={{ color: "#56616b" }}>карточки с серией из 3+ правильных повторов</small>
-              </div>
-              <div style={styles.metric}>
-                <strong>{memoryStats.weak}</strong><br />
-                <small>слабые места</small><br />
-                <small style={{ color: "#56616b" }}>карточки, где была ошибка или ещё нет устойчивой серии</small>
-              </div>
-            </div>
-            <div style={{ ...styles.note, marginTop: 10, marginBottom: 0 }}>
-              <strong>Как это читать:</strong> `карточки в памяти` — всё, что уже попадало в повторение; `закреплено` — то, что ты несколько раз подряд решил правильно; `слабые места` — задания, к которым курсу стоит возвращаться чаще.
-            </div>
           </div>
           <div style={styles.stat}>
             <strong>Текущее упражнение</strong><br />
