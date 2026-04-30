@@ -14,6 +14,7 @@ const LEGACY_STORAGE_KEY = "polish-trainer-course-v1";
 const PROFILE_META_KEY = "polish-trainer-profiles-v1";
 const PROFILE_STORAGE_PREFIX = "polish-trainer-course-profile-v1";
 const SHUFFLE_SEED_KEY = "polish-trainer-shuffle-seed-v1";
+const BUILD_VERSION = "2026-04-30 23:50";
 
 const styles = {
   app: { minHeight: "100vh", background: "#f4f6f8", padding: 20, fontFamily: "Arial, sans-serif", color: "#202428" },
@@ -147,7 +148,6 @@ function shuffle(arr) {
     .map((entry) => entry.item);
 }
 
-const EXERCISE_MIN = 50;
 const EXERCISE_MAX = 70;
 
 function speakPolish(text, rate = 0.95) {
@@ -163,70 +163,8 @@ function speakPolish(text, rate = 0.95) {
   return true;
 }
 
-function rotatePick(list, start, count) {
-  if (!list.length) return [];
-  const out = [];
-  for (let i = 0; i < count; i += 1) out.push(list[(start + i) % list.length]);
-  return out;
-}
-
-function exerciseAnswerPool(items) {
-  const values = [];
-  (items || []).forEach((item) => {
-    if (item?.type === "input") {
-      (item.a || []).forEach((answer) => {
-        const clean = String(answer || "").trim();
-        if (clean) values.push(clean);
-      });
-    }
-    if (item?.type === "choice") {
-      const clean = String(item.correct || "").trim();
-      if (clean) values.push(clean);
-    }
-  });
-  return Array.from(new Map(values.map((value) => [norm(value), value])).values());
-}
-
 function synthesizeExerciseItems(items) {
-  let current = uniqueExerciseItems(items);
-  const answerPool = exerciseAnswerPool(current);
-
-  for (let round = 0; round < 3 && current.length < EXERCISE_MIN; round += 1) {
-    const derived = [];
-
-    current.forEach((item, index) => {
-      if (item?.type === "input" && (item.a || []).length === 1) {
-        const correct = item.a[0];
-        const questionCore = String(item.q || "").replace(/^Uzupełnij:\s*/i, "").trim();
-        const distractors = answerPool.filter((value) => norm(value) !== norm(correct));
-        if (distractors.length >= 2) {
-          derived.push(
-            choice(
-              `Wybierz poprawną formę: ${questionCore}`,
-              shuffle([correct, ...rotatePick(distractors, index + round, 2)]),
-              correct,
-              item.explanation
-            )
-          );
-          derived.push(
-            choice(
-              `Która odpowiedź najlepiej pasuje do zdania? ${questionCore}`,
-              shuffle([correct, ...rotatePick(distractors, index + round + 3, 2)]),
-              correct,
-              item.explanation
-            )
-          );
-        }
-      }
-
-    });
-
-    const next = uniqueExerciseItems([...current, ...derived]);
-    if (next.length === current.length) break;
-    current = next;
-  }
-
-  return current;
+  return uniqueExerciseItems(items);
 }
 
 function cap50(items) {
@@ -3255,17 +3193,24 @@ function getClozeScore(item, value) {
   return { correct, total: blanks.length, passed: blanks.length > 0 && correct === blanks.length };
 }
 
-function buildItemId(key, exIndex, itemIndex) {
-  return `${key}-${exIndex}-${itemIndex}`;
+function buildItemId(key, exIndex, itemIndex, item) {
+  const signature = item ? stableHash(itemSignature(item)) : `${exIndex}-${itemIndex}`;
+  return `${key}::${exIndex}::${signature}`;
 }
 
 function getItemById(id) {
-  const parts = String(id).split("-");
-  const itemIndex = Number(parts.pop());
-  const exIndex = Number(parts.pop());
-  const key = parts.join("-");
-  const item = topics[key]?.exercises?.[exIndex]?.items?.[itemIndex];
-  return item ? { key, exIndex, itemIndex, item, exerciseTitle: topics[key].exercises[exIndex].title } : null;
+  for (const [key, topic] of Object.entries(topics)) {
+    for (let exIndex = 0; exIndex < topic.exercises.length; exIndex += 1) {
+      const exercise = topic.exercises[exIndex];
+      for (let itemIndex = 0; itemIndex < exercise.items.length; itemIndex += 1) {
+        const item = exercise.items[itemIndex];
+        if (buildItemId(key, exIndex, itemIndex, item) === id) {
+          return { key, exIndex, itemIndex, item, exerciseTitle: exercise.title };
+        }
+      }
+    }
+  }
+  return null;
 }
 
 function getNextReview(previous, isCorrect, now = Date.now()) {
@@ -3609,7 +3554,7 @@ export default function App() {
       topics[key].exercises.forEach((ex, exIndex) => {
         ex.items.forEach((item, itemIndex) => {
           if (!isPracticeItem(item)) return;
-          const answer = answers[`${key}-${exIndex}-${itemIndex}`];
+          const answer = answers[buildItemId(key, exIndex, itemIndex, item)];
           if (answer?.checked) topicChecked += 1;
           if (evaluateAnswer(item, answer)) topicCorrect += 1;
         });
@@ -3635,7 +3580,7 @@ export default function App() {
       topics[key].exercises.forEach((ex, exIndex) => {
         ex.items.forEach((item, itemIndex) => {
           if (!isPracticeItem(item)) return;
-          const id = buildItemId(key, exIndex, itemIndex);
+          const id = buildItemId(key, exIndex, itemIndex, item);
           const answer = answers[id];
           if (answer?.checked && !evaluateAnswer(item, answer)) {
             list.push({ id, key, exIndex, itemIndex, item, answer, exerciseTitle: ex.title, checkedAt: answer.checkedAt || 0 });
@@ -3751,6 +3696,9 @@ export default function App() {
           <div>
             <h1>Polish Trainer A2 → B1</h1>
             <p>Курс-тренажёр: маршрут, цели уроков, повторение ошибок и проверка каждого ответа.</p>
+            <div style={{ marginBottom: 8 }}>
+              <span style={styles.badge}>build {BUILD_VERSION}</span>
+            </div>
             <div style={styles.profileBar}>
               <span style={styles.badge}>Профиль</span>
               <select value={activeProfileId} onChange={(e) => switchProfile(e.target.value)} style={{ ...styles.input, width: 220 }}>
@@ -3979,7 +3927,7 @@ export default function App() {
               <hr />
 
               {currentItems.map((item, i) => {
-                const id = buildItemId(safeTopicKey, safeExerciseIndex, i);
+                const id = buildItemId(safeTopicKey, safeExerciseIndex, i, item);
                 return (
                   <div key={id} style={styles.item}>
                     <div style={{ fontWeight: "bold", marginBottom: 8 }}>{i + 1}. {item.q}</div>
