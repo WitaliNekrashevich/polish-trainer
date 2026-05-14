@@ -791,18 +791,22 @@ const dict = {
   adjectives: [
     ["dobry", "dobrzy", "dobre", "dobrego", "dobrą"], ["nowy", "nowi", "nowe", "nowego", "nową"], ["polski", "polscy", "polskie", "polskiego", "polską"],
     ["wysoki", "wysocy", "wysokie", "wysokiego", "wysoką"], ["młody", "młodzi", "młode", "młodego", "młodą"], ["duży", "duzi", "duże", "dużego", "dużą"],
-    ["mały", "mali", "małe", "małego", "małą"], ["miły", "mili", "miłe", "miłego", "miłą"], ["stary", "starzy", "stare", "starego", "starą"], ["znany", "znani", "znane", "znanego", "znaną"]
+    ["mały", "mali", "małe", "małego", "małą"], ["miły", "mili", "miłe", "miłego", "miłą"], ["stary", "starzy", "stare", "starego", "starą"], ["znany", "znani", "znane", "znanego", "znaną"],
+    ["ważny", "ważni", "ważne", "ważnego", "ważną"], ["ciekawy", "ciekawi", "ciekawe", "ciekawego", "ciekawą"], ["spokojny", "spokojni", "spokojne", "spokojnego", "spokojną"],
+    ["krótki", "krótcy", "krótkie", "krótkiego", "krótką"], ["długi", "dłudzy", "długie", "długiego", "długą"], ["świeży", "świezi", "świeże", "świeżego", "świeżą"],
+    ["lokalny", "lokalni", "lokalne", "lokalnego", "lokalną"], ["zagraniczny", "zagraniczni", "zagraniczne", "zagranicznego", "zagraniczną"], ["formalny", "formalni", "formalne", "formalnego", "formalną"],
+    ["praktyczny", "praktyczni", "praktyczne", "praktycznego", "praktyczną"], ["wygodny", "wygodni", "wygodne", "wygodnego", "wygodną"], ["pilny", "pilni", "pilne", "pilnego", "pilną"]
   ],
   biernik: {
-    animate: [["lekarz", "lekarza"], ["student", "studenta"], ["kolega", "kolegę"], ["nauczyciel", "nauczyciela"], ["pies", "psa"], ["kot", "kota"], ["mężczyzna", "mężczyznę"], ["klient", "klienta"], ["pracownik", "pracownika"], ["programista", "programistę"]],
-    inanimate: [["telefon", "telefon"], ["samochód", "samochód"], ["chleb", "chleb"], ["dom", "dom"], ["film", "film"], ["kurs", "kurs"], ["język", "język"], ["bilet", "bilet"], ["komputer", "komputer"], ["obiad", "obiad"]],
-    feminine: [["kawa", "kawę"], ["praca", "pracę"], ["książka", "książkę"], ["szkoła", "szkołę"], ["restauracja", "restaurację"], ["lekcja", "lekcję"], ["rodzina", "rodzinę"], ["woda", "wodę"], ["sprawa", "sprawę"], ["ulica", "ulicę"]],
-    mascPlural: [["studenci", "studentów"], ["lekarze", "lekarzy"], ["koledzy", "kolegów"], ["nauczyciele", "nauczycieli"], ["klienci", "klientów"], ["pracownicy", "pracowników"], ["aktorzy", "aktorów"], ["profesorowie", "profesorów"], ["programiści", "programistów"], ["mężczyźni", "mężczyzn"]]
+    animate: [["lekarz", "lekarza"], ["student", "studenta"], ["kolega", "kolegę"], ["nauczyciel", "nauczyciela"], ["pies", "psa"], ["kot", "kota"], ["mężczyzna", "mężczyznę"], ["klient", "klienta"], ["pracownik", "pracownika"], ["programista", "programistę"], ["kierowca", "kierowcę"], ["turysta", "turystę"], ["sprzedawca", "sprzedawcę"], ["sąsiad", "sąsiada"], ["urzędnik", "urzędnika"], ["ratownik", "ratownika"], ["kucharz", "kucharza"], ["wykładowca", "wykładowcę"]],
+    inanimate: [["telefon", "telefon"], ["samochód", "samochód"], ["chleb", "chleb"], ["dom", "dom"], ["film", "film"], ["kurs", "kurs"], ["język", "język"], ["bilet", "bilet"], ["komputer", "komputer"], ["obiad", "obiad"], ["formularz", "formularz"], ["raport", "raport"], ["paszport", "paszport"], ["rower", "rower"], ["plecak", "plecak"], ["klucz", "klucz"], ["zeszyt", "zeszyt"], ["magazyn", "magazyn"]],
+    feminine: [["kawa", "kawę"], ["praca", "pracę"], ["książka", "książkę"], ["szkoła", "szkołę"], ["restauracja", "restaurację"], ["lekcja", "lekcję"], ["rodzina", "rodzinę"], ["woda", "wodę"], ["sprawa", "sprawę"], ["ulica", "ulicę"], ["wizyta", "wizytę"], ["recepta", "receptę"], ["mapa", "mapę"], ["torba", "torbę"], ["podróż", "podróż"], ["wiadomość", "wiadomość"], ["umowa", "umowę"], ["sałatka", "sałatkę"]],
+    mascPlural: [["studenci", "studentów"], ["lekarze", "lekarzy"], ["koledzy", "kolegów"], ["nauczyciele", "nauczycieli"], ["klienci", "klientów"], ["pracownicy", "pracowników"], ["aktorzy", "aktorów"], ["profesorowie", "profesorów"], ["programiści", "programistów"], ["mężczyźni", "mężczyzn"], ["sąsiedzi", "sąsiadów"], ["urzędnicy", "urzędników"], ["turyści", "turystów"], ["kucharze", "kucharzy"], ["kierowcy", "kierowców"], ["sprzedawcy", "sprzedawców"]]
   },
-  genitive: [["czas", "czasu"], ["kawa", "kawy"], ["praca", "pracy"], ["telefon", "telefonu"], ["student", "studenta"], ["kobieta", "kobiety"], ["dziecko", "dziecka"], ["chleb", "chleba"], ["samochód", "samochodu"], ["pomoc", "pomocy"], ["człowiek", "człowieka"], ["pieniądze", "pieniędzy"], ["woda", "wody"], ["lekarz", "lekarza"], ["kolega", "kolegi"], ["książka", "książki"], ["język", "języka"], ["dom", "domu"], ["sklep", "sklepu"], ["Polska", "Polski"]],
-  dative: [["ja", "mi"], ["ty", "ci"], ["on", "mu"], ["ona", "jej"], ["my", "nam"], ["wy", "wam"], ["oni", "im"], ["student", "studentowi"], ["kolega", "koledze"], ["kobieta", "kobiecie"], ["dziecko", "dziecku"], ["brat", "bratu"], ["siostra", "siostrze"], ["mama", "mamie"], ["człowiek", "człowiekowi"], ["lekarz", "lekarzowi"], ["nauczyciel", "nauczycielowi"], ["ludzie", "ludziom"]],
-  instrumental: [["programista", "programistą"], ["student", "studentem"], ["lekarz", "lekarzem"], ["nauczyciel", "nauczycielem"], ["kolega", "kolegą"], ["rodzina", "rodziną"], ["dziecko", "dzieckiem"], ["kobieta", "kobietą"], ["mężczyzna", "mężczyzną"], ["samochód", "samochodem"], ["autobus", "autobusem"], ["długopis", "długopisem"], ["komputer", "komputerem"], ["ludzie", "ludźmi"], ["przyjaciel", "przyjacielem"]],
-  locative: [["Polska", "Polsce"], ["praca", "pracy"], ["sklep", "sklepie"], ["dom", "domu"], ["kurs", "kursie"], ["spacer", "spacerze"], ["rodzina", "rodzinie"], ["problem", "problemie"], ["student", "studencie"], ["kobieta", "kobiecie"], ["język polski", "języku polskim"], ["park", "parku"], ["stół", "stole"], ["dziecko", "dziecku"], ["spotkanie", "spotkaniu"], ["miasto", "mieście"], ["szkoła", "szkole"], ["telefon", "telefonie"]],
+  genitive: [["czas", "czasu"], ["kawa", "kawy"], ["praca", "pracy"], ["telefon", "telefonu"], ["student", "studenta"], ["kobieta", "kobiety"], ["dziecko", "dziecka"], ["chleb", "chleba"], ["samochód", "samochodu"], ["pomoc", "pomocy"], ["człowiek", "człowieka"], ["pieniądze", "pieniędzy"], ["woda", "wody"], ["lekarz", "lekarza"], ["kolega", "kolegi"], ["książka", "książki"], ["język", "języka"], ["dom", "domu"], ["sklep", "sklepu"], ["Polska", "Polski"], ["paszport", "paszportu"], ["formularz", "formularza"], ["raport", "raportu"], ["szpital", "szpitala"], ["muzeum", "muzeum"], ["bilet", "biletu"], ["rower", "roweru"], ["ogród", "ogrodu"]],
+  dative: [["ja", "mi"], ["ty", "ci"], ["on", "mu"], ["ona", "jej"], ["my", "nam"], ["wy", "wam"], ["oni", "im"], ["student", "studentowi"], ["kolega", "koledze"], ["kobieta", "kobiecie"], ["dziecko", "dziecku"], ["brat", "bratu"], ["siostra", "siostrze"], ["mama", "mamie"], ["człowiek", "człowiekowi"], ["lekarz", "lekarzowi"], ["nauczyciel", "nauczycielowi"], ["ludzie", "ludziom"], ["turysta", "turyście"], ["kierownik", "kierownikowi"], ["pasażer", "pasażerowi"], ["babcia", "babci"], ["dziadek", "dziadkowi"], ["urzędnik", "urzędnikowi"]],
+  instrumental: [["programista", "programistą"], ["student", "studentem"], ["lekarz", "lekarzem"], ["nauczyciel", "nauczycielem"], ["kolega", "kolegą"], ["rodzina", "rodziną"], ["dziecko", "dzieckiem"], ["kobieta", "kobietą"], ["mężczyzna", "mężczyzną"], ["samochód", "samochodem"], ["autobus", "autobusem"], ["długopis", "długopisem"], ["komputer", "komputerem"], ["ludzie", "ludźmi"], ["przyjaciel", "przyjacielem"], ["rower", "rowerem"], ["tramwaj", "tramwajem"], ["sąsiad", "sąsiadem"], ["projekt", "projektem"], ["kultura", "kulturą"], ["walizka", "walizką"], ["mapa", "mapą"]],
+  locative: [["Polska", "Polsce"], ["praca", "pracy"], ["sklep", "sklepie"], ["dom", "domu"], ["kurs", "kursie"], ["spacer", "spacerze"], ["rodzina", "rodzinie"], ["problem", "problemie"], ["student", "studencie"], ["kobieta", "kobiecie"], ["język polski", "języku polskim"], ["park", "parku"], ["stół", "stole"], ["dziecko", "dziecku"], ["spotkanie", "spotkaniu"], ["miasto", "mieście"], ["szkoła", "szkole"], ["telefon", "telefonie"], ["muzeum", "muzeum"], ["urząd", "urzędzie"], ["lotnisko", "lotnisku"], ["biblioteka", "bibliotece"], ["apteka", "aptece"], ["pociąg", "pociągu"]],
   present: [["pracować", ["pracuję", "pracujesz", "pracuje", "pracujemy", "pracujecie", "pracują"]], ["robić", ["robię", "robisz", "robi", "robimy", "robicie", "robią"]], ["mówić", ["mówię", "mówisz", "mówi", "mówimy", "mówicie", "mówią"]], ["pić", ["piję", "pijesz", "pije", "pijemy", "pijecie", "piją"]], ["mieć", ["mam", "masz", "ma", "mamy", "macie", "mają"]], ["czytać", ["czytam", "czytasz", "czyta", "czytamy", "czytacie", "czytają"]], ["mieszkać", ["mieszkam", "mieszkasz", "mieszka", "mieszkamy", "mieszkacie", "mieszkają"]], ["oglądać", ["oglądam", "oglądasz", "ogląda", "oglądamy", "oglądacie", "oglądają"]], ["uczyć się", ["uczę się", "uczysz się", "uczy się", "uczymy się", "uczycie się", "uczą się"]]],
   perfectivePairs: [["robić", "zrobić"], ["pisać", "napisać"], ["czytać", "przeczytać"], ["kupować", "kupić"], ["uczyć się", "nauczyć się"], ["gotować", "ugotować"], ["oglądać", "obejrzeć"], ["wracać", "wrócić"], ["spotykać", "spotkać"], ["otwierać", "otworzyć"], ["jeść", "zjeść"], ["pić", "wypić"], ["brać", "wziąć"], ["mówić", "powiedzieć"]],
   thematicVocab: {
@@ -1322,51 +1326,89 @@ function genAccusativeForms() {
   return cap50(items);
 }
 function genAccusativeAdjectives() {
-  const items = [];
-  dict.adjectives.forEach(([base, , , mascAcc, femAcc]) => {
-    dict.biernik.animate.slice(0, 8).forEach(([sg, acc], index) => items.push(input(`Uzupełnij formę w bierniku: ${["Widzę", "Spotykam", "Odwiedzam", "Zapraszam"][index % 4]} (${base} ${sg}).`, `${mascAcc} ${acc}`)));
-    dict.biernik.feminine.slice(0, 8).forEach(([sg, acc], index) => items.push(input(`Uzupełnij formę w bierniku: ${["Kupuję", "Piję", "Czytam", "Biorę"][index % 4]} (${base} ${sg}).`, `${femAcc} ${acc}`)));
-    dict.biernik.inanimate.slice(0, 8).forEach(([sg, acc], index) => items.push(input(`Uzupełnij formę w bierniku: ${["Mam", "Kupuję", "Wybieram", "Otwieram"][index % 4]} (${base} ${sg}).`, `${base} ${acc}`)));
-  });
-  return cap50(items);
+  return cap50([
+    input("Uzupełnij formę w bierniku: Spotykam (stary kolega).", "starego kolegę"),
+    input("Uzupełnij formę w bierniku: Odwiedzam (chory sąsiad).", "chorego sąsiada"),
+    input("Uzupełnij formę w bierniku: Widzę (zagubiony turysta).", "zagubionego turystę"),
+    input("Uzupełnij formę w bierniku: Zapraszam (nowy pracownik).", "nowego pracownika"),
+    input("Uzupełnij formę w bierniku: Słyszę (młody wykładowca).", "młodego wykładowcę"),
+    input("Uzupełnij formę w bierniku: Spotykam (miły kierowca).", "miłego kierowcę"),
+    input("Uzupełnij formę w bierniku: Kupuję (świeża bułka).", "świeżą bułkę"),
+    input("Uzupełnij formę w bierniku: Zamawiam (gorąca herbata).", "gorącą herbatę"),
+    input("Uzupełnij formę w bierniku: Czytam (krótka wiadomość).", "krótką wiadomość"),
+    input("Uzupełnij formę w bierniku: Biorę (ważna recepta).", "ważną receptę"),
+    input("Uzupełnij formę w bierniku: Otwieram (ciężka walizka).", "ciężką walizkę"),
+    input("Uzupełnij formę w bierniku: Rezerwuję (tania wycieczka).", "tanią wycieczkę"),
+    input("Uzupełnij formę w bierniku: Mam (ważny paszport).", "ważny paszport"),
+    input("Uzupełnij formę w bierniku: Kupuję (nowy rower).", "nowy rower"),
+    input("Uzupełnij formę w bierniku: Wypełniam (urzędowy formularz).", "urzędowy formularz"),
+    input("Uzupełnij formę w bierniku: Oglądam (długi reportaż).", "długi reportaż"),
+    input("Uzupełnij formę w bierniku: Biorę (mały plecak).", "mały plecak"),
+    input("Uzupełnij formę w bierniku: Pokazuję (ważny dokument).", "ważny dokument"),
+    input("Uzupełnij formę w bierniku: Na lotnisku spotykam (zagraniczni turyści).", "zagranicznych turystów"),
+    input("Uzupełnij formę w bierniku: Szef zaprasza (nowi kandydaci).", "nowych kandydatów"),
+    input("Uzupełnij formę w bierniku: W sali widzę (zmęczeni uczestnicy).", "zmęczonych uczestników"),
+    input("Uzupełnij formę w bierniku: W hotelu witamy (pierwsi goście).", "pierwszych gości"),
+    input("Uzupełnij formę w bierniku: Kupuję (świeże warzywa).", "świeże warzywa"),
+    input("Uzupełnij formę w bierniku: Czytam (lokalne wiadomości).", "lokalne wiadomości"),
+    input("Uzupełnij formę w bierniku: Na biurku mam (ważne dokumenty).", "ważne dokumenty"),
+    input("Uzupełnij formę w bierniku: Oglądam (ciekawe zdjęcia).", "ciekawe zdjęcia"),
+    input("Uzupełnij formę w bierniku: Rezerwuję (tanie bilety).", "tanie bilety"),
+    input("Uzupełnij formę w bierniku: Na obiad zamawiam (gorące pierogi).", "gorące pierogi")
+  ]);
 }
 
 function genAccusativeVariety() {
   return cap50([
-    input("Uzupełnij formę: codziennie oglądam (serial).", "serial"),
+    input("Uzupełnij formę: codziennie rano oglądam (krótki serwis informacyjny).", "krótki serwis informacyjny"),
     input("Uzupełnij formę: w restauracji zamawiam (zupa pomidorowa).", "zupę pomidorową"),
     input("Uzupełnij formę: rano piję (mocna kawa).", "mocną kawę"),
-    input("Uzupełnij formę: wieczorem czytam (interesująca książka).", "interesującą książkę"),
-    input("Uzupełnij formę: w sklepie wybieram (nowy telefon).", "nowy telefon"),
+    input("Uzupełnij formę: wieczorem czytam (interesujący reportaż).", "interesujący reportaż"),
+    input("Uzupełnij formę: w sklepie wybieram (wygodny plecak).", "wygodny plecak"),
     input("Uzupełnij formę: na dworcu kupuję (bilet miesięczny).", "bilet miesięczny"),
-    input("Uzupełnij formę: jutro odwiedzam (stary kolega).", "starego kolegę"),
+    input("Uzupełnij formę: jutro odwiedzam (starsza ciocia).", "starszą ciocię"),
     input("Uzupełnij formę: na zdjęciu widzę (małe dziecko).", "małe dziecko"),
     input("Uzupełnij formę: szef zaprasza (nowi pracownicy).", "nowych pracowników"),
     input("Uzupełnij formę: po pracy spotykam (miły sąsiad).", "miłego sąsiada"),
-    input("Uzupełnij formę: na lekcji słyszę (ważne pytanie).", "ważne pytanie"),
+    input("Uzupełnij formę: na zebraniu słyszę (ważna decyzja).", "ważną decyzję"),
     input("Uzupełnij formę: w domu otwieram (duże okno).", "duże okno"),
     input("Uzupełnij formę: w aptece biorę (tańszy lek).", "tańszy lek"),
     input("Uzupełnij formę: na uczelni znam (dobrzy profesorowie).", "dobrych profesorów"),
-    input("Uzupełnij formę: w weekend oglądam (ciekawy film).", "ciekawy film"),
+    input("Uzupełnij formę: w weekend oglądam (ciekawy film dokumentalny).", "ciekawy film dokumentalny"),
     input("Uzupełnij formę: w urzędzie pokazuję (ważny dokument).", "ważny dokument"),
+    input("Uzupełnij formę: w recepcji zostawiam (duża walizka).", "dużą walizkę"),
+    input("Uzupełnij formę: w księgarni kupuję (nowy słownik).", "nowy słownik"),
+    input("Uzupełnij formę: w biurze drukuję (krótki raport).", "krótki raport"),
+    input("Uzupełnij formę: na lotnisku witam (zagraniczny gość).", "zagranicznego gościa"),
+    input("Uzupełnij formę: w kawiarni zamawiam (mała woda mineralna).", "małą wodę mineralną"),
+    input("Uzupełnij formę: przed wyjazdem pakuję (ciepły sweter).", "ciepły sweter"),
+    input("Uzupełnij formę: w hotelu rezerwuję (jednoosobowy pokój).", "jednoosobowy pokój"),
+    input("Uzupełnij formę: na targu kupuję (świeże truskawki).", "świeże truskawki"),
     input("Przetłumacz na polski: Я вижу нового клиента.", "widzę nowego klienta"),
     input("Przetłumacz na polski: Я покупаю свежий хлеб.", "kupuję świeży chleb"),
     input("Przetłumacz na polski: Я читаю короткое сообщение.", "czytam krótką wiadomość"),
     input("Przetłumacz na polski: Я встречаю милого соседа.", "spotykam miłego sąsiada"),
+    input("Przetłumacz na polski: Я показываю важный паспорт в аэропорту.", "pokazuję ważny paszport na lotnisku"),
+    input("Przetłumacz na polski: Я заказываю горячий чай и яблочный пирог.", "zamawiam gorącą herbatę i szarlotkę"),
+    input("Przetłumacz na polski: Я беру маленький рюкзак и билет.", "biorę mały plecak i bilet"),
     input("Popraw zdanie: Widzę nowy klient.", "widzę nowego klienta"),
     input("Popraw zdanie: Kupuję czarna kawa.", "kupuję czarną kawę"),
     input("Popraw zdanie: Spotykam dobrzy profesorowie.", "spotykam dobrych profesorów"),
     input("Popraw zdanie: Czytam interesującej książki.", "czytam interesującą książkę"),
+    input("Popraw zdanie: Zamawiam gorący herbata.", "zamawiam gorącą herbatę"),
+    input("Popraw zdanie: Rezerwuję tanią pokój.", "rezerwuję tani pokój"),
     choice("W zdaniu `W urzędzie pokazuję ...` wybierz najlepsze dopełnienie.", ["ważny dokument", "ważnego dokumentu", "ważnym dokumentem"], "ważny dokument"),
     choice("W zdaniu `Po pracy spotykam ...` wybierz poprawną formę.", ["miłego sąsiada", "miły sąsiad", "miłemu sąsiadowi"], "miłego sąsiada"),
     choice("W zdaniu `Na obiad gotuję ...` wybierz poprawną formę.", ["smaczną zupę", "smaczna zupa", "smacznej zupy"], "smaczną zupę"),
     choice("W zdaniu `Na uczelni znam ...` wybierz poprawną formę.", ["dobrych profesorów", "dobrzy profesorowie", "dobrym profesorom"], "dobrych profesorów"),
+    choice("W zdaniu `Na lotnisku witam ...` wybierz poprawną formę.", ["zagranicznego gościa", "zagraniczny gość", "zagranicznemu gościowi"], "zagranicznego gościa"),
+    choice("W zdaniu `W recepcji zostawiam ...` wybierz poprawną formę.", ["dużą walizkę", "duża walizka", "dużej walizki"], "dużą walizkę"),
     free("Napisz 4 zdania w bierniku z różnymi czasownikami. Użyj przynajmniej: kupować, oglądać, spotykać, zamawiać.", "Не повторяй один и тот же глагол. Покажи разные типы дополнения: человека, вещь, еду, документ.")
   ]);
 }
 function genGenitiveVariety() {
   return cap50([
-    input("Uzupełnij formę: rano słucham (polskie radio).", "polskiego radia"),
+    input("Uzupełnij formę: rano słucham (lokalne radio).", "lokalnego radia"),
     input("Uzupełnij formę: w nowym mieście szukam (spokojne mieszkanie).", "spokojnego mieszkania"),
     input("Uzupełnij formę: po pracy potrzebuję (chwila spokoju).", "chwili spokoju"),
     input("Uzupełnij formę: w kuchni używam (duży nóż).", "dużego noża"),
@@ -1374,15 +1416,24 @@ function genGenitiveVariety() {
     input("Uzupełnij formę: na kursie uczę się (polska wymowa).", "polskiej wymowy"),
     input("Uzupełnij formę: wieczorem nie mam (siła).", "siły"),
     input("Uzupełnij formę: w sklepie szukam (świeży chleb).", "świeżego chleba"),
+    input("Uzupełnij formę: przed podróżą potrzebuję (ważny paszport).", "ważnego paszportu"),
+    input("Uzupełnij formę: w hotelu szukam (wolny pokój).", "wolnego pokoju"),
+    input("Uzupełnij formę: do projektu używam (specjalny program).", "specjalnego programu"),
+    input("Uzupełnij formę: na wystawie słucham (lokalny przewodnik).", "lokalnego przewodnika"),
+    input("Uzupełnij formę: dziś nie ma (gorąca woda).", "gorącej wody"),
     input("Przetłumacz na polski: Мне нужен новый документ.", "potrzebuję nowego dokumentu"),
     input("Przetłumacz na polski: У меня нет свободного времени.", "nie mam wolnego czasu"),
     input("Przetłumacz na polski: Я ищу спокойную квартиру.", "szukam spokojnego mieszkania"),
     input("Przetłumacz na polski: Я использую большой нож.", "używam dużego noża"),
+    input("Przetłumacz na polski: Мне нужен новый пароль для аккаунта.", "potrzebuję nowego hasła do konta"),
+    input("Przetłumacz na polski: У нас нет свободного места в машине.", "nie mamy wolnego miejsca w samochodzie"),
     input("Popraw zdanie: Potrzebuję nowy dokument.", "potrzebuję nowego dokumentu"),
     input("Popraw zdanie: Nie ma wolne miejsce.", "nie ma wolnego miejsca"),
     input("Popraw zdanie: Szukam spokojne mieszkanie.", "szukam spokojnego mieszkania"),
+    input("Popraw zdanie: Używam specjalny program.", "używam specjalnego programu"),
     choice("Po wyrażeniu `nie ma` wybierz najlepszą formę.", ["wolnego miejsca", "wolne miejsce", "wolnym miejscem"], "wolnego miejsca"),
     choice("Po czasowniku `potrzebuję` wybierz najlepszą formę.", ["dobrego komputera", "dobry komputer", "dobremu komputerowi"], "dobrego komputera"),
+    choice("Po czasowniku `używam` wybierz najlepszą formę.", ["szybkiego komputera", "szybki komputer", "szybkim komputerem"], "szybkiego komputera"),
     free("Napisz 4 zdania w dopełniaczu. Użyj przynajmniej: nie ma, potrzebuję, szukam, używam.", "Пусть в предложениях будут разные ситуации: дом, работа, магазин, учёба.")
   ]);
 }
@@ -1394,14 +1445,23 @@ function genDativeVariety() {
     input("Uzupełnij formę: daję dokument (kierownik).", "kierownikowi"),
     input("Uzupełnij formę: pomagam (małe dziecko).", "małemu dziecku"),
     input("Uzupełnij formę: mówię prawdę (dobry kolega).", "dobremu koledze"),
+    input("Uzupełnij formę: tłumaczę drogę (zagraniczny turysta).", "zagranicznemu turyście"),
+    input("Uzupełnij formę: oddaję klucz (starsza sąsiadka).", "starszej sąsiadce"),
+    input("Uzupełnij formę: pokazuję zdjęcia (moja babcia).", "mojej babci"),
+    input("Uzupełnij formę: wysyłam raport (nowy kierownik).", "nowemu kierownikowi"),
+    input("Uzupełnij formę: odpowiadam spokojnie (zdenerwowany klient).", "zdenerwowanemu klientowi"),
     input("Przetłumacz na polski: Я помогаю пожилому соседу.", "pomagam starszemu sąsiadowi"),
     input("Przetłumacz na polski: Я даю книгу моей коллеге.", "daję książkę mojej koleżance"),
     input("Przetłumacz na polski: Я отвечаю учителю.", "odpowiadam nauczycielowi"),
+    input("Przetłumacz на polski: Я объясняю правила иностранному туристу.", "tłumaczę zasady zagranicznemu turyście"),
+    input("Przetłumacz на polski: Я отправляю сообщение новому руководителю.", "wysyłam wiadomość nowemu kierownikowi"),
     input("Popraw zdanie: Pomagam starszego sąsiada.", "pomagam starszemu sąsiadowi"),
     input("Popraw zdanie: Daję książkę moją koleżankę.", "daję książkę mojej koleżance"),
     input("Popraw zdanie: Mówię prawdę dobry kolega.", "mówię prawdę dobremu koledze"),
+    input("Popraw zdanie: Tłumaczę drogę zagranicznego turystę.", "tłumaczę drogę zagranicznemu turyście"),
     choice("Po czasowniku `pomagam` wybierz poprawną formę.", ["starszemu sąsiadowi", "starszego sąsiada", "starszym sąsiadem"], "starszemu sąsiadowi"),
-    choice("Po czasowniku `daję` dla adresata wybierz poprawną formę.", ["mojej koleżance", "moją koleżankę", "mojej koleżanką"], "mojej koleżance"),
+    choice("Po czasowniku `daję` dla адресата wybierz poprawną formę.", ["mojej koleżance", "moją koleżankę", "mojej koleżanką"], "mojej koleżance"),
+    choice("Po czasowniku `odpowiadam` wybierz poprawną formę.", ["nauczycielowi", "nauczyciela", "nauczycielem"], "nauczycielowi"),
     free("Napisz 4 zdania w celowniku. Użyj przynajmniej: dawać, pomagać, tłumaczyć, wysyłać.", "Покажи разные адресаты: человек, родственник, коллега, ребёнок.")
   ]);
 }
@@ -1413,14 +1473,23 @@ function genLocativeVariety() {
     input("Uzupełnij formę: myślę o (krótki urlop).", "krótkim urlopie"),
     input("Uzupełnij formę: jestem na (długie spotkanie).", "długim spotkaniu"),
     input("Uzupełnij formę: mówię o (trudny problem).", "trudnym problemie"),
-    input("Przetłumacz na polski: Я живу в спокойном районе.", "mieszkam w spokojnej dzielnicy"),
-    input("Przetłumacz na polski: Мы говорим о важном экзамене.", "rozmawiamy o ważnym egzaminie"),
-    input("Przetłumacz na polski: Я думаю о коротком отпуске.", "myślę o krótkim urlopie"),
+    input("Uzupełnij formę: rozmawiam o (nowy projekt).", "nowym projekcie"),
+    input("Uzupełnij formę: jestem w (lokalne muzeum).", "lokalnym muzeum"),
+    input("Uzupełnij formę: czytam o (szybki pociąg).", "szybkim pociągu"),
+    input("Uzupełnij formę: po pracy siedzę na (mały balkon).", "małym balkonie"),
+    input("Uzupełnij formę: myślę o (zagraniczna podróż).", "zagranicznej podróży"),
+    input("Przetłumacz на polski: Я живу в спокойном районе.", "mieszkam w spokojnej dzielnicy"),
+    input("Przetłumacz на polski: Мы говорим о важном экзамене.", "rozmawiamy o ważnym egzaminie"),
+    input("Przetłumacz на polski: Я думаю о коротком отпуске.", "myślę o krótkim urlopie"),
+    input("Przetłumacz на polski: Я читаю о новом проекте в газете.", "czytam o nowym projekcie w gazecie"),
+    input("Przetłumacz на polski: Мы сидим на маленьком балконе вечером.", "siedzimy na małym balkonie wieczorem"),
     input("Popraw zdanie: Jestem w nowe biuro.", "jestem w nowym biurze"),
     input("Popraw zdanie: Myślę o ważny termin.", "myślę o ważnym terminie"),
     input("Popraw zdanie: Czytam o nowa praca.", "czytam o nowej pracy"),
+    input("Popraw zdanie: Rozmawiam o nowy projekt.", "rozmawiam o nowym projekcie"),
     choice("Po `w` w znaczeniu `gdzie?` wybierz poprawną formę.", ["nowym biurze", "nowe biuro", "nowego biura"], "nowym biurze"),
     choice("Po `o` wybierz poprawną formę.", ["ważnym terminie", "ważny termin", "ważnego terminu"], "ważnym terminie"),
+    choice("Po `na` w znaczeniu `gdzie?` wybierz poprawną formę.", ["małym balkonie", "mały balkon", "małego balkonu"], "małym balkonie"),
     free("Napisz 4 zdania w miejscowniku. Użyj przynajmniej: w, na, o, po.", "Пусть одно предложение будет о месте, одно о встрече, одно о теме разговора, одно о дне.")
   ]);
 }
