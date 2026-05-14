@@ -1237,12 +1237,18 @@ function genNominativeAgreement() {
     makeChoice("Wybierz poprawną formę: To jest ___", ["polska szkoła", "polski szkoła", "polskie szkoła"], "polska szkoła"),
     makeChoice("Wybierz poprawną formę: To jest ___", ["nowe mieszkanie", "nowy mieszkanie", "nowa mieszkanie"], "nowe mieszkanie"),
     makeChoice("Wybierz poprawną formę: To jest ___", ["wysoki student", "wysoka student", "wysokie student"], "wysoki student"),
-    makeChoice("Wybierz poprawną formę: To jest ___", ["stara mapa", "stary mapa", "stare mapa"], "stara mapa")
+    makeChoice("Wybierz poprawną formę: To jest ___", ["stara mapa", "stary mapa", "stare mapa"], "stara mapa"),
+    makeChoice("Wybierz poprawną formę: To jest ___", ["ważny paszport", "ważna paszport", "ważne paszport"], "ważny paszport"),
+    makeChoice("Wybierz poprawną formę: To jest ___", ["lokalne muzeum", "lokalny muzeum", "lokalna muzeum"], "lokalne muzeum"),
+    makeChoice("Wybierz poprawną formę: To jest ___", ["spokojna dzielnica", "spokojny dzielnica", "spokojne dzielnica"], "spokojna dzielnica"),
+    makeChoice("Wybierz poprawną formę: To jest ___", ["ciekawy reportaż", "ciekawa reportaż", "ciekawe reportaż"], "ciekawy reportaż"),
+    makeChoice("Wybierz poprawną formę: To jest ___", ["gorąca herbata", "gorący herbata", "gorące herbata"], "gorąca herbata"),
+    makeChoice("Wybierz poprawną formę: To jest ___", ["jednoosobowy pokój", "jednoosobowa pokój", "jednoosobowe pokój"], "jednoosobowy pokój")
   ];
-  dict.adjectives.slice(0, 8).forEach(([base,, , mascAcc, femAcc], index) => {
+  dict.adjectives.slice(0, 10).forEach(([base,, , mascAcc, femAcc], index) => {
     const mascNoun = dict.biernik.animate[index % dict.biernik.animate.length][0];
     const femNoun = dict.biernik.feminine[index % dict.biernik.feminine.length][0];
-    const neutNoun = ["dziecko", "mieszkanie", "biuro", "zadanie"][index % 4];
+    const neutNoun = ["dziecko", "mieszkanie", "biuro", "zadanie", "muzeum", "lotnisko"][index % 6];
     items.push(makeChoice(`Wybierz mianownik: To jest ___`, [`${base} ${mascNoun}`, `${femAcc} ${mascNoun}`, `${base.replace(/y$|i$/,"e")} ${mascNoun}`], `${base} ${mascNoun}`));
     items.push(makeChoice(`Wybierz mianownik: To jest ___`, [`${base.replace(/y$|i$/,"a")} ${femNoun}`, `${base} ${femNoun}`, `${femAcc} ${femNoun}`], `${base.replace(/y$|i$/,"a")} ${femNoun}`));
     items.push(makeChoice(`Wybierz mianownik: To jest ___`, [`${base.replace(/y$|i$/,"e")} ${neutNoun}`, `${base} ${neutNoun}`, `${mascAcc} ${neutNoun}`], `${base.replace(/y$|i$/,"e")} ${neutNoun}`));
@@ -1266,51 +1272,58 @@ function genNominativeIdentity() {
     input("Uzupełnij formę mnogą: To są ___ dzieci (mały).", "małe"),
     input("Uzupełnij formę mnogą: To są ___ sąsiedzi (miły).", "mili"),
     input("Uzupełnij formę mnogą: To są ___ dokumenty (nowy).", "nowe"),
-    input("Uzupełnij formę mnogą: To są ___ kobiety (młody).", "młode")
+    input("Uzupełnij formę mnogą: To są ___ kobiety (młody).", "młode"),
+    input("Uzupełnij przymiotnik w mianowniku: To jest ___ paszport (ważny).", "ważny"),
+    input("Uzupełnij przymiotnik w mianowniku: To jest ___ herbata (gorący).", "gorąca"),
+    input("Uzupełnij przymiотnik w mianowniku: To jest ___ muzeum (lokalny).", "lokalne"),
+    input("Uzupełnij przymiотnik w mianowniku: To jest ___ dzielnica (spokojny).", "spokojna"),
+    input("Uzupełnij zaimek: To jest ___ rower (ten).", "ten"),
+    input("Uzupełnij zaimek: To jest ___ apteka (ten).", "ta"),
+    input("Uzupełnij zaimek: To jest ___ lotnisko (ten).", "to"),
+    input("Uzupełnij formę mnogą: To są ___ turyści (zagraniczny).", "zagraniczni"),
+    input("Uzupełnij formę mnogą: To są ___ bilety (tani).", "tanie"),
+    input("Uzupełnij formę mnogą: To są ___ muzea (lokalny).", "lokalne"),
+    input("Uzupełnij formę mnogą: To są ___ raporty (krótki).", "krótkie"),
+    choice("Wybierz poprawnie: To jest ___ recepta.", ["ważny", "ważna", "ważne"], "ważna"),
+    choice("Wybierz poprawnie: To jest ___ lotnisko.", ["polski", "polska", "polskie"], "polskie"),
+    choice("Wybierz poprawnie: To są ___ goście.", ["pierwsi", "pierwsze"], "pierwsi")
   ]);
 }
 function genNominativeWorkbook() {
-  return [
-    workbook(
-      "Wpisz słowa z nawiasów w mianowniku",
-      [
-        "To jest [1] lekarz (dobry).",
-        "To jest [2] kobieta (miły).",
-        "To jest [3] dziecko (mały).",
-        "To jest [4] restauracja (polski).",
-        "To jest [5] mieszkanie (nowy).",
-        "To jest [6] problem (ważny)."
-      ],
-      ["dobry", "miła", "małe", "polska", "nowe", "ważny"],
-      "В mianownik главное не просто переписать слово, а согласовать форму с родом."
-    ),
-    workbook(
-      "Mianownik: zaimki i rodzaj",
-      [
-        "To jest [1] książka (ten).",
-        "To jest [2] dokument (ten).",
-        "To jest [3] mieszkanie (ten).",
-        "To jest [4] szkoła (mój).",
-        "To jest [5] brat (mój).",
-        "To jest [6] dziecko (mój)."
-      ],
-      ["ta", "ten", "to", "moja", "mój", "moje"],
-      "Сначала решай род, потом выбирай `ten / ta / to` или `mój / moja / moje`."
-    ),
-    workbook(
-      "Mianownik liczby mnogiej: przymiotnik + rzeczownik",
-      [
-        "To są [1] [2] (dobry, student).",
-        "To są [3] [4] (miły, sąsiad).",
-        "To są [5] [6] (ciekawy, książka).",
-        "To są [7] [8] (mały, dziecko).",
-        "To są [9] [10] (nowy, dokument).",
-        "To są [11] [12] (polski, szkoła)."
-      ],
-      ["dobrzy", "studenci", "mili", "sąsiedzi", "ciekawe", "książki", "małe", "dzieci", "nowe", "dokumenty", "polskie", "szkoły"],
-      "Во множественном числе тренируй и прилагательное, и существительное: `oni` или `one`."
-    )
-  ];
+  return cap50([
+    input("Wpisz słowo z nawiasów w mianowniku: To jest ___ (student).", "student"),
+    input("Wpisz słowo z nawiasów w mianowniku: To jest ___ (kobieta).", "kobieta"),
+    input("Wpisz słowo z nawiasów w mianowniku: To jest ___ (dziecko).", "dziecko"),
+    input("Wpisz słowo z nawiasów w mianowniku: To jest ___ (restauracja).", "restauracja"),
+    input("Wpisz słowo z nawiasów w mianowniku: To jest ___ (mieszkanie).", "mieszkanie"),
+    input("Wpisz słowo z nawiasów w mianowniku: To jest ___ (problem).", "problem"),
+    input("Wpisz słowo z nawiasów w mianowniku: To jest ___ (paszport).", "paszport"),
+    input("Wpisz słowo z nawiasów w mianowniku: To jest ___ (apteka).", "apteka"),
+    input("Wpisz słowo z nawiasów w mianowniku: To jest ___ (muzeum).", "muzeum"),
+    input("Wpisz słowo z nawiasów w mianowniku: To jest ___ (lotnisko).", "lotnisko"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ ___ (dobry, lekarz).", "dobry lekarz"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ ___ (miły, sąsiadka).", "miła sąsiadka"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ ___ (lokalny, muzeum).", "lokalne muzeum"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ ___ (ważny, dokument).", "ważny dokument"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ ___ (gorący, herbata).", "gorąca herbata"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ ___ (spokojny, dzielnica).", "spokojna dzielnica"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ ___ (jednoosobowy, pokój).", "jednoosobowy pokój"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ ___ (krótki, reportaż).", "krótki reportaż"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ książka (ten).", "ta"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ dokument (ten).", "ten"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ mieszkanie (ten).", "to"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ szkoła (mój).", "moja"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ brat (mój).", "mój"),
+    input("Wpisz słowa z nawiasów w mianowniku: To jest ___ dziecko (mój).", "moje"),
+    input("Wpisz słowa z nawiasów w mianowniku: To są ___ ___ (dobry, student).", "dobrzy studenci"),
+    input("Wpisz słowa z nawiasów w mianowniku: To są ___ ___ (miły, sąsiad).", "mili sąsiedzi"),
+    input("Wpisz słowa z nawiasów w mianowniku: To są ___ ___ (ciekawy, książka).", "ciekawe książki"),
+    input("Wpisz słowa z nawiasów w mianowniku: To są ___ ___ (mały, dziecko).", "małe dzieci"),
+    input("Wpisz słowa z nawiasów w mianowniku: To są ___ ___ (nowy, dokument).", "nowe dokumenty"),
+    input("Wpisz słowa z nawiasów w mianowniku: To są ___ ___ (polski, szkoła).", "polskie szkoły"),
+    input("Wpisz słowa z nawiasów w mianowniku: To są ___ ___ (zagraniczny, turyści).", "zagraniczni turyści"),
+    input("Wpisz słowa z nawiasów w mianowniku: To są ___ ___ (lokalny, muzea).", "lokalne muzea")
+  ]);
 }
 function genPluralMistakes() { return cap50([input("To są dobre studenci", "to są dobrzy studenci"), input("To są polskie lekarze", "to są polscy lekarze"), input("To są wysokie mężczyźni", "to są wysocy mężczyźni"), input("To są nowe klienci", "to są nowi klienci"), input("To są młode chłopaki", "to są młodzi chłopaki"), input("To są duże pracownicy", "to są duzi pracownicy"), input("To są miłe nauczyciele", "to są mili nauczyciele"), input("To są stare sąsiedzi", "to są starzy sąsiedzi"), input("To są znane aktorzy", "to są znani aktorzy"), input("To są dobre profesorowie", "to są dobrzy profesorowie"), input("To są polscy kobiety", "to są polskie kobiety"), input("To są dobrzy książki", "to są dobre książki"), input("To są nowi samochody", "to są nowe samochody"), input("To są wysocy domy", "to są wysokie domy"), input("To są młodzi dzieci", "to są młode dzieci")]); }
 function genAccusativeForms() {
@@ -3742,9 +3755,7 @@ function getTopicSupplementPool(topicKey) {
     environmentLexicon: "environment"
   };
 
-  if (thematicMap[topicKey]) {
-    const key = thematicMap[topicKey];
-    return uniqueExerciseItems([
+  const thematicPool = (key) => uniqueExerciseItems([
       ...genThematicReverseChoices(key),
       ...genThematicChoices(key),
       ...genThematicWords(key),
@@ -3754,7 +3765,8 @@ function getTopicSupplementPool(topicKey) {
       ...genThematicComprehension(key),
       ...genThematicContextGrammar(key)
     ]);
-  }
+
+  if (thematicMap[topicKey]) return thematicPool(thematicMap[topicKey]);
 
   const pools = {
     nominative: [...genNominativeIdentity(), ...genNominativeWorkbook(), ...genNominativeAgreement()],
@@ -3799,7 +3811,23 @@ function getTopicSupplementPool(topicKey) {
     audioUczmySiePolskiego: [...genUczmySiePolskiego()]
   };
 
-  return uniqueExerciseItems(pools[topicKey] || []);
+  const ownPool = uniqueExerciseItems(pools[topicKey] || []);
+  const ownPracticeCount = ownPool.filter(isPracticeItem).length;
+  if (ownPracticeCount >= MIN_EXERCISE_ITEMS) return ownPool;
+
+  const module = courseModules.find((entry) => entry.keys.includes(topicKey));
+  if (!module) return ownPool;
+
+  const siblingPool = uniqueExerciseItems(
+    module.keys
+      .filter((key) => key !== topicKey)
+      .flatMap((key) => {
+        if (thematicMap[key]) return thematicPool(thematicMap[key]);
+        return pools[key] || [];
+      })
+  );
+
+  return uniqueExerciseItems([...ownPool, ...siblingPool]);
 }
 
 function dedupeTopicExercises(topicKey, topic) {
