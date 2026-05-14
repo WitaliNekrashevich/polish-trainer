@@ -3585,7 +3585,7 @@ function genB1Strategy(topic) {
   return blocks[topic] || [];
 }
 
-const topics = {
+const rawTopics = {
   diagnosticB1: { title: "Диагностика B1", description: "Карта сильных и слабых мест", theory: ["Начни здесь, если хочешь понять текущий уровень.", "20 вопросов смешивают падежи, времена, аспект, лексику и экзаменационные реакции.", "После прохождения смотри проценты по темам и тренируй слабые блоки."], exercises: [makeExercise("Диагностика: 20 вопросов", genDiagnostic())] },
   mixed20: { title: "Смешанный тест 20", description: "Активное вспоминание из всего курса", theory: ["Это режим для памяти: вопросы идут вперемешку, как в реальной речи.", "Запускай после 2–3 тем или в конце дня.", "Цель — 80% правильных без подсказок."], exercises: [makeExercise("Mixed practice 20", genMixed20())] },
   nominative: { title: "Mianownik — kto? co?", description: "Базовая форма слова и согласование по роду", theory: ["Mianownik — это базовая форма слова. Именно её ты видишь в словаре и используешь, когда просто называешь человека, вещь, место или профессию: `to jest student`, `to jest kawa`, `to jest mieszkanie`.", "Он отвечает на pytanie `kto? co?`. Это не падеж изменения, а стартовая точка, от которой потом строятся другие формы.", "Самое важное в начале — не окончания существительного, а согласование прилагательного с родом: `dobry lekarz`, `miła kobieta`, `małe dziecko`, `nowe mieszkanie`.", "Если ты не уверен в форме, сначала реши род: `męski`, `żeński`, `nijaki`. Потом подставь правильное прилагательное: `-y/-i`, `-a`, `-e`.", "Полезные базовые модели: `to jest mój brat`, `to jest moja siostra`, `to jest moje dziecko`, `to jest nowy dokument`, `to jest dobra kawa`."], exercises: [makeExercise("Mianownik — формы", genNominativeIdentity()), makeExercise("Wpisz słowa z nawiasów", genNominativeWorkbook()), makeExercise("Przymiotnik + rzeczownik", genNominativeAgreement()), makeExercise("Разговор", speakingPrompts)] },
@@ -3862,10 +3862,6 @@ function dedupeTopicExercises(topicKey, topic) {
   return { ...topic, exercises };
 }
 
-Object.keys(topics).forEach((key) => {
-  topics[key] = dedupeTopicExercises(key, topics[key]);
-});
-
 function getProfileStorageKey(profileId) {
   return `${PROFILE_STORAGE_PREFIX}-${profileId}`;
 }
@@ -3998,7 +3994,7 @@ function buildItemId(key, exIndex, itemIndex, item) {
 }
 
 function getItemById(id) {
-  for (const [key, topic] of Object.entries(topics)) {
+  for (const [key, topic] of Object.entries(rawTopics)) {
     for (let exIndex = 0; exIndex < topic.exercises.length; exIndex += 1) {
       const exercise = topic.exercises[exIndex];
       for (let itemIndex = 0; itemIndex < exercise.items.length; itemIndex += 1) {
@@ -4328,7 +4324,7 @@ function AnswerBlock({ item, state, setState, addWord }) {
 }
 
 export default function App() {
-  const topicKeys = Object.keys(topics);
+  const topicKeys = Object.keys(rawTopics);
   const profileMeta = useMemo(loadProfileMeta, []);
   const initialActiveProfileId = profileMeta.activeProfileId || profileMeta.profiles[0].id;
   const saved = useMemo(() => loadProfileCourse(initialActiveProfileId), [initialActiveProfileId]);
@@ -4349,6 +4345,16 @@ export default function App() {
   const [openModules, setOpenModules] = useState({ [initialModuleTitle]: true });
   const [openTopics, setOpenTopics] = useState({ [saved.topicKey || topicKeys[0]]: true });
   const [rulesOpen, setRulesOpen] = useState(true);
+  const currentVariant = getVariantIndex();
+
+  const topics = useMemo(() => {
+    const next = { ...rawTopics };
+    const keysToPrepare = new Set([topicKey || topicKeys[0], ...Object.keys(openTopics || {}).filter((key) => openTopics[key])]);
+    keysToPrepare.forEach((key) => {
+      if (rawTopics[key]) next[key] = dedupeTopicExercises(key, rawTopics[key]);
+    });
+    return next;
+  }, [topicKey, openTopics, currentVariant, topicKeys]);
 
   const safeTopicKey = topics[topicKey] ? topicKey : topicKeys[0];
   const topic = topics[safeTopicKey];
@@ -4356,7 +4362,6 @@ export default function App() {
   const safeExerciseIndex = topic.exercises[exerciseIndex] ? exerciseIndex : 0;
   const exercise = topic.exercises[safeExerciseIndex];
   const currentItems = exercise.items;
-  const currentVariant = getVariantIndex();
 
   const flat = topicKeys.flatMap((key) => topics[key].exercises.map((_, i) => ({ key, i })));
   const currentFlat = flat.findIndex((x) => x.key === safeTopicKey && x.i === safeExerciseIndex);
