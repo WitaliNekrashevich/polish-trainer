@@ -3885,7 +3885,11 @@ function getTopicSupplementPool(topicKey) {
 
 function dedupeTopicExercises(topicKey, topic) {
   const seen = new Set();
-  const supplementPool = stableSortExerciseItems(getTopicSupplementPool(topicKey));
+  let supplementPool = null;
+  const getSupplementPool = () => {
+    if (!supplementPool) supplementPool = stableSortExerciseItems(getTopicSupplementPool(topicKey));
+    return supplementPool;
+  };
   const exercises = (topic.exercises || [])
     .filter(Boolean)
     .map((exercise) => {
@@ -3900,7 +3904,7 @@ function dedupeTopicExercises(topicKey, topic) {
       const nextItems = [...items];
       const practiceCount = nextItems.filter(isPracticeItem).length;
       if (practiceCount < MIN_EXERCISE_ITEMS) {
-        for (const item of supplementPool) {
+        for (const item of getSupplementPool()) {
           if (!isPracticeItem(item)) continue;
           const signature = itemFamilySignature(item);
           if (!signature || seen.has(signature)) continue;
@@ -3922,6 +3926,16 @@ function materializeTopic(topic) {
     return { ...topic, exercises: (topic.buildExercises() || []).filter(Boolean) };
   }
   return { ...topic, exercises: [] };
+}
+
+const topicBuildCache = new Map();
+
+function getCachedTopic(topicKey, topicSource) {
+  const cacheKey = `${getVariantIndex()}::${topicKey}`;
+  if (topicBuildCache.has(cacheKey)) return topicBuildCache.get(cacheKey);
+  const built = dedupeTopicExercises(topicKey, materializeTopic(topicSource));
+  topicBuildCache.set(cacheKey, built);
+  return built;
 }
 
 function getProfileStorageKey(profileId) {
@@ -4348,7 +4362,7 @@ function AppContent() {
     const keysToPrepare = new Set([topicKey || topicKeys[0], ...Object.keys(openTopics || {}).filter((key) => openTopics[key])]);
     keysToPrepare.forEach((key) => {
       const topicSource = lazyTopics[key] || rawTopics[key];
-      if (topicSource?.buildExercises || topicSource?.exercises) next[key] = dedupeTopicExercises(key, materializeTopic(topicSource));
+      if (topicSource?.buildExercises || topicSource?.exercises) next[key] = getCachedTopic(key, topicSource);
     });
     return next;
   }, [topicKey, openTopics, currentVariant, topicKeys, lazyTopics]);
@@ -4356,7 +4370,7 @@ function AppContent() {
   const getTopic = (key) => {
     if (topics[key]) return topics[key];
     const topicSource = lazyTopics[key] || rawTopics[key];
-    if (topicSource?.buildExercises || topicSource?.exercises) return dedupeTopicExercises(key, materializeTopic(topicSource));
+    if (topicSource?.buildExercises || topicSource?.exercises) return getCachedTopic(key, topicSource);
     return { ...topicSource, exercises: [] };
   };
 
