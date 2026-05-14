@@ -1,5 +1,37 @@
 import React, { useEffect, useMemo, useState } from "react";
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidCatch(error, info) {
+    console.error("Polish trainer runtime error", error, info);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ minHeight: "100vh", background: "#f4f6f8", padding: 24, fontFamily: "Arial, sans-serif", color: "#202428" }}>
+          <div style={{ maxWidth: 900, margin: "0 auto", background: "#fff", borderRadius: 10, padding: 20, boxShadow: "0 2px 8px rgba(0,0,0,.08)" }}>
+            <h1 style={{ marginTop: 0 }}>Сайт запустился с ошибкой</h1>
+            <p>Это уже не белый экран. Ниже показано, что именно упало в рантайме.</p>
+            <pre style={{ whiteSpace: "pre-wrap", background: "#f8fafb", border: "1px solid #d8e2e8", borderRadius: 8, padding: 12, overflow: "auto" }}>
+              {String(this.state.error?.stack || this.state.error?.message || this.state.error)}
+            </pre>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // Polish Trainer A2 → B1
 // Pure React, no external libraries. Paste into src/App.js
 
@@ -4324,7 +4356,7 @@ function AnswerBlock({ item, state, setState, addWord }) {
   );
 }
 
-export default function App() {
+function AppContent() {
   const sanitizedTopics = useMemo(() => {
     const next = {};
     Object.keys(rawTopics).forEach((key) => {
@@ -4761,5 +4793,13 @@ export default function App() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary>
+      <AppContent />
+    </ErrorBoundary>
   );
 }
