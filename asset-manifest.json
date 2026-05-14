@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/polish-trainer/static/css/main.e6c13ad2.css",
-    "main.js": "/polish-trainer/static/js/main.9bb89678.js",
+    "main.js": "/polish-trainer/static/js/main.b1cfaa43.js",
     "static/js/453.2bf69d40.chunk.js": "/polish-trainer/static/js/453.2bf69d40.chunk.js",
     "index.html": "/polish-trainer/index.html",
     "main.e6c13ad2.css.map": "/polish-trainer/static/css/main.e6c13ad2.css.map",
-    "main.9bb89678.js.map": "/polish-trainer/static/js/main.9bb89678.js.map",
+    "main.b1cfaa43.js.map": "/polish-trainer/static/js/main.b1cfaa43.js.map",
     "453.2bf69d40.chunk.js.map": "/polish-trainer/static/js/453.2bf69d40.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.9bb89678.js"
+    "static/js/main.b1cfaa43.js"
   ]
 }
