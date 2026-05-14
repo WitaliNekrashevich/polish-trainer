@@ -3280,6 +3280,33 @@ function genMixed20() {
 
 const speakingPrompts = repeatTo50([free("Opisz swój typowy dzień. Użyj: rano, potem, wieczorem, kiedy."), free("Dlaczego uczysz się polskiego? Użyj: dlatego, że; żeby; jeśli."), free("Opisz swoją pracę albo naukę. Użyj minimum 6 zdań."), free("Opisz ostatni weekend w czasie przeszłym."), free("Opisz plany na następny tydzień w czasie przyszłym."), free("Opowiedz o swojej rodzinie. Użyj mianownika liczby mnogiej."), free("Co zwykle kupujesz w sklepie? Użyj biernika."), free("Czego potrzebujesz do nauki? Użyj dopełniacza."), free("Komu najczęściej pomagasz? Użyj celownika."), free("Z kim spędzasz czas po pracy? Użyj narzędnika."), free("Gdzie mieszkasz i co lubisz w tym miejscu? Użyj miejscownika."), free("Opisz różnicę między tym, co robisz codziennie, a tym, co zrobisz jutro.")]);
 
+const lazyLexiconTopicShells = {
+  workLexicon: { title: "Praca i firma", description: "Работа, обязанности, коллеги" },
+  housingLexicon: { title: "Mieszkanie", description: "Жильё, аренда, бытовые проблемы" },
+  healthLexicon: { title: "Zdrowie i lekarz", description: "Врач, аптека, симптомы" },
+  documentsLexicon: { title: "Urząd i dokumenty", description: "Документы, заявления, учреждение" },
+  shoppingLexicon: { title: "Zakupy i usługi", description: "Покупки, услуги, возврат" },
+  cityLexicon: { title: "Miasto i transport", description: "Город, транспорт, как добраться" },
+  educationLexicon: { title: "Edukacja i egzamin", description: "Учёба, экзамен, прогресс" },
+  relationshipsLexicon: { title: "Relacje i emocje", description: "Отношения, эмоции, поддержка" },
+  travelLexicon: { title: "Podróże i hotel", description: "Путешествия, отель, задержки" },
+  foodLexicon: { title: "Jedzenie i restauracja", description: "Еда, ресторан, аллергии" },
+  technologyLexicon: { title: "Internet i technologia", description: "Интернет, приложения, проблемы" },
+  argumentationLexicon: { title: "Argumentacja B1", description: "Мнение, аргументы, вывод" },
+  financeLexicon: { title: "Finanse osobiste", description: "Деньги, бюджет, банк" },
+  familyLexicon: { title: "Rodzina i pokolenia", description: "Семья, поколения, обязанности" },
+  dailyLexicon: { title: "Codzienne życie", description: "Быт, привычки, организация дня" },
+  natureLexicon: { title: "Pogoda i natura", description: "Погода, природа, поездки" },
+  cultureLexicon: { title: "Kultura i media", description: "Культура, новости, медиа" },
+  leisureLexicon: { title: "Czas wolny i sport", description: "Хобби, спорт, отдых" },
+  safetyLexicon: { title: "Bezpieczeństwo i prawo", description: "Безопасность, правила, помощь" },
+  societyLexicon: { title: "Społeczeństwo", description: "Общество, город, интеграция" },
+  personalityLexicon: { title: "Charakter i cechy", description: "Характер, качества человека" },
+  environmentLexicon: { title: "Środowisko", description: "Экология, город, выбор" }
+};
+
+const lazyTopicToModule = Object.fromEntries(Object.keys(lazyLexiconTopicShells).map((key) => [key, "lexicon"]));
+
 function makeLexiconTopic(key, title, description, theory) {
   return {
     title,
@@ -3618,6 +3645,7 @@ function genB1Strategy(topic) {
 }
 
 const rawTopics = {
+  ...lazyLexiconTopicShells,
   nominative: { title: "Mianownik — kto? co?", description: "Базовая форма слова и согласование по роду", theory: ["Mianownik — это базовая форма слова. Именно её ты видишь в словаре и используешь, когда просто называешь человека, вещь, место или профессию: `to jest student`, `to jest kawa`, `to jest mieszkanie`.", "Он отвечает на pytanie `kto? co?`. Это не падеж изменения, а стартовая точка, от которой потом строятся другие формы.", "Самое важное в начале — не окончания существительного, а согласование прилагательного с родом: `dobry lekarz`, `miła kobieta`, `małe dziecko`, `nowe mieszkanie`.", "Если ты не уверен в форме, сначала реши род: `męski`, `żeński`, `nijaki`. Потом подставь правильное прилагательное: `-y/-i`, `-a`, `-e`.", "Полезные базовые модели: `to jest mój brat`, `to jest moja siostra`, `to jest moje dziecko`, `to jest nowy dokument`, `to jest dobra kawa`."], buildExercises: () => [makeExercise("Mianownik — формы", genNominativeIdentity()), makeExercise("Wpisz słowa z nawiasów", genNominativeWorkbook()), makeExercise("Przymiotnik + rzeczownik", genNominativeAgreement()), makeExercise("Разговор", speakingPrompts)] },
   pluralNominative: { title: "Mianownik liczby mnogiej", description: "Множественное число: oni / one", theory: ["Mianownik liczby mnogiej отвечает на pytanie `kto? co?` и нужен, когда мы просто называем группу: `To są studenci. To są książki.`", "Самое важное деление: `oni` = męskoosobowy, `one` = niemęskoosobowy. Если в группе есть мужчины или группа смешанная, очень часто будет `oni`.", "У существительных męskoosobowy часто появляются формы типа `-i / -y / -e / -owie`: `student -> studenci`, `lekarz -> lekarze`, `pan -> panowie`, `kolega -> koledzy`.", "У niemęskoosobowy чаще видим формы `-y / -i / -e / -a`: `kobieta -> kobiety`, `pies -> psy`, `dziecko -> dzieci`, `okno -> okna`, `mieszkanie -> mieszkania`.", "Смотри сразу на прилагательное: `dobrzy studenci`, `mili koledzy`, но `dobre książki`, `nowe mieszkania`, `małe dzieci`. Практическое правило: сначала реши `oni czy one`, а уже потом выбирай форму прилагательного и существительного."], buildExercises: () => [makeExercise("Почему так? Разбор формы", genGrammarNuance("pluralNominative")), makeExercise("Разбор по шагам", genGrammarStepByStep("pluralNominative")), makeExercise("Męskoosobowy — rzeczowniki", genMascPlural()), makeExercise("Niemęskoosobowy — rzeczowniki", genNonMascPlural()), makeExercise("Przymiotnik + rzeczownik", genPluralAdjectives()), makeExercise("Liczba mnoga w sytuacji", genPluralVariety()), makeExercise("Oni czy one?", genOniOne()), makeExercise("Исправь ошибку", genPluralMistakes()), makeExercise("Разговор", speakingPrompts)] },
   accusativePlural: { title: "Biernik liczby mnogiej", description: "Отдельная тема: винительный множественного числа", theory: ["Это отдельная тема про `biernik` во множественном числе.", "Главное деление: `męskoosobowy` даёт формы типа `dobrych studentów`, а `niemęskoosobowy` часто совпадает с mianownik: `dobre książki`, `małe dzieci`, `nowe dokumenty`.", "Сначала решай, кто перед тобой: люди-мужчины/смешанная группа или женщины/дети/вещи. Только потом выбирай форму.", "Эту тему лучше учить отдельно от единственного числа, потому что здесь своя логика и свои частые ошибки."], buildExercises: () => [makeExercise("Liczba mnoga: biernik osobno (50–70)", genAccusativePlural()), makeExercise("Wpisz słowa z nawiasów: liczba mnoga", genWorkbookDrills("accusativePlural")), makeExercise("Почему так? Разбор формы", genGrammarNuance("accusativePlural")), makeExercise("Разбор по шагам", genGrammarStepByStep("accusativePlural"))] },
@@ -4291,29 +4319,54 @@ function AppContent() {
   const [exerciseIndex, setExerciseIndex] = useState(saved.exerciseIndex || 0);
   const [answers, setAnswers] = useState(saved.answers || {});
   const [review, setReview] = useState({});
+  const [lazyTopics, setLazyTopics] = useState({});
+  const [loadingModules, setLoadingModules] = useState({});
   const initialModuleTitle = courseModules.find((module) => module.keys.includes(saved.topicKey || topicKeys[0]))?.title || courseModules[0].title;
   const [openModules, setOpenModules] = useState({ [initialModuleTitle]: true });
   const [openTopics, setOpenTopics] = useState({ [saved.topicKey || topicKeys[0]]: true });
   const [rulesOpen, setRulesOpen] = useState(true);
   const currentVariant = getVariantIndex();
 
+  const ensureLazyTopicLoaded = React.useCallback(async (key) => {
+    const moduleName = lazyTopicToModule[key];
+    if (!moduleName) return;
+    if (lazyTopics[key]) return;
+    if (loadingModules[moduleName]) return;
+    setLoadingModules((prev) => ({ ...prev, [moduleName]: true }));
+    try {
+      if (moduleName === "lexicon") {
+        const mod = await import("./lazyModules/lexiconTopics");
+        setLazyTopics((prev) => ({ ...prev, ...mod.buildLexiconTopics({ makeLexiconTopic }) }));
+      }
+    } finally {
+      setLoadingModules((prev) => ({ ...prev, [moduleName]: false }));
+    }
+  }, [lazyTopics, loadingModules]);
+
   const topics = useMemo(() => {
     const next = {};
     const keysToPrepare = new Set([topicKey || topicKeys[0], ...Object.keys(openTopics || {}).filter((key) => openTopics[key])]);
     keysToPrepare.forEach((key) => {
-      if (rawTopics[key]) next[key] = dedupeTopicExercises(key, materializeTopic(rawTopics[key]));
+      const topicSource = lazyTopics[key] || rawTopics[key];
+      if (topicSource?.buildExercises || topicSource?.exercises) next[key] = dedupeTopicExercises(key, materializeTopic(topicSource));
     });
     return next;
-  }, [topicKey, openTopics, currentVariant, topicKeys]);
+  }, [topicKey, openTopics, currentVariant, topicKeys, lazyTopics]);
 
-  const getTopic = (key) => topics[key] || dedupeTopicExercises(key, materializeTopic(rawTopics[key]));
+  const getTopic = (key) => {
+    if (topics[key]) return topics[key];
+    const topicSource = lazyTopics[key] || rawTopics[key];
+    if (topicSource?.buildExercises || topicSource?.exercises) return dedupeTopicExercises(key, materializeTopic(topicSource));
+    return { ...topicSource, exercises: [] };
+  };
 
   const safeTopicKey = rawTopics[topicKey] ? topicKey : topicKeys[0];
   const topic = getTopic(safeTopicKey);
+  const topicLoading = Boolean(lazyTopicToModule[safeTopicKey] && !lazyTopics[safeTopicKey]);
   const hasRuleSheets = (topicRuleSheets[safeTopicKey] || []).length > 0;
   const safeExerciseIndex = topic.exercises[exerciseIndex] ? exerciseIndex : 0;
-  const exercise = topic.exercises[safeExerciseIndex];
-  const currentItems = exercise.items;
+  const exercise = topic.exercises[safeExerciseIndex] || { title: "Загрузка темы…", items: [] };
+  const currentItems = exercise.items || [];
 
   const currentTopicPosition = topicKeys.indexOf(safeTopicKey);
 
@@ -4326,6 +4379,10 @@ function AppContent() {
       window.localStorage.setItem(ACTIVE_VARIANT_KEY, "0");
     }
   }, []);
+
+  useEffect(() => {
+    ensureLazyTopicLoaded(safeTopicKey);
+  }, [safeTopicKey, ensureLazyTopicLoaded]);
 
   useEffect(() => {
     if (activeProfileId === loadedProfileId) return;
@@ -4475,6 +4532,7 @@ function AppContent() {
                       (() => {
                         const topicMeta = rawTopics[key];
                         const openedTopic = openTopics[key] ? getTopic(key) : null;
+                        const openedTopicLoading = Boolean(openTopics[key] && lazyTopicToModule[key] && !lazyTopics[key]);
                         return (
                       <div key={key} style={styles.topicPanel}>
                         <button onClick={() => {
@@ -4483,11 +4541,12 @@ function AppContent() {
                         }} style={{ ...styles.topicBtn, marginBottom: 0, ...(key === safeTopicKey ? styles.activeTopic : {}) }}>
                           <strong>{openTopics[key] ? "▾" : "▸"} {topicMeta.title}</strong><br />
                           <small>{topicMeta.description}</small><br />
-                          <small>{openedTopic ? openedTopic.exercises.length : "Открыть тему"} {openedTopic ? "упр." : ""}</small>
+                          <small>{openedTopicLoading ? "Загрузка..." : openedTopic ? `${openedTopic.exercises.length} упр.` : "Открыть тему"}</small>
                         </button>
                         {openTopics[key] && (
                           <div style={styles.exerciseList}>
-                            {openedTopic.exercises.map((ex, i) => (
+                            {openedTopicLoading && <div style={styles.note}>Загружаю тему…</div>}
+                            {!openedTopicLoading && openedTopic.exercises.map((ex, i) => (
                               <button key={i} onClick={() => selectExercise(key, i)} style={{ ...styles.exBtn, width: "100%", marginLeft: 0, ...(key === safeTopicKey && i === safeExerciseIndex ? { border: "1px solid #1f4f6f", background: "#e8f1f5" } : {}) }}>
                                 {i + 1}. {ex.title}
                               </button>
@@ -4548,7 +4607,8 @@ function AppContent() {
 
               <hr />
 
-              {currentItems.map((item, i) => {
+              {topicLoading && <div style={styles.note}>Загружаю упражнения этой темы…</div>}
+              {!topicLoading && currentItems.map((item, i) => {
                 const id = buildItemId(safeTopicKey, safeExerciseIndex, i, item);
                 return (
                   <div key={id} style={styles.item}>
@@ -4577,4 +4637,5 @@ export default function App() {
     </ErrorBoundary>
   );
 }
+
 
