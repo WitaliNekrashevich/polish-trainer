@@ -107,9 +107,22 @@ function itemFamilySignature(item) {
   return itemSignature(item);
 }
 
+function simplifyInputPrompt(question) {
+  const text = String(question || "").trim();
+  const promptMatch = text.match(/^(Uzupełnij formę(?: w [^:]+)?):\s*.+\(([^()]+)\)\.?\s*$/i);
+  if (promptMatch) return `${promptMatch[1]} (${promptMatch[2]}).`;
+  return text;
+}
+
+function sanitizeExerciseItem(item) {
+  if (!item) return item;
+  if (item.type === "input") return { ...item, q: simplifyInputPrompt(item.q) };
+  return item;
+}
+
 function uniqueExerciseItems(items) {
   const seen = new Set();
-  return (items || []).filter((item) => {
+  return (items || []).map(sanitizeExerciseItem).filter((item) => {
     const rawQuestion = String(item?.q || "").trim();
     if (item?.type === "choice" && /^(Które zdanie jest poprawne\?|Wybierz poprawną formę:|Która odpowiedź najlepiej pasuje do zdania\?|Napisz poprawną odpowiedź:)/i.test(rawQuestion)) {
       return false;
@@ -3894,6 +3907,71 @@ function DictionaryModal({ words, onClose, onRemove }) {
   );
 }
 
+function getAutoExplanation(item) {
+  if (item?.explanation) return item.explanation;
+  const question = String(item?.q || "");
+  const correct = String(item?.correct || item?.a?.[0] || "").trim();
+
+  if (/mianowniku liczby mnogiej/i.test(question)) {
+    return "Это mianownik liczby mnogiej. Сначала реши `oni` или `one`, потом согласуй прилагательное и существительное.";
+  }
+  if (/mianowniku/i.test(question)) {
+    return "Это mianownik. Здесь важнее всего согласование по роду: `męski`, `żeński`, `nijaki`.";
+  }
+  if (/bierniku liczby mnogiej/i.test(question)) {
+    if (/(ów|ego|ych|ich)\b/i.test(correct)) {
+      return "Это biernik liczby mnogiej męskoosobowej: обычно прилагательное получает `-ych / -ich`, а существительное часто форму типа `-ów`, `-i`, `-y`.";
+    }
+    return "Это biernik liczby mnogiej niemęskoosobowy: форма часто совпадает с mianownik, например `dobre książki`, `nowe dokumenty`.";
+  }
+  if (/bierniku/i.test(question)) {
+    return "Это biernik. Сначала найди прямой объект `kogo? co?`, потом решай: żywotny, nieżywotny, żeński или nijaki.";
+  }
+  if (/dopełniaczu liczby mnogiej/i.test(question)) {
+    return "Это dopełniacz liczby mnogiej. Чаще всего ищем прилагательное `-ych / -ich` и существительное типа `-ów`, `-i / -y` или zero ending.";
+  }
+  if (/dopełniaczu/i.test(question) || /nie ma|szukam|potrzebuję|używam/i.test(question)) {
+    return "Это dopełniacz. Часто он появляется после `nie ma`, `szukam`, `potrzebuję`, `używam` и отвечает на `kogo? czego?`.";
+  }
+  if (/celowniku liczby mnogiej/i.test(question)) {
+    return "Это celownik liczby mnogiej. Ищи адресата `komu?` и помни, что очень часто здесь появляется окончание `-om`.";
+  }
+  if (/celowniku/i.test(question) || /pomagam|daję|mówię|tłumaczę|wysyłam/i.test(question)) {
+    return "Это celownik. Здесь важен адресат действия: `komu? czemu?`, а не прямой объект.";
+  }
+  if (/narzędniku liczby mnogiej/i.test(question)) {
+    return "Это narzędnik liczby mnogiej. Обычно ищем конструкции `z kim? z czym?` и формы на `-ami / -mi`.";
+  }
+  if (/narzędniku/i.test(question) || /rozmawiam z|jadę z|interesuję się|zajmuję się/i.test(question)) {
+    return "Это narzędnik. Обычно он идёт после `z` или в конструкциях типа `interesuję się`.";
+  }
+  if (/miejscowniku liczby mnogiej/i.test(question)) {
+    return "Это miejscownik liczby mnogiej. Смотри на предлог и на формы типа `-ach`.";
+  }
+  if (/miejscowniku/i.test(question) || /myślę o|mówię o|jestem w|jestem na/i.test(question)) {
+    return "Это miejscownik. Чаще всего он приходит после `o`, `w`, `na`, `po`, `przy` и отвечает на `o kim? o czym? gdzie?`.";
+  }
+  if (/teraźniejszym|czas teraźniejszy/i.test(question)) {
+    return "Это czas teraźniejszy. Сначала определи лицо `ja / ty / on / my / wy / oni`, потом выбери правильное окончание.";
+  }
+  if (/przeszły|wczoraj|poszed/i.test(question)) {
+    return "Это czas przeszły. Проверь лицо, число и род: `robiłem / robiłam`, `byli / były`.";
+  }
+  if (/przyszły|jutro|będę|zrobię/i.test(question)) {
+    return "Это czas przyszły. Сначала реши: процесс (`będę robić`) или результат (`zrobię`).";
+  }
+  if (/aspekt|zrobić|robić|przeczytać|czytać/i.test(question)) {
+    return "Здесь работает aspekt: сначала реши, нужен процесс или завершённый результат.";
+  }
+  if (/zaimek|pomagam.*\bmu\b|widzę.*\bją\b/i.test(question)) {
+    return "Здесь важен zaimek. Сначала спроси себя: `komu?`, `kogo?`, `czego?`, и только потом выбирай форму.";
+  }
+  if (/przyimek|gdzie|dokąd|skąd|z kim|o czym/i.test(question)) {
+    return "Сначала пойми смысл предлога: `gdzie?`, `dokąd?`, `skąd?`, `z kim?`, `o czym?`, а потом выбирай падеж.";
+  }
+  return "Смотри на вопрос, определи тему формы и проверь, какой падеж, число или время здесь требуется.";
+}
+
 function AnswerBlock({ item, state, setState, addWord }) {
   if (item.type === "note") {
     return (
@@ -4012,7 +4090,7 @@ function AnswerBlock({ item, state, setState, addWord }) {
             Проверь формы и предлоги. Здесь важно услышать цельную фразу, а не отдельное слово.
           </div>
         )}
-        {checked && item.explanation && <div style={{ marginTop: 6, color: "#555", fontSize: 14 }}>{item.explanation}</div>}
+        {checked && <div style={{ marginTop: 6, color: "#555", fontSize: 14 }}>{getAutoExplanation(item)}</div>}
       </div>
     );
   }
@@ -4047,7 +4125,7 @@ function AnswerBlock({ item, state, setState, addWord }) {
           Формат: {freeScore.requirements.label} · слов: {freeScore.words}/{freeScore.requirements.minWords}+ · связка: {freeScore.hasConnector ? "есть" : "нет"}{freeScore.requirements.needsTime ? ` · время/план: ${freeScore.hasPastOrFuture ? "есть" : "нет"}` : ""}
         </div>
       )}
-      {checked && item.explanation && <div style={{ marginTop: 6, color: "#555", fontSize: 14 }}>{item.explanation}</div>}
+      {checked && <div style={{ marginTop: 6, color: "#555", fontSize: 14 }}>{getAutoExplanation(item)}</div>}
     </div>
   );
 }
@@ -4063,14 +4141,13 @@ export default function App() {
   const [topicKey, setTopicKey] = useState(saved.topicKey || topicKeys[0]);
   const [exerciseIndex, setExerciseIndex] = useState(saved.exerciseIndex || 0);
   const [answers, setAnswers] = useState(saved.answers || {});
-  const [review, setReview] = useState(saved.review || {});
+  const [review, setReview] = useState({});
   const [userWords, setUserWords] = useState(saved.userWords || []);
   const [newWordPl, setNewWordPl] = useState("");
   const [newWordRu, setNewWordRu] = useState("");
   const [dictionaryOpen, setDictionaryOpen] = useState(false);
   const [dictionaryDockOpen, setDictionaryDockOpen] = useState(false);
   const [mistakesDockOpen, setMistakesDockOpen] = useState(false);
-  const [reviewDockOpen, setReviewDockOpen] = useState(false);
   const initialModuleTitle = courseModules.find((module) => module.keys.includes(saved.topicKey || topicKeys[0]))?.title || courseModules[0].title;
   const [openModules, setOpenModules] = useState({ [initialModuleTitle]: true });
   const [openTopics, setOpenTopics] = useState({ [saved.topicKey || topicKeys[0]]: true });
@@ -4106,14 +4183,13 @@ export default function App() {
     setTopicKey(nextTopicKey);
     setExerciseIndex(nextExerciseIndex);
     setAnswers(course.answers || {});
-    setReview(course.review || {});
+    setReview({});
     setUserWords(course.userWords || []);
     setNewWordPl("");
     setNewWordRu("");
     setDictionaryOpen(false);
     setDictionaryDockOpen(false);
     setMistakesDockOpen(false);
-    setReviewDockOpen(false);
     setOpenModules({ [nextModuleTitle]: true });
     setOpenTopics({ [nextTopicKey]: true });
     setRulesOpen(true);
@@ -4122,8 +4198,8 @@ export default function App() {
 
   useEffect(() => {
     if (activeProfileId !== loadedProfileId) return;
-    saveProfileCourse(activeProfileId, { topicKey: safeTopicKey, exerciseIndex: safeExerciseIndex, answers, review, userWords });
-  }, [answers, review, userWords, safeTopicKey, safeExerciseIndex, activeProfileId, loadedProfileId]);
+    saveProfileCourse(activeProfileId, { topicKey: safeTopicKey, exerciseIndex: safeExerciseIndex, answers, review: {}, userWords });
+  }, [answers, userWords, safeTopicKey, safeExerciseIndex, activeProfileId, loadedProfileId]);
 
   const progress = useMemo(() => {
     const entries = currentItems
@@ -4185,25 +4261,8 @@ export default function App() {
     return list.sort((a, b) => b.checkedAt - a.checkedAt).slice(0, 8);
   }, [answers, topicKeys]);
 
-  const dueReviews = useMemo(() => {
-    const now = Date.now();
-    return Object.entries(review)
-      .filter(([, state]) => state.dueAt <= now || state.lastResult === "wrong")
-      .map(([id, state]) => ({ id, state, ...getItemById(id) }))
-      .filter((entry) => entry.item)
-      .sort((a, b) => (a.state.dueAt || 0) - (b.state.dueAt || 0))
-      .slice(0, 10);
-  }, [review]);
-
   function setAnswer(id, value) {
     setAnswers((prev) => ({ ...prev, [id]: value }));
-    if (value?.checked) {
-      const found = getItemById(id);
-      if (found) {
-        const isCorrect = evaluateAnswer(found.item, value);
-        setReview((prev) => ({ ...prev, [id]: getNextReview(prev[id], isCorrect, value.checkedAt || Date.now()) }));
-      }
-    }
   }
   function addWord(pl, ru, source = "manual") {
     const cleanPl = String(pl || "").trim();
@@ -4224,7 +4283,6 @@ export default function App() {
     if (nextProfileId && nextProfileId !== activeProfileId) {
       setDictionaryDockOpen(false);
       setMistakesDockOpen(false);
-      setReviewDockOpen(false);
       setActiveProfileId(nextProfileId);
     }
   }
@@ -4267,7 +4325,6 @@ export default function App() {
     setUserWords([]);
     setDictionaryDockOpen(false);
     setMistakesDockOpen(false);
-    setReviewDockOpen(false);
     window.localStorage.removeItem(getProfileStorageKey(activeProfileId));
     window.localStorage.setItem(SHUFFLE_SEED_KEY, String(Date.now()));
     window.location.reload();
@@ -4278,7 +4335,6 @@ export default function App() {
     setReview({});
     setDictionaryDockOpen(false);
     setMistakesDockOpen(false);
-    setReviewDockOpen(false);
     saveProfileCourse(activeProfileId, {
       topicKey: safeTopicKey,
       exerciseIndex: safeExerciseIndex,
@@ -4368,44 +4424,6 @@ export default function App() {
             ))}
           </div>
         )}
-        {reviewDockOpen && dueReviews.length > 0 && (
-          <div style={styles.floatingReviewPanel}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
-              <div>
-                <strong>Умное повторение</strong>
-                <div><small>{dueReviews.length} карточек пора повторить сейчас</small></div>
-              </div>
-              <button style={styles.btn} onClick={() => setReviewDockOpen(false)}>Свернуть</button>
-            </div>
-            {dueReviews.map((entry) => (
-              <div key={entry.id} style={styles.review}>
-                <strong>{topics[entry.key].title} · {entry.exerciseTitle}</strong>
-                <div>{entry.item.q}</div>
-                <small>Серия: {entry.state.streak} · попыток: {entry.state.attempts} · правильно: {entry.state.corrects}</small>
-                <div style={{ marginTop: 8 }}>
-                  <button style={styles.btn} onClick={() => selectExercise(entry.key, entry.exIndex)}>Повторить</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        {dueReviews.length > 0 && (
-          <button
-            style={{ ...styles.primary, ...styles.floatingReviewButton }}
-            onClick={() => {
-              setReviewDockOpen((value) => {
-                const next = !value;
-                if (next) {
-                  setMistakesDockOpen(false);
-                  setDictionaryDockOpen(false);
-                }
-                return next;
-              });
-            }}
-          >
-            {reviewDockOpen ? "Скрыть повторение" : `Умное повторение · ${dueReviews.length}`}
-          </button>
-        )}
         {mistakes.length > 0 && (
           <button
             style={{ ...styles.primary, ...styles.floatingMistakesButton }}
@@ -4413,7 +4431,6 @@ export default function App() {
               setMistakesDockOpen((value) => {
                 const next = !value;
                 if (next) {
-                  setReviewDockOpen(false);
                   setDictionaryDockOpen(false);
                 }
                 return next;
