@@ -3995,8 +3995,9 @@ function buildItemId(key, exIndex, itemIndex, item) {
 
 function getItemById(id) {
   for (const [key, topic] of Object.entries(rawTopics)) {
-    for (let exIndex = 0; exIndex < topic.exercises.length; exIndex += 1) {
-      const exercise = topic.exercises[exIndex];
+    const exercises = (topic.exercises || []).filter(Boolean);
+    for (let exIndex = 0; exIndex < exercises.length; exIndex += 1) {
+      const exercise = exercises[exIndex];
       for (let itemIndex = 0; itemIndex < exercise.items.length; itemIndex += 1) {
         const item = exercise.items[itemIndex];
         if (buildItemId(key, exIndex, itemIndex, item) === id) {
@@ -4324,7 +4325,14 @@ function AnswerBlock({ item, state, setState, addWord }) {
 }
 
 export default function App() {
-  const topicKeys = Object.keys(rawTopics);
+  const sanitizedTopics = useMemo(() => {
+    const next = {};
+    Object.keys(rawTopics).forEach((key) => {
+      next[key] = { ...rawTopics[key], exercises: (rawTopics[key].exercises || []).filter(Boolean) };
+    });
+    return next;
+  }, []);
+  const topicKeys = Object.keys(sanitizedTopics);
   const profileMeta = useMemo(loadProfileMeta, []);
   const initialActiveProfileId = profileMeta.activeProfileId || profileMeta.profiles[0].id;
   const saved = useMemo(() => loadProfileCourse(initialActiveProfileId), [initialActiveProfileId]);
@@ -4348,13 +4356,13 @@ export default function App() {
   const currentVariant = getVariantIndex();
 
   const topics = useMemo(() => {
-    const next = { ...rawTopics };
+    const next = { ...sanitizedTopics };
     const keysToPrepare = new Set([topicKey || topicKeys[0], ...Object.keys(openTopics || {}).filter((key) => openTopics[key])]);
     keysToPrepare.forEach((key) => {
-      if (rawTopics[key]) next[key] = dedupeTopicExercises(key, rawTopics[key]);
+      if (sanitizedTopics[key]) next[key] = dedupeTopicExercises(key, sanitizedTopics[key]);
     });
     return next;
-  }, [topicKey, openTopics, currentVariant, topicKeys]);
+  }, [sanitizedTopics, topicKey, openTopics, currentVariant, topicKeys]);
 
   const safeTopicKey = topics[topicKey] ? topicKey : topicKeys[0];
   const topic = topics[safeTopicKey];
