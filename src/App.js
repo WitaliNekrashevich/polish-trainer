@@ -3714,9 +3714,97 @@ const topicGoals = {
 };
 
 const isPracticeItem = (item) => item.type !== "note" && item.type !== "audio";
+const MIN_EXERCISE_ITEMS = 30;
 
-function dedupeTopicExercises(topic) {
+function getTopicSupplementPool(topicKey) {
+  const thematicMap = {
+    workLexicon: "work",
+    housingLexicon: "housing",
+    healthLexicon: "health",
+    documentsLexicon: "documents",
+    shoppingLexicon: "shopping",
+    cityLexicon: "city",
+    educationLexicon: "education",
+    relationshipsLexicon: "relationships",
+    travelLexicon: "travel",
+    foodLexicon: "food",
+    technologyLexicon: "technology",
+    argumentationLexicon: "argumentation",
+    financeLexicon: "finance",
+    familyLexicon: "family",
+    dailyLexicon: "daily",
+    natureLexicon: "nature",
+    cultureLexicon: "culture",
+    leisureLexicon: "leisure",
+    safetyLexicon: "safety",
+    societyLexicon: "society",
+    personalityLexicon: "personality",
+    environmentLexicon: "environment"
+  };
+
+  if (thematicMap[topicKey]) {
+    const key = thematicMap[topicKey];
+    return uniqueExerciseItems([
+      ...genThematicReverseChoices(key),
+      ...genThematicChoices(key),
+      ...genThematicWords(key),
+      ...genThematicActiveRecall(key),
+      ...genThematicPhrases(key),
+      ...genThematicSkillBuilder(key),
+      ...genThematicComprehension(key),
+      ...genThematicContextGrammar(key)
+    ]);
+  }
+
+  const pools = {
+    nominative: [...genNominativeIdentity(), ...genNominativeWorkbook(), ...genNominativeAgreement()],
+    pluralNominative: [...genGrammarNuance("pluralNominative"), ...genGrammarStepByStep("pluralNominative"), ...genMascPlural(), ...genNonMascPlural(), ...genPluralAdjectives(), ...genPluralVariety(), ...genOniOne(), ...genPluralMistakes()],
+    accusativePlural: [...genAccusativePlural(), ...genWorkbookDrills("accusativePlural"), ...genGrammarNuance("accusativePlural"), ...genGrammarStepByStep("accusativePlural"), ...genAccusativeForms(), ...genAccusativeAdjectives(), ...genAccusativeVariety()],
+    accusative: [...genGrammarNuance("accusative"), ...genGrammarStepByStep("accusative"), ...genWorkbookDrills("accusative"), ...genWorkbookDrills("accusativePlural"), ...genAccusativePlural(), ...genAccusativeForms(), ...genAccusativeAdjectives(), ...genAccusativeVariety()],
+    genitivePlural: [...genGenitivePlural(), ...genWorkbookDrills("genitivePlural"), ...genGrammarNuance("genitivePlural"), ...genGrammarStepByStep("genitivePlural"), ...genGenitive(), ...genGenitiveVariety()],
+    genitive: [...genGrammarNuance("genitive"), ...genGrammarStepByStep("genitive"), ...genWorkbookDrills("genitive"), ...genWorkbookDrills("genitivePlural"), ...genGenitivePlural(), ...genGenitive(), ...genGenitiveVariety()],
+    dativePlural: [...genDativePlural(), ...genWorkbookDrills("dativePlural"), ...genGrammarNuance("dativePlural"), ...genGrammarStepByStep("dativePlural"), ...genDative(), ...genDativeVariety()],
+    dative: [...genGrammarNuance("dative"), ...genGrammarStepByStep("dative"), ...genWorkbookDrills("dative"), ...genWorkbookDrills("dativePlural"), ...genDativePlural(), ...genDative(), ...genDativeVariety()],
+    instrumentalPlural: [...genInstrumentalPlural(), ...genWorkbookDrills("instrumentalPlural"), ...genGrammarNuance("instrumentalPlural"), ...genGrammarStepByStep("instrumentalPlural"), ...genInstrumental()],
+    instrumental: [...genGrammarNuance("instrumental"), ...genGrammarStepByStep("instrumental"), ...genWorkbookDrills("instrumental"), ...genWorkbookDrills("instrumentalPlural"), ...genInstrumentalPlural(), ...genInstrumental()],
+    locativePlural: [...genLocativePlural(), ...genWorkbookDrills("locativePlural"), ...genGrammarNuance("locativePlural"), ...genGrammarStepByStep("locativePlural"), ...genLocative(), ...genLocativeVariety()],
+    locative: [...genGrammarNuance("locative"), ...genGrammarStepByStep("locative"), ...genWorkbookDrills("locative"), ...genWorkbookDrills("locativePlural"), ...genLocativePlural(), ...genLocative(), ...genLocativeVariety()],
+    verbsPresent: [...genGrammarNuance("verbsPresent"), ...genGrammarStepByStep("verbsPresent"), ...genPresentConjugationGuide(), ...genPresentConjugationDrills(), ...genPresent(), ...genPresentVariety()],
+    irregularVerbs: [...genGrammarNuance("irregularVerbs"), ...genGrammarStepByStep("irregularVerbs"), ...genIrregularVerbsVariety(), ...genPresentConjugationDrills(), ...genPresent()],
+    verbsPast: [...genGrammarNuance("verbsPast"), ...genGrammarStepByStep("verbsPast"), ...genPast()],
+    verbsFuture: [...genGrammarNuance("verbsFuture"), ...genGrammarStepByStep("verbsFuture"), ...genFuture(), ...genFutureVariety(), ...genFutureWithTime()],
+    aspect: [...genGrammarNuance("aspect"), ...genGrammarStepByStep("aspect"), ...genAspectChoice(), ...genAspectPairs(), ...genAspectVariety()],
+    prepositions: [...genGrammarNuance("prepositions"), ...genGrammarStepByStep("prepositions"), ...genWorkbookDrills("prepositions"), ...genPrepositions(), ...genPrepositionVariety()],
+    numbersTime: [...genNumbers(), ...genMoney(), ...genNumberRules(), ...genClock(), ...genTimePhrases(), ...genNumberTimeVariety(), ...genFutureWithTime()],
+    complexSentences: [...genGrammarNuance("complexSentences"), ...genGrammarStepByStep("complexSentences"), ...genComplexSentences(), ...genComplexSentenceVariety()],
+    politeConditional: [...genPoliteConditional()],
+    imperatives: [...genImperatives()],
+    pronouns: [...genGrammarNuance("pronouns"), ...genWorkbookDrills("pronouns"), ...genPronouns()],
+    reflexiveSie: [...genGrammarNuance("reflexiveSie"), ...genWorkbookDrills("reflexiveSie"), ...genReflexiveSie()],
+    comparisons: [...genGrammarNuance("comparisons"), ...genGrammarStepByStep("comparisons"), ...genComparisons(), ...genComparisonVariety()],
+    modalVerbs: [...genModalVerbs(), ...genModalVariety()],
+    impersonal: [...genImpersonal(), ...genImpersonalVariety()],
+    wordOrder: [...genGrammarNuance("wordOrder"), ...genGrammarStepByStep("wordOrder"), ...genWordOrder(), ...genWordOrderVariety()],
+    b1Connectors: [...genB1Strategy("b1Connectors"), ...genB1Connectors(), ...genConnectorChoiceAdvanced(), ...genSentenceAssemblyB1(), ...genShortWritingB1()],
+    b1Mistakes: [...genB1Mistakes(), ...genExamGrammarSkills(), ...genSentenceAssemblyB1(), ...genShortWritingB1()],
+    writingTemplates: [...genB1Strategy("writingTemplates"), ...genWritingTemplates(), ...genWritingAssembly(), ...genWritingTemplatePractice(), ...genShortWritingB1()],
+    examB1Reading: [...genB1Strategy("examB1Reading"), ...genReadingSignalsB1(), ...genExamReading(), ...genLongReading()],
+    examB1Listening: [...genB1Strategy("examB1Listening"), ...genListeningSignalsB1(), ...genAudioListening(), ...genExamListening()],
+    examB1Grammar: [...genExamGrammarGuide(), ...genExamGrammarSkills(), ...genExamGrammarContext()],
+    examB1Writing: [...genB1Strategy("examB1Writing"), ...genWritingTaskAnalysis(), ...genExamWriting(), ...genShortWritingB1(), ...genWritingAssembly()],
+    examB1Speaking: [...genExamSpeaking()],
+    examB1Mock: [...genExamMixed()],
+    mixed20: [...genMixed20()],
+    diagnosticB1: [...genDiagnostic()],
+    audioUczmySiePolskiego: [...genUczmySiePolskiego()]
+  };
+
+  return uniqueExerciseItems(pools[topicKey] || []);
+}
+
+function dedupeTopicExercises(topicKey, topic) {
   const seen = new Set();
+  const supplementPool = stableSortExerciseItems(getTopicSupplementPool(topicKey));
   const exercises = (topic.exercises || [])
     .filter(Boolean)
     .map((exercise) => {
@@ -3728,14 +3816,26 @@ function dedupeTopicExercises(topic) {
         seen.add(signature);
         return true;
       });
-      return { ...exercise, items };
+      const nextItems = [...items];
+      const practiceCount = nextItems.filter(isPracticeItem).length;
+      if (practiceCount < MIN_EXERCISE_ITEMS) {
+        for (const item of supplementPool) {
+          if (!isPracticeItem(item)) continue;
+          const signature = itemFamilySignature(item);
+          if (!signature || seen.has(signature)) continue;
+          nextItems.push(item);
+          seen.add(signature);
+          if (nextItems.filter(isPracticeItem).length >= MIN_EXERCISE_ITEMS) break;
+        }
+      }
+      return { ...exercise, items: nextItems };
     })
     .filter((exercise) => (exercise.items || []).length > 0);
   return { ...topic, exercises };
 }
 
 Object.keys(topics).forEach((key) => {
-  topics[key] = dedupeTopicExercises(topics[key]);
+  topics[key] = dedupeTopicExercises(key, topics[key]);
 });
 
 function getProfileStorageKey(profileId) {
