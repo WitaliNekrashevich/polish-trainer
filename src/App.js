@@ -3618,8 +3618,6 @@ function genB1Strategy(topic) {
 }
 
 const rawTopics = {
-  diagnosticB1: { title: "Диагностика B1", description: "Карта сильных и слабых мест", theory: ["Начни здесь, если хочешь понять текущий уровень.", "20 вопросов смешивают падежи, времена, аспект, лексику и экзаменационные реакции.", "После прохождения смотри проценты по темам и тренируй слабые блоки."], exercises: [makeExercise("Диагностика: 20 вопросов", genDiagnostic())] },
-  mixed20: { title: "Смешанный тест 20", description: "Активное вспоминание из всего курса", theory: ["Это режим для памяти: вопросы идут вперемешку, как в реальной речи.", "Запускай после 2–3 тем или в конце дня.", "Цель — 80% правильных без подсказок."], exercises: [makeExercise("Mixed practice 20", genMixed20())] },
   nominative: { title: "Mianownik — kto? co?", description: "Базовая форма слова и согласование по роду", theory: ["Mianownik — это базовая форма слова. Именно её ты видишь в словаре и используешь, когда просто называешь человека, вещь, место или профессию: `to jest student`, `to jest kawa`, `to jest mieszkanie`.", "Он отвечает на pytanie `kto? co?`. Это не падеж изменения, а стартовая точка, от которой потом строятся другие формы.", "Самое важное в начале — не окончания существительного, а согласование прилагательного с родом: `dobry lekarz`, `miła kobieta`, `małe dziecko`, `nowe mieszkanie`.", "Если ты не уверен в форме, сначала реши род: `męski`, `żeński`, `nijaki`. Потом подставь правильное прилагательное: `-y/-i`, `-a`, `-e`.", "Полезные базовые модели: `to jest mój brat`, `to jest moja siostra`, `to jest moje dziecko`, `to jest nowy dokument`, `to jest dobra kawa`."], exercises: [makeExercise("Mianownik — формы", genNominativeIdentity()), makeExercise("Wpisz słowa z nawiasów", genNominativeWorkbook()), makeExercise("Przymiotnik + rzeczownik", genNominativeAgreement()), makeExercise("Разговор", speakingPrompts)] },
   pluralNominative: { title: "Mianownik liczby mnogiej", description: "Множественное число: oni / one", theory: ["Mianownik liczby mnogiej отвечает на pytanie `kto? co?` и нужен, когда мы просто называем группу: `To są studenci. To są książki.`", "Самое важное деление: `oni` = męskoosobowy, `one` = niemęskoosobowy. Если в группе есть мужчины или группа смешанная, очень часто будет `oni`.", "У существительных męskoosobowy часто появляются формы типа `-i / -y / -e / -owie`: `student -> studenci`, `lekarz -> lekarze`, `pan -> panowie`, `kolega -> koledzy`.", "У niemęskoosobowy чаще видим формы `-y / -i / -e / -a`: `kobieta -> kobiety`, `pies -> psy`, `dziecko -> dzieci`, `okno -> okna`, `mieszkanie -> mieszkania`.", "Смотри сразу на прилагательное: `dobrzy studenci`, `mili koledzy`, но `dobre książki`, `nowe mieszkania`, `małe dzieci`. Практическое правило: сначала реши `oni czy one`, а уже потом выбирай форму прилагательного и существительного."], exercises: [makeExercise("Почему так? Разбор формы", genGrammarNuance("pluralNominative")), makeExercise("Разбор по шагам", genGrammarStepByStep("pluralNominative")), makeExercise("Męskoosobowy — rzeczowniki", genMascPlural()), makeExercise("Niemęskoosobowy — rzeczowniki", genNonMascPlural()), makeExercise("Przymiotnik + rzeczownik", genPluralAdjectives()), makeExercise("Liczba mnoga w sytuacji", genPluralVariety()), makeExercise("Oni czy one?", genOniOne()), makeExercise("Исправь ошибку", genPluralMistakes()), makeExercise("Разговор", speakingPrompts)] },
   accusativePlural: { title: "Biernik liczby mnogiej", description: "Отдельная тема: винительный множественного числа", theory: ["Это отдельная тема про `biernik` во множественном числе.", "Главное деление: `męskoosobowy` даёт формы типа `dobrych studentów`, а `niemęskoosobowy` часто совпадает с mianownik: `dobre książki`, `małe dzieci`, `nowe dokumenty`.", "Сначала решай, кто перед тобой: люди-мужчины/смешанная группа или женщины/дети/вещи. Только потом выбирай форму.", "Эту тему лучше учить отдельно от единственного числа, потому что здесь своя логика и свои частые ошибки."], exercises: [makeExercise("Liczba mnoga: biernik osobno (50–70)", genAccusativePlural()), makeExercise("Wpisz słowa z nawiasów: liczba mnoga", genWorkbookDrills("accusativePlural")), makeExercise("Почему так? Разбор формы", genGrammarNuance("accusativePlural")), makeExercise("Разбор по шагам", genGrammarStepByStep("accusativePlural"))] },
@@ -3678,12 +3676,11 @@ const rawTopics = {
   examB1Writing: { title: "Egzamin B1: Pisanie", description: "Письмо: email, жалоба, заявление", theory: ["Письмо B1 требует структуры: приветствие, цель, детали, просьба, завершение.", "Цель — писать 80–120 слов простыми, правильными фразами.", "Проверяй себя по чеклисту: czy jest cel? czy są szczegóły? czy ton jest grzeczny?", "В хорошей работе видно, что автор выполнил задачу, а не просто написал что-то похожее на письмо.", "Если задание просит объяснить проблему, попросить о помощи и предложить решение, все три пункта должны быть в тексте."], exercises: [makeExercise("Na co patrzy egzamin", genB1Strategy("examB1Writing")), makeExercise("Jak rozłożyć polecenie", genWritingTaskAnalysis()), makeExercise("Pisanie B1", genExamWriting()), makeExercise("Krótka odpowiedź 2–4 zdania", genShortWritingB1()), makeExercise("Собери полезную фразу", genWritingAssembly())] },
   examB1Speaking: { title: "Egzamin B1: Mówienie", description: "Говорение: карточки и ситуации", theory: ["Говорение B1 — это не идеальная грамматика, а понятная речь с примерами и связками.", "Тренируй схему: opisuję sytuację → dodaję szczegóły → mówię opinię → kończę wnioskiem.", "Хорошие связки: moim zdaniem, wydaje mi się, ponieważ, dlatego, na przykład."], exercises: [makeExercise("Mówienie B1", genExamSpeaking())] },
   examB1Mock: { title: "Egzamin B1: Mini test", description: "Смешанный пробный тест", theory: ["Мини-тест смешивает грамматику, лексику и экзаменационные реакции.", "Используй его как контроль после прохождения модулей.", "Если тема даёт много ошибок, возвращайся в соответствующий блок курса."], exercises: [makeExercise("Mini test B1", genExamMixed()), makeExercise("Wypowiedź kontrolna", repeatTo50([free("Napisz autoprezentację B1: kim jesteś, czym się zajmujesz, dlaczego uczysz się polskiego i jakie masz plany. 100–140 słów.", "Checklist: teraźniejszość, przeszłość, przyszłość, минимум 5 связок.")]))] },
-  b1Mistakes: { title: "Najczęstsze błędy B1", description: "Самые частые ошибки B1", theory: ["Здесь собраны ошибки по падежам, się, порядку слов, аспекту, предлогам и временам.", "Цель — видеть ошибку автоматически.", "Если ошибка повторяется 3 раза — это тема для повторения.", "Лучший способ работать с этим блоком: не просто исправлять форму, а объяснять себе, почему здесь нужен именно этот падеж, аспект или порядок слов."], exercises: [makeExercise("Исправь ошибки B1", genB1Mistakes()), makeExercise("Mikrotest gramatyczny B1", genExamGrammarSkills()), makeExercise("Собери правильную фразу", genSentenceAssemblyB1()), makeExercise("Короткий ответ 2–4 zdania", genShortWritingB1()), makeExercise("Разговор-диагностика", speakingPrompts)] },
+  b1Mistakes: { title: "Najczęstsze błędy B1", description: "Самые частые ошибки B1", theory: ["Здесь собраны ошибки по падежам, się, порядку слов, аспекту, предлогам и временам.", "Цель — видеть ошибку автоматически.", "Лучший способ работать с этим блоком: не просто исправлять форму, а объяснять себе, почему здесь нужен именно этот падеж, аспект или порядок слов."], exercises: [makeExercise("Исправь ошибки B1", genB1Mistakes()), makeExercise("Mikrotest gramatyczny B1", genExamGrammarSkills()), makeExercise("Собери правильную фразу", genSentenceAssemblyB1()), makeExercise("Короткий ответ 2–4 zdania", genShortWritingB1())] },
   audioUczmySiePolskiego: { title: "Audio: Uczmy się polskiego", description: "Сериал по сериям с YouTube", theory: ["Это отдельный финальный раздел для живого аудирования через учебный сериал. Он хорош тем, что даёт повторяемые бытовые темы и медленную, понятную польскую речь.", "Лучший режим работы такой: сначала смотри без паузы, потом пересматривай с выписыванием 5-10 новых слов, потом добавляй их в словарь и через пару дней возвращайся к серии.", "Начинай с odcinki 1-15, потому что они ближе к базе A2/B1. Когда они станут понятнее, переходи дальше и используй сериал как мост к настоящему аудированию."], exercises: [makeExercise("Serial audio", genUczmySiePolskiego())] }
 };
 
 const courseModules = [
-  { title: "Диагностика и повторение", keys: ["diagnosticB1", "mixed20"] },
   { title: "База: формы и числа", keys: ["nominative", "pluralNominative", "numbersTime"] },
   { title: "Падежи в речи", keys: ["accusative", "accusativePlural", "genitive", "genitivePlural", "dative", "dativePlural", "instrumental", "instrumentalPlural", "locative", "locativePlural"] },
   { title: "Глаголы и время", keys: ["verbsPresent", "irregularVerbs", "verbsPast", "verbsFuture", "aspect"] },
@@ -3694,8 +3691,6 @@ const courseModules = [
 ];
 
 const topicGoals = {
-  diagnosticB1: ["Понять текущий уровень", "Найти слабые темы", "Получить направление для повторения"],
-  mixed20: ["Вспоминать без подсказок", "Смешивать темы", "Тренировать B1-автоматизм"],
   nominative: ["Узнавать базовую форму слова", "Согласовывать прилагательное с родом", "Строить простые фразы `to jest ...`"],
   pluralNominative: ["Отличать oni от one", "Согласовывать прилагательные", "Говорить о людях и вещах во множественном числе"],
   accusativePlural: ["Отдельно видеть męskoosobowy и niemęskoosobowy", "Строить формы типа `dobrych studentów` и `dobre książki`", "Перестать путать biernik plural с dopełniacz"],
@@ -3838,8 +3833,6 @@ function getTopicSupplementPool(topicKey) {
     examB1Writing: [...genB1Strategy("examB1Writing"), ...genWritingTaskAnalysis(), ...genExamWriting(), ...genShortWritingB1(), ...genWritingAssembly()],
     examB1Speaking: [...genExamSpeaking()],
     examB1Mock: [...genExamMixed()],
-    mixed20: [...genMixed20()],
-    diagnosticB1: [...genDiagnostic()],
     audioUczmySiePolskiego: [...genUczmySiePolskiego()]
   };
 
@@ -4380,7 +4373,6 @@ function AppContent() {
   const [newWordRu, setNewWordRu] = useState("");
   const [dictionaryOpen, setDictionaryOpen] = useState(false);
   const [dictionaryDockOpen, setDictionaryDockOpen] = useState(false);
-  const [mistakesDockOpen, setMistakesDockOpen] = useState(false);
   const initialModuleTitle = courseModules.find((module) => module.keys.includes(saved.topicKey || topicKeys[0]))?.title || courseModules[0].title;
   const [openModules, setOpenModules] = useState({ [initialModuleTitle]: true });
   const [openTopics, setOpenTopics] = useState({ [saved.topicKey || topicKeys[0]]: true });
@@ -4431,7 +4423,6 @@ function AppContent() {
     setNewWordRu("");
     setDictionaryOpen(false);
     setDictionaryDockOpen(false);
-    setMistakesDockOpen(false);
     setOpenModules({ [nextModuleTitle]: true });
     setOpenTopics({ [nextTopicKey]: true });
     setRulesOpen(true);
@@ -4451,57 +4442,6 @@ function AppContent() {
     const correct = entries.filter(({ id, item }) => evaluateAnswer(item, answers[id])).length;
     return { checked, correct, total: entries.length, percent: entries.length ? Math.round((correct / entries.length) * 100) : 0 };
   }, [answers, safeTopicKey, safeExerciseIndex, currentItems]);
-
-  const courseStats = useMemo(() => {
-    const byTopic = {};
-    let checked = 0;
-    let correct = 0;
-    let total = 0;
-
-    topicKeys.forEach((key) => {
-      const topicTotal = topics[key].exercises.reduce((sum, ex) => sum + ex.items.filter(isPracticeItem).length, 0);
-      let topicChecked = 0;
-      let topicCorrect = 0;
-
-      topics[key].exercises.forEach((ex, exIndex) => {
-        ex.items.forEach((item, itemIndex) => {
-          if (!isPracticeItem(item)) return;
-          const answer = answers[buildItemId(key, exIndex, itemIndex, item)];
-          if (answer?.checked) topicChecked += 1;
-          if (evaluateAnswer(item, answer)) topicCorrect += 1;
-        });
-      });
-
-      byTopic[key] = {
-        checked: topicChecked,
-        correct: topicCorrect,
-        total: topicTotal,
-        percent: topicTotal ? Math.round((topicCorrect / topicTotal) * 100) : 0
-      };
-      checked += topicChecked;
-      correct += topicCorrect;
-      total += topicTotal;
-    });
-
-    return { byTopic, checked, correct, total, percent: total ? Math.round((correct / total) * 100) : 0 };
-  }, [answers, topicKeys]);
-
-  const mistakes = useMemo(() => {
-    const list = [];
-    topicKeys.forEach((key) => {
-      topics[key].exercises.forEach((ex, exIndex) => {
-        ex.items.forEach((item, itemIndex) => {
-          if (!isPracticeItem(item)) return;
-          const id = buildItemId(key, exIndex, itemIndex, item);
-          const answer = answers[id];
-          if (answer?.checked && !evaluateAnswer(item, answer)) {
-            list.push({ id, key, exIndex, itemIndex, item, answer, exerciseTitle: ex.title, checkedAt: answer.checkedAt || 0 });
-          }
-        });
-      });
-    });
-    return list.sort((a, b) => b.checkedAt - a.checkedAt).slice(0, 8);
-  }, [answers, topicKeys]);
 
   function setAnswer(id, value) {
     setAnswers((prev) => ({ ...prev, [id]: value }));
@@ -4524,7 +4464,6 @@ function AppContent() {
   function switchProfile(nextProfileId) {
     if (nextProfileId && nextProfileId !== activeProfileId) {
       setDictionaryDockOpen(false);
-      setMistakesDockOpen(false);
       setActiveProfileId(nextProfileId);
     }
   }
@@ -4566,7 +4505,6 @@ function AppContent() {
     setReview({});
     setUserWords([]);
     setDictionaryDockOpen(false);
-    setMistakesDockOpen(false);
     window.localStorage.removeItem(getProfileStorageKey(activeProfileId));
     window.localStorage.setItem(SHUFFLE_SEED_KEY, String(Date.now()));
     window.location.reload();
@@ -4576,7 +4514,6 @@ function AppContent() {
     setAnswers({});
     setReview({});
     setDictionaryDockOpen(false);
-    setMistakesDockOpen(false);
     saveProfileCourse(activeProfileId, {
       topicKey: safeTopicKey,
       exerciseIndex: safeExerciseIndex,
@@ -4595,7 +4532,7 @@ function AppContent() {
         <div style={styles.header}>
           <div>
             <h1>Polish Trainer A2 → B1</h1>
-            <p>Курс-тренажёр: маршрут, цели уроков, повторение ошибок и проверка каждого ответа.</p>
+            <p>Курс-тренажёр: маршрут, цели уроков и проверка каждого ответа.</p>
             <div style={styles.profileBar}>
               <span style={styles.badge}>Профиль</span>
               <select value={activeProfileId} onChange={(e) => switchProfile(e.target.value)} style={{ ...styles.input, width: 220 }}>
@@ -4604,7 +4541,6 @@ function AppContent() {
               <button style={styles.btn} onClick={createProfile}>Новый профиль</button>
               <button style={styles.btn} onClick={renameProfile}>Переименовать</button>
             </div>
-            <ProgressBar value={courseStats.percent} />
           </div>
           <div style={styles.stat}>
             <strong>Текущее упражнение</strong><br />
@@ -4614,93 +4550,16 @@ function AppContent() {
           </div>
         </div>
 
-        {dictionaryOpen && <DictionaryModal words={userWords} onClose={() => setDictionaryOpen(false)} onRemove={removeWord} />}
-        {dictionaryDockOpen && (
-          <div style={styles.floatingDictionaryPanel}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
-              <div>
-                <strong>Мой словарь</strong>
-                <div><small>{userWords.length} слов в активном профиле</small></div>
-              </div>
-              <button style={styles.btn} onClick={() => setDictionaryDockOpen(false)}>Свернуть</button>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 8, alignItems: "center" }}>
-              <input value={newWordPl} onChange={(e) => setNewWordPl(e.target.value)} style={styles.input} placeholder="polskie słowo..." />
-              <input value={newWordRu} onChange={(e) => setNewWordRu(e.target.value)} style={styles.input} placeholder="перевод..." />
-              <button style={styles.primary} onClick={addManualWord}>Добавить</button>
-            </div>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-              <button style={styles.primary} onClick={() => setDictionaryOpen(true)}>Открыть полностью</button>
-              <span style={styles.badge}>{userWords.length} слов</span>
-            </div>
-            {userWords.length > 0 && (
-              <div style={{ marginTop: 12, maxHeight: 220, overflow: "auto" }}>
-                {userWords.slice(0, 12).map((word) => (
-                  <div key={`${word.pl}-${word.addedAt}`} style={styles.dictionaryItem}>
-                    <div><strong>{word.pl}</strong> · {word.ru}<br /><small>{word.source === "manual" ? "добавлено вручную" : word.source}</small></div>
-                    <button style={styles.btn} onClick={() => removeWord(word.pl)}>Удалить</button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-        {mistakesDockOpen && mistakes.length > 0 && (
-          <div style={styles.floatingMistakesPanel}>
-            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
-              <div>
-                <strong>Повторить ошибки</strong>
-                <div><small>{mistakes.length} недавних ошибок в активном профиле</small></div>
-              </div>
-              <button style={styles.btn} onClick={() => setMistakesDockOpen(false)}>Свернуть</button>
-            </div>
-            {mistakes.map((m) => (
-              <div key={m.id} style={styles.mistake}>
-                <strong>{topics[m.key].title} · {m.exerciseTitle}</strong>
-                <div>{m.item.q}</div>
-                <small>Твой ответ: {m.answer.value || "пусто"} · правильно: {m.item.correct || m.item.a?.[0] || "развернуть ответ"}</small>
-                <div style={{ marginTop: 8 }}>
-                  <button style={styles.btn} onClick={() => selectExercise(m.key, m.exIndex)}>Открыть упражнение</button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        {mistakes.length > 0 && (
-          <button
-            style={{ ...styles.primary, ...styles.floatingMistakesButton }}
-            onClick={() => {
-              setMistakesDockOpen((value) => {
-                const next = !value;
-                if (next) {
-                  setDictionaryDockOpen(false);
-                }
-                return next;
-              });
-            }}
-          >
-            {mistakesDockOpen ? "Скрыть ошибки" : `Ошибки · ${mistakes.length}`}
-          </button>
-        )}
-        <button style={{ ...styles.primary, ...styles.floatingDictionaryButton }} onClick={() => setDictionaryDockOpen((value) => !value)}>
-          {dictionaryDockOpen ? "Скрыть словарь" : `Словарь · ${userWords.length}`}
-        </button>
-
         <div style={styles.layout}>
           <aside style={styles.card}>
             <h2>Маршрут курса</h2>
             {courseModules.map((module) => {
-              const moduleTotal = module.keys.reduce((sum, key) => sum + courseStats.byTopic[key].total, 0);
-              const moduleCorrect = module.keys.reduce((sum, key) => sum + courseStats.byTopic[key].correct, 0);
-              const modulePercent = moduleTotal ? Math.round((moduleCorrect / moduleTotal) * 100) : 0;
-
               return (
                 <div key={module.title} style={styles.moduleCard}>
                   <button style={styles.moduleBtn} onClick={() => toggleModule(module.title)}>
-                    <span>{openModules[module.title] ? "▾" : "▸"} {module.title} · {modulePercent}%</span>
+                    <span>{openModules[module.title] ? "▾" : "▸"} {module.title}</span>
                     <span>{module.keys.length}</span>
                   </button>
-                  {openModules[module.title] && <ProgressBar value={modulePercent} />}
                   {openModules[module.title] && (
                     <div style={{ marginTop: 10 }}>
                       {module.keys.map((key) => (
@@ -4711,7 +4570,7 @@ function AppContent() {
                         }} style={{ ...styles.topicBtn, marginBottom: 0, ...(key === safeTopicKey ? styles.activeTopic : {}) }}>
                           <strong>{openTopics[key] ? "▾" : "▸"} {topics[key].title}</strong><br />
                           <small>{topics[key].description}</small><br />
-                          <small>{courseStats.byTopic[key].percent}% освоено · {topics[key].exercises.length} упр.</small>
+                          <small>{topics[key].exercises.length} упр.</small>
                         </button>
                         {openTopics[key] && (
                           <div style={styles.exerciseList}>
