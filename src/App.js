@@ -4335,6 +4335,8 @@ function AppContent() {
   const [review, setReview] = useState({});
   const [lazyTopics, setLazyTopics] = useState({});
   const [loadingModules, setLoadingModules] = useState({});
+  const [builtTopics, setBuiltTopics] = useState({});
+  const [buildingTopics, setBuildingTopics] = useState({});
   const initialModuleTitle = courseModules.find((module) => module.keys.includes(saved.topicKey || topicKeys[0]))?.title || courseModules[0].title;
   const [openModules, setOpenModules] = useState({ [initialModuleTitle]: true });
   const [openTopics, setOpenTopics] = useState({ [saved.topicKey || topicKeys[0]]: true });
@@ -4357,20 +4359,12 @@ function AppContent() {
     }
   }, [lazyTopics, loadingModules]);
 
-  const topics = useMemo(() => {
-    const next = {};
-    const keysToPrepare = new Set([topicKey || topicKeys[0], ...Object.keys(openTopics || {}).filter((key) => openTopics[key])]);
-    keysToPrepare.forEach((key) => {
-      const topicSource = lazyTopics[key] || rawTopics[key];
-      if (topicSource?.buildExercises || topicSource?.exercises) next[key] = getCachedTopic(key, topicSource);
-    });
-    return next;
-  }, [topicKey, openTopics, currentVariant, topicKeys, lazyTopics]);
-
   const getTopic = (key) => {
-    if (topics[key]) return topics[key];
+    if (builtTopics[key]) return builtTopics[key];
     const topicSource = lazyTopics[key] || rawTopics[key];
-    if (topicSource?.buildExercises || topicSource?.exercises) return getCachedTopic(key, topicSource);
+    if (topicSource?.buildExercises || topicSource?.exercises) {
+      return getCachedTopic(key, topicSource);
+    }
     return { ...topicSource, exercises: [] };
   };
 
@@ -4613,9 +4607,14 @@ function AppContent() {
                   <span style={styles.badge}>Правильно: {progress.correct}/{progress.total}</span>
                 </div>
                 <button style={styles.btn} onClick={() => {
-                  const copy = { ...answers };
-                  currentItems.forEach((_, i) => delete copy[`${safeTopicKey}-${safeExerciseIndex}-${i}`]);
-                  setAnswers(copy);
+                  const idsToClear = currentItems
+                    .map((item, i) => (isPracticeItem(item) ? buildItemId(safeTopicKey, safeExerciseIndex, i, item) : null))
+                    .filter(Boolean);
+                  setAnswers((prev) => {
+                    const next = { ...prev };
+                    idsToClear.forEach((id) => delete next[id]);
+                    return next;
+                  });
                 }}>Сбросить упражнение</button>
               </div>
 
