@@ -291,17 +291,21 @@ function buildPluralCasePool(entries, config) {
     const fallbackWrong = entry.singular !== entry.base ? entry.singular : `${entry.base} !`;
     const options = Array.from(new Set([entry.target, wrong, fallbackWrong])).slice(0, 3);
     while (options.length < 3) options.push(`${entry.base} ? ${options.length}`);
+    const transformSource = entry.base === entry.target ? entry.singular : entry.base;
+    const hasVisibleChange = transformSource !== entry.target;
     items.push(
-      input(`Uzupełnij formę w ${config.caseLabel}: ${entry.prompt} (${entry.base}).`, entry.target, config.hint),
+      input(`Uzupełnij formę w ${config.caseLabel}: ${entry.prompt} (${transformSource}).`, entry.target, config.hint),
       input(`Zmień na ${config.caseLabel}: (${entry.singular}).`, entry.target, config.hint),
-      input(`Uzupełnij pełną formę po modelu (${entry.base}): ${entry.prompt} ___.`, entry.target, config.hint),
+      input(`Uzupełnij pełną formę po modelu (${transformSource}): ${entry.prompt} ___.`, entry.target, config.hint),
       input(`Popraw zdanie: ${entry.prompt} ${wrong}.`, `${entry.prompt} ${entry.target}.`, config.hint),
-      choice(`Po zdaniu \`${entry.prompt}\` wybierz poprawną formę.`, options, entry.target, config.hint),
-      choice(`Wskaż poprawny model dla wyrażenia \`${entry.base}\`.`, options, entry.target, config.hint)
+      choice(`Po zdaniu \`${entry.prompt}\` wybierz poprawną formę.`, options, entry.target, config.hint)
     );
-    if (index % 3 === 0) {
+    if (hasVisibleChange) {
+      items.push(choice(`Wskaż poprawny model dla wyrażenia \`${transformSource}\`.`, options, entry.target, config.hint));
+    }
+    if (index % 3 === 0 && hasVisibleChange) {
       items.push(
-        input(`Napisz samą formę po modelu: ${entry.base} ->`, entry.target, config.hint)
+        input(`Napisz samą formę po modelu: ${transformSource} ->`, entry.target, config.hint)
       );
     }
   });
