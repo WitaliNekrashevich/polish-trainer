@@ -293,8 +293,8 @@ function buildPluralCasePool(entries, config) {
     while (options.length < 3) options.push(`${entry.base} ? ${options.length}`);
     items.push(
       input(`Uzupełnij formę w ${config.caseLabel}: ${entry.prompt} (${entry.base}).`, entry.target, config.hint),
-      input(`Zmień na ${config.caseLabel} liczby mnogiej: (${entry.singular}).`, entry.target, config.hint),
-      input(`Uzupełnij brakujące wyrażenie: ${entry.prompt} ___.`, entry.target, config.hint),
+      input(`Zmień na ${config.caseLabel}: (${entry.singular}).`, entry.target, config.hint),
+      input(`Uzupełnij pełną formę po modelu (${entry.base}): ${entry.prompt} ___.`, entry.target, config.hint),
       input(`Popraw zdanie: ${entry.prompt} ${wrong}.`, `${entry.prompt} ${entry.target}.`, config.hint),
       choice(`Po zdaniu \`${entry.prompt}\` wybierz poprawną formę.`, options, entry.target, config.hint),
       choice(`Wskaż poprawny model dla wyrażenia \`${entry.base}\`.`, options, entry.target, config.hint)
@@ -3765,6 +3765,10 @@ const topicGoals = {
 const isPracticeItem = (item) => item.type !== "note" && item.type !== "audio";
 const MIN_EXERCISE_ITEMS = 30;
 
+function isPluralTopicKey(topicKey) {
+  return topicKey === "pluralNominative" || /Plural$/.test(String(topicKey || ""));
+}
+
 function getTopicSupplementPool(topicKey) {
   const thematicMap = {
     workLexicon: "work",
@@ -3855,6 +3859,7 @@ function getTopicSupplementPool(topicKey) {
   const siblingPool = uniqueExerciseItems(
     module.keys
       .filter((key) => key !== topicKey)
+      .filter((key) => isPluralTopicKey(key) === isPluralTopicKey(topicKey))
       .flatMap((key) => {
         if (thematicMap[key]) return thematicPool(thematicMap[key]);
         return pools[key] || [];
