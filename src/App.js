@@ -296,18 +296,9 @@ function buildPluralCasePool(entries, config) {
     items.push(
       input(`Uzupełnij formę w ${config.caseLabel}: ${entry.prompt} (${transformSource}).`, entry.target, config.hint),
       input(`Zmień na ${config.caseLabel}: (${entry.singular}).`, entry.target, config.hint),
-      input(`Uzupełnij pełną formę po modelu (${transformSource}): ${entry.prompt} ___.`, entry.target, config.hint),
       input(`Popraw zdanie: ${entry.prompt} ${wrong}.`, `${entry.prompt} ${entry.target}.`, config.hint),
       choice(`Po zdaniu \`${entry.prompt}\` wybierz poprawną formę.`, options, entry.target, config.hint)
     );
-    if (hasVisibleChange) {
-      items.push(choice(`Wskaż poprawny model dla wyrażenia \`${transformSource}\`.`, options, entry.target, config.hint));
-    }
-    if (index % 3 === 0 && hasVisibleChange) {
-      items.push(
-        input(`Napisz samą formę po modelu: ${transformSource} ->`, entry.target, config.hint)
-      );
-    }
   });
   return uniqueExerciseItems(items);
 }
