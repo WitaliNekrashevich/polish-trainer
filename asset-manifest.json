@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/polish-trainer/static/css/main.e6c13ad2.css",
-    "main.js": "/polish-trainer/static/js/main.c839eecd.js",
+    "main.js": "/polish-trainer/static/js/main.473a0484.js",
     "static/js/0.f0d07506.chunk.js": "/polish-trainer/static/js/0.f0d07506.chunk.js",
     "static/js/453.2bf69d40.chunk.js": "/polish-trainer/static/js/453.2bf69d40.chunk.js",
     "index.html": "/polish-trainer/index.html",
     "main.e6c13ad2.css.map": "/polish-trainer/static/css/main.e6c13ad2.css.map",
-    "main.c839eecd.js.map": "/polish-trainer/static/js/main.c839eecd.js.map",
+    "main.473a0484.js.map": "/polish-trainer/static/js/main.473a0484.js.map",
     "0.f0d07506.chunk.js.map": "/polish-trainer/static/js/0.f0d07506.chunk.js.map",
     "453.2bf69d40.chunk.js.map": "/polish-trainer/static/js/453.2bf69d40.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.e6c13ad2.css",
-    "static/js/main.c839eecd.js"
+    "static/js/main.473a0484.js"
   ]
 }
